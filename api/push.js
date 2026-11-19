@@ -26,7 +26,12 @@ module.exports = async (req, res) => {
   if (req.method === 'OPTIONS') return res.status(204).end();
   try {
     const k = await L.vapid();
-    if (req.method === 'GET') return res.status(200).json({ publicKey: k.publicKey });
+    if (req.method === 'GET') {
+      // Solo cuántos móviles tienen los avisos activados (sin ningún dato personal), para poder comprobarlo.
+      let admins = 0, users = 0, lastAdmin = 0;
+      try { for (const x of await L.allSubs()) { if (x.role === 'admin') { admins++; lastAdmin = Math.max(lastAdmin, x.ts || 0); } else users++; } } catch (e) {}
+      return res.status(200).json({ publicKey: k.publicKey, admins, users, lastAdmin });
+    }
     if (req.method !== 'POST') return res.status(405).json({ error: 'method' });
     const b = await L.readBody(req);
     const sub = b.sub;
