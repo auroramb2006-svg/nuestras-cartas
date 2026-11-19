@@ -290,6 +290,10 @@ html[data-theme="dark"] .bub.her{background:#4a3360;color:#fff}
 #reqp textarea{flex:1;width:auto;box-sizing:border-box;padding:12px;border-radius:14px;border:2px solid rgba(143,123,255,.35);font:inherit;font-weight:700;background:rgba(143,123,255,.08);color:inherit;outline:none;resize:none}
 .reqh{margin-top:12px;font-size:12px;font-weight:600;color:#8a85a6}.reqh div{padding:5px 0;border-bottom:1px solid rgba(143,123,255,.15)}
 #loginp{text-align:center}#loginp .heart{font-size:42px}#loginp h3{margin:6px 0 4px}#loginp p{font-size:14px;color:#8a85a6;margin:0 0 14px}#loginp input{width:100%;box-sizing:border-box;padding:13px 14px;border-radius:14px;border:2px solid rgba(143,123,255,.35);font:inherit;font-weight:600;font-size:16px;background:rgba(143,123,255,.08);color:inherit;outline:none;margin-bottom:12px;text-align:center}#loginp input:focus{border-color:#8f7bff}#loginp .err{color:#ff6b9a;font-size:13px;font-weight:600;min-height:18px;margin:-4px 0 8px}
+.vrow{display:flex;align-items:center;gap:10px;margin-top:8px}.vrow span{width:62px;font-size:13px;font-weight:600;color:#8a85a6}.vrow b{width:40px;text-align:right;font-size:13px}
+.vol{flex:1;-webkit-appearance:none;appearance:none;height:10px;border-radius:99px;background:linear-gradient(90deg,#ff8fb8 0,#8f7bff var(--p,50%),rgba(143,123,255,.18) var(--p,50%));outline:none;margin:0}
+.vol::-webkit-slider-thumb{-webkit-appearance:none;width:24px;height:24px;border-radius:50%;background:#fff;border:3px solid #ff6f9f;box-shadow:0 2px 6px rgba(0,0,0,.25);cursor:pointer}
+.vol::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:#fff;border:3px solid #ff6f9f;cursor:pointer}
 .srow{padding:12px 0;border-bottom:1px solid rgba(0,0,0,.07)}
 .srow:last-of-type{border-bottom:none}
 .srow .l{font-weight:600;font-size:15px}.srow .d{font-size:12px;color:#8a85a6;margin-top:2px}
@@ -1235,9 +1239,11 @@ try{Object.assign(SET,JSON.parse(localStorage.getItem(SKEY)||"{}"))}catch(e){}
 function saveSet(){try{localStorage.setItem(SKEY,JSON.stringify(SET))}catch(e){}}
 // ---------- sonido de la app: efectitos y música tenue (todo generado, sin archivos) ----------
 const APPSND=(()=>{let ac=null,master=null,sfxBus=null,musBus=null,playing=false,ducked=false,timer=0,nextBar=0,bar=0;
- const sfxOn=()=>SET.sfx!==false,musOn=()=>SET.music!==false;
+ // volumen 0–1 (las versiones antiguas guardaban sí/no)
+ const vol=k=>{const v=SET[k+"Vol"];if(typeof v==="number")return Math.max(0,Math.min(1,v));return SET[k==="sfx"?"sfx":"music"]===false?0:(k==="sfx"?.8:.6)};
+ const sfxOn=()=>vol("sfx")>0,musOn=()=>vol("mus")>0;
  function ctx(){if(!ac){const A=window.AudioContext||window.webkitAudioContext;if(!A)return null;ac=new A();master=ac.createGain();master.gain.value=1;master.connect(ac.destination);
-   sfxBus=ac.createGain();sfxBus.gain.value=.9;sfxBus.connect(master);
+   sfxBus=ac.createGain();sfxBus.gain.value=1.1*vol("sfx");sfxBus.connect(master);
    const lp=ac.createBiquadFilter();lp.type="lowpass";lp.frequency.value=2600;lp.Q.value=.3;musBus=ac.createGain();musBus.gain.value=0;musBus.connect(lp);lp.connect(master)}
   if(ac.state==="suspended")ac.resume();return ac}
  const N=n=>440*Math.pow(2,(n-69)/12);
@@ -1282,7 +1288,7 @@ const APPSND=(()=>{let ac=null,master=null,sfxBus=null,musBus=null,playing=false
  function pump(){if(!playing||!ac)return;while(nextBar<ac.currentTime+1.2){schedBar(nextBar,bar++);nextBar+=BAR}}
  function fade(v,s=1.2){if(!musBus)return;const t=ac.currentTime;musBus.gain.cancelScheduledValues(t);musBus.gain.setValueAtTime(musBus.gain.value,t);musBus.gain.linearRampToValueAtTime(v,t+s)}
  const LEVEL=1.4;
- function startMusic(){if(!musOn()||!ctx())return;if(!playing){playing=true;nextBar=ac.currentTime+.15;pump();clearInterval(timer);timer=setInterval(pump,250)}fade(ducked?0:LEVEL,2.5)}
+ function startMusic(){if(!musOn()||!ctx())return;if(!playing){playing=true;nextBar=ac.currentTime+.15;pump();clearInterval(timer);timer=setInterval(pump,250)}fade(ducked?0:LEVEL*vol("mus")*1.6,2.5)}
  function stopMusic(){if(!ac)return;fade(0,.8);setTimeout(()=>{if(!musOn()||ducked){playing=false;clearInterval(timer)}},900)}
  document.addEventListener("visibilitychange",()=>{if(!ac)return;if(document.hidden)ac.suspend();else{ac.resume();if(playing)nextBar=Math.max(nextBar,ac.currentTime+.1)}});
  function watch(){const obs=new MutationObserver(ms=>ms.forEach(m=>{const el=m.target;const on=el.classList.contains("on");if(el._snd===on)return;el._snd=on;
@@ -1292,7 +1298,8 @@ const APPSND=(()=>{let ac=null,master=null,sfxBus=null,musBus=null,playing=false
  let first=false;const touch=()=>{if(first)return;first=true;ctx();if(musOn())startMusic()};
  document.addEventListener("pointerdown",touch,{passive:true,capture:true});
  function p(k,x){if(!sfxOn())return;try{if(!ctx())return;FX[k]&&FX[k](x)}catch(e){}}
- return{p,start(){touch();try{if(sfxOn()&&ctx())FX.wBig()}catch(e){}},
+ function setVol(){if(!ac)return;sfxBus.gain.setTargetAtTime(1.1*vol("sfx"),ac.currentTime,.05);if(musOn()){if(playing&&!ducked)fade(LEVEL*vol("mus")*1.6,.25);else startMusic()}else stopMusic()}
+ return{p,setVol,start(){touch();try{if(sfxOn()&&ctx())FX.wBig()}catch(e){}},
   music(on){if(on)startMusic();else stopMusic()},duck(d){ducked=d;if(!ac)return;if(d)fade(0,.6);else if(musOn()){startMusic()}}}})();
 
 function applySet(){const r=document.documentElement;let th=SET.theme;if(th==="auto")th=matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";
@@ -1305,8 +1312,7 @@ function openSettings(){const seg=(k,opts)=>`<div class="seg">${opts.map(([v,l])
  <div class="srow"><div class="l">Tema</div>${seg("theme",[["light","Claro"],["dark","Oscuro"],["auto","Automático"]])}</div>
  <div class="srow"><div class="l">Pantalla de inicio</div><div class="d">La portada del principio</div>${seg("splash",[["always","Siempre"],["day","Una vez al día"],["never","Nunca"]])}</div>
  <div class="srow"><div class="l">Brillos y animaciones</div>${seg("anim",[["true","Activados"],["false","Desactivados"]])}</div>
- <div class="srow"><div class="l">Sonidos</div>${seg("sfx",[["true","Sí"],["false","No"]])}</div>
- <div class="srow"><div class="l">Música</div>${seg("music",[["true","Sí"],["false","No"]])}</div>
+ <div class="srow"><div class="l">Volumen</div><div class="vrow"><span>Efectos</span><input type="range" class="vol" id="volSfx" min="0" max="100" value="${Math.round((typeof SET.sfxVol==="number"?SET.sfxVol:(SET.sfx===false?0:.8))*100)}"><b id="volSfxN"></b></div><div class="vrow"><span>Música</span><input type="range" class="vol" id="volMus" min="0" max="100" value="${Math.round((typeof SET.musVol==="number"?SET.musVol:(SET.music===false?0:.6))*100)}"><b id="volMusN"></b></div></div>
  <div class="srow"><div class="l">Vibración</div>${seg("vibe",[["true","Sí"],["false","No"]])}</div>
  <div class="srow"><div class="l">Cartas por fila</div>${seg("cols",[["2","2, grandes"],["3","3, pequeñas"]])}</div>
  ${(ENC.sync&&getUser())?`<div class="srow"><div class="l">Notificaciones</div><div class="d" id="pushD">${!PUSHOK()&&!(ISIOS&&!STANDALONE())?"Este navegador no deja 😒":ISIOS&&!STANDALONE()?"En iPhone tienes que añadirla a la pantalla de inicio (Compartir → Añadir a pantalla de inicio) y abrirla desde ahí":pushOn()?"Activadas":"Te aviso de los planes, de lo que caduca y de los sobres nuevos"}</div>${PUSHOK()&&!(ISIOS&&!STANDALONE())?`<div class="seg">${pushOn()?`<button id="pushT">Probar</button><button id="pushX">Desactivar</button>`:`<button id="pushA">Activar</button>`}</div>`:""}</div>`:""}
@@ -1314,7 +1320,9 @@ function openSettings(){const seg=(k,opts)=>`<div class="seg">${opts.map(([v,l])
  <div class="btns" style="margin-top:14px"><button class="cta pink" id="setOk" style="width:100%">Listo</button></div>`;
  $("ovSet").classList.add("on");
  $("setp").querySelectorAll(".seg button").forEach(b=>b.onclick=()=>{const k=b.dataset.k;let v=b.dataset.v;if(v==="true")v=true;else if(v==="false")v=false;else if(k==="cols")v=+v;
-  SET[k]=v;saveSet();applySet();if(k==="music")APPSND.music(v!==false);APPSND.p("tap");openSettings()});
+  SET[k]=v;saveSet();applySet();APPSND.p("tap");openSettings()});
+  [["volSfx","sfxVol"],["volMus","musVol"]].forEach(([id,k])=>{const r=$(id),n=$(id+"N");if(!r)return;const show=()=>{const v=+r.value;n.textContent=v?v+"%":"No";r.style.setProperty("--p",v+"%")};show();
+   r.oninput=()=>{SET[k]=+r.value/100;show();APPSND.setVol()};r.onchange=()=>{saveSet();if(k==="sfxVol")APPSND.p("ding")}});
  const pd=t=>{const e=$("pushD");if(e)e.textContent=t};
  const pa=$("pushA");if(pa)pa.onclick=async()=>{pd("Activando…");try{await enablePush();openSettings();pd("Activadas, dale a Probar")}catch(e){pd(e.message==="denied"?"Les has dicho que no 🙄 Actívalas en los ajustes del móvil":e.message==="ios"?"En iPhone tienes que añadirla a la pantalla de inicio y abrirla desde ahí":"No ha ido, prueba en un rato")}};
  const pt=$("pushT");if(pt)pt.onclick=async()=>{pd("Enviando…");try{await testPush();pd("Enviada, te tendría que llegar ya")}catch(e){pd("No ha salido. Quítalas y vuelve a ponerlas")}};
