@@ -1,6 +1,14 @@
 // Guarda y devuelve la actividad de la app (va cifrada: solo el editor puede leerla).
-const { put, get } = require('@vercel/blob');
-const PATH = 'sync/estado.json';
+const { put, get, list } = require('@vercel/blob');
+const PATH = 'sync/estado.json'; // versión antigua (sin sesión)
+const userPath = u => 'sync/u-' + u + '.json';
+
+async function readBlob(pathname) {
+  for (const access of ACCESS) {
+    try { const r = await get(pathname, { access, useCache: false }); if (r && r.stream) return await new Response(r.stream).text(); } catch (e) { /* probar la otra forma */ }
+  }
+  return null;
+}
 const ACCESS = ['private', 'public'];
 
 async function readBody(req) {
@@ -22,23 +30,31 @@ module.exports = async (req, res) => {
       if (body.length > 300000) return res.status(413).json({ error: 'too_large' });
       const o = JSON.parse(body);
       if (!o || o.v !== 1 || !o.k || !o.iv || !o.ct) return res.status(400).json({ error: 'bad' });
+      if (o.u !== undefined && !/^[a-z0-9]{1,13}$/.test(String(o.u))) return res.status(400).json({ error: 'bad_user' });
+      const path = o.u ? userPath(o.u) : PATH;
       let last;
       for (const access of ACCESS) {
         try {
-          await put(PATH, JSON.stringify(o), { access, addRandomSuffix: false, allowOverwrite: true, contentType: 'application/json', cacheControlMaxAge: 60 });
+          await put(path, JSON.stringify(o), { access, addRandomSuffix: false, allowOverwrite: true, contentType: 'application/json', cacheControlMaxAge: 60 });
           return res.status(200).json({ ok: true });
         } catch (e) { last = e; }
       }
       throw last;
     }
     if (req.method === 'GET') {
-      for (const access of ACCESS) {
-        try {
-          const r = await get(PATH, { access, useCache: false });
-          if (r && r.stream) { const txt = await new Response(r.stream).text(); res.setHeader('Content-Type', 'application/json'); return res.status(200).send(txt); }
-        } catch (e) { /* probar la otra forma de acceso */ }
+      // Devuelve la actividad de cada persona que ha iniciado sesión (cada una va cifrada).
+      let blobs = [];
+      try { const r = await list({ prefix: 'sync/', limit: 100 }); blobs = r.blobs || []; }
+      catch (e) { const m = String(e && e.message || e); if (/token|store/i.test(m)) return res.status(500).json({ error: 'no_store', message: m.slice(0, 200) }); }
+      const items = [];
+      for (const b of blobs) {
+        const txt = await readBlob(b.pathname);
+        if (!txt) continue;
+        try { const o = JSON.parse(txt); o.legacy = b.pathname === PATH; items.push(o); } catch (e) { /* ignorar */ }
       }
-      return res.status(404).json({ error: 'empty' });
+      if (!items.length) return res.status(404).json({ error: 'empty' });
+      res.setHeader('Content-Type', 'application/json');
+      return res.status(200).send(JSON.stringify({ items }));
     }
     res.setHeader('Allow', 'GET, POST, OPTIONS');
     return res.status(405).json({ error: 'method' });
