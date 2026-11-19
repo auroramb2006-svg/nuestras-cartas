@@ -306,7 +306,7 @@ const TYPES=["Argentina","Dulce","Planes","Especial","Gamer","Calma","Amor","Mot
 const RAR={c:"Común",p:"Poco común",r:"Rara",l:"Legendaria",s:"Shiny",x:"Secreta"};
 const KEY="editor-cartas-v1";
 const REPO="auroramb2006-svg/nuestras-cartas",BRANCH="main",DATAF="cartas-datos.enc",EDF=location.pathname.split("/").pop()||"editor.html";
-const EDITOR_VER="2026-11-20b";
+const EDITOR_VER="2026-11-20c";
 async function checkEdUpdate(){try{const r=await fetch(location.pathname+"?v="+Date.now(),{cache:"no-store"});if(!r.ok)return;const t=await r.text();const m=t.match(/const EDITOR_VER="([^"]+)"/);
  if(m&&m[1]!==EDITOR_VER){let n=0;try{n=+sessionStorage.getItem("nc-edreload")||0}catch(e){}if(n<2){try{sessionStorage.setItem("nc-edreload",n+1)}catch(e){}location.reload()}}}catch(e){}}
 checkEdUpdate();document.addEventListener("visibilitychange",()=>{if(!document.hidden)checkEdUpdate()});
@@ -436,9 +436,12 @@ function build(){
 function dl(name,text,type){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},2000);toast("Descargado ✓")}
 var PREVIEW=false;document.getElementById("test").onclick=()=>{try{PREVIEW=true;let h;try{h=build()}finally{PREVIEW=false}let ov=document.getElementById("pv");
   if(!ov){ov=document.createElement("div");ov.id="pv";ov.style.cssText="position:fixed;inset:0;z-index:50;background:#000;display:flex;flex-direction:column";
-   ov.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#2e2140;color:#fff;font-weight:800">Vista previa (no se guarda nada)<button id="pvx" style="font-weight:800">Cerrar</button></div><iframe id="pvf" style="flex:1;border:0;width:100%"></iframe>';
-   document.body.appendChild(ov);document.getElementById("pvx").onclick=()=>{ov.remove()}}
-  document.getElementById("pvf").srcdoc=h}catch(e){toast(e)}};
+   ov.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 12px;background:#2e2140;color:#fff;font-weight:800"><span>Vista previa</span><span style="display:flex;gap:8px"><button id="pvr" style="font-weight:800">Empezar de cero</button><button id="pvx" style="font-weight:800">Cerrar</button></span></div><iframe id="pvf" style="flex:1;border:0;width:100%"></iframe>';
+   document.body.appendChild(ov);document.getElementById("pvx").onclick=()=>{ov.remove()};
+   // Borra solo lo que la vista previa ha ido guardando (sobres abiertos, cartas, planes...). Tu clave, tu contraseña y tus borradores no se tocan.
+   const pvr=document.getElementById("pvr");let sure=false;pvr.onclick=()=>{if(!sure){sure=true;pvr.textContent="¿Seguro? Toca otra vez";setTimeout(()=>{sure=false;pvr.textContent="Empezar de cero"},3500);return}
+    ["nuestras-cartas-v3","nc-alert-day","nc-splash-day"].forEach(k=>{try{localStorage.removeItem(k)}catch(e){}});sure=false;pvr.textContent="Empezar de cero";document.getElementById("pvf").srcdoc=ov._h;toast("Prueba reiniciada: sobres sin abrir ✓")}}
+  ov._h=h;document.getElementById("pvf").srcdoc=h}catch(e){toast(e)}};
 document.getElementById("exp").onclick=()=>{const o=Object.assign({},D);delete o._base;delete o._initial;dl("cartas-copia.json",JSON.stringify(o),"application/json")};
 document.getElementById("imp").onclick=()=>document.getElementById("impf").click();
 document.getElementById("impf").onchange=e=>{const f=e.target.files[0];if(!f)return;f.text().then(t=>{try{const o=JSON.parse(t);if(!o.cards||!o.codes)throw 0;const keepP=D&&D.placeholder;D=o;normalize();if(!D.placeholder)D.placeholder=keepP;save();render();toast("Copia cargada ✓ Pulsa Publicar para subirla")}catch(x){toast("Ese archivo no es una copia válida")}})};
