@@ -11,6 +11,11 @@ async function readBody(req) {
 
 module.exports = async (req, res) => {
   res.setHeader('Cache-Control', 'no-store');
+  // El editor vive en otra dirección: permitir que lea y escriba (los datos van cifrados).
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  if (req.method === 'OPTIONS') return res.status(204).end();
   try {
     if (req.method === 'POST') {
       const body = await readBody(req);
@@ -35,7 +40,7 @@ module.exports = async (req, res) => {
       }
       return res.status(404).json({ error: 'empty' });
     }
-    res.setHeader('Allow', 'GET, POST');
+    res.setHeader('Allow', 'GET, POST, OPTIONS');
     return res.status(405).json({ error: 'method' });
   } catch (e) {
     const msg = String(e && e.message || e);

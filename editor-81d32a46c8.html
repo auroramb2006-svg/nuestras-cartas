@@ -226,7 +226,7 @@ document.getElementById("imp").onclick=()=>document.getElementById("impf").click
 document.getElementById("impf").onchange=e=>{const f=e.target.files[0];if(!f)return;f.text().then(t=>{try{const o=JSON.parse(t);if(!o.cards||!o.codes)throw 0;const keepP=D&&D.placeholder;D=o;normalize();if(!D.placeholder)D.placeholder=keepP;save();render();toast("Copia cargada ✓ Pulsa Publicar para subirla")}catch(x){toast("Ese archivo no es una copia válida")}})};
 
 // ---------- actividad de él ----------
-async function loadAct(manual){ACTERR="";try{const r=await fetch("/api/sync?t="+Date.now(),{cache:"no-store"});
+async function loadAct(manual){ACTERR="";try{const r=await fetch("https://nuestrascartas.vercel.app/api/sync?t="+Date.now(),{cache:"no-store"});
   if(r.status===404){ACT=null;ACTERR="empty"}else if(!r.ok){let e={};try{e=await r.json()}catch(x){}ACTERR=e.error||"server"}
   else{const o=await r.json();const unb=s=>{const b=atob(s);const u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return u};
    const pk=await crypto.subtle.importKey("jwk",D.syncKeys.priv,{name:"RSA-OAEP",hash:"SHA-256"},false,["decrypt"]);
