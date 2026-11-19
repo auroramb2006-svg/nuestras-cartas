@@ -36,6 +36,12 @@ async function isHim(uid, tok) {
   toks.push(h); await kv.set(k, toks); return true;
 }
 const cleanCard = c => c && { n: +c.n || 0, name: L.clip(c.name, 60), efecto: L.clip(c.efecto, 300), r: L.clip(c.r, 2), type: L.clip(c.type, 20) };
+// Valor de cada rareza para que las apuestas sean justas (1 rara = 2 comunes, etc.)
+const VAL = { c: 2, p: 3, r: 4, l: 8, s: 12, x: 16 };
+const cleanBet = b => (Array.isArray(b) ? b : b ? [b] : []).slice(0, 6).map(cleanCard).filter(c => c && c.name);
+const betVal = b => (Array.isArray(b) ? b : b ? [b] : []).reduce((a, c) => a + (VAL[c.r] || 2), 0);
+const betNames = b => { const n = (Array.isArray(b) ? b : b ? [b] : []).map(c => '«' + c.name + '»'); return n.length > 1 ? n.slice(0, -1).join(', ') + ' y ' + n[n.length - 1] : n[0] || ''; };
+const asList = b => (Array.isArray(b) ? b : b ? [b] : []);
 
 async function notify(role, uid, title, body) {
   try {
@@ -54,13 +60,13 @@ async function nudge(g, uid, who) {
 
 async function finish(g, uid) {
   const led = (await kv.get(uid + '-ledger')) || { prizes: [], debts: [] };
-  if (g.winner === 'el') { led.prizes.push({ id: g.id, card: g.bets.ella, ts: Date.now(), used: 0 }); }
-  else { led.debts.push({ id: g.id, card: g.bets.el, ts: Date.now(), paid: 0 }); }
+  if (g.winner === 'el') asList(g.bets.ella).forEach((card, i) => led.prizes.push({ id: g.id + '-' + i, card, ts: Date.now(), used: 0 }));
+  else asList(g.bets.el).forEach((card, i) => led.debts.push({ id: g.id + '-' + i, card, ts: Date.now(), paid: 0 }));
   led.history = (led.history || []).concat([{ id: g.id, winner: g.winner, score: g.score, ts: Date.now(), bets: g.bets }]).slice(-50);
   await kv.set(uid + '-ledger', led);
   const sc = g.score.el + ' a ' + g.score.ella;
-  if (g.winner === 'el') { await notify('ella', uid, g.names.el + ' te ha ganado al truco 🙄', sc + '. Se lleva «' + g.bets.ella.name + '»'); }
-  else { await notify('el', uid, 'Te he ganado al truco 😏', (g.score.ella + ' a ' + g.score.el) + '. Me debes «' + g.bets.el.name + '»'); }
+  if (g.winner === 'el') { await notify('ella', uid, g.names.el + ' te ha ganado al truco 🙄', sc + '. Se lleva ' + betNames(g.bets.ella)); }
+  else { await notify('el', uid, 'Te he ganado al truco 😏', (g.score.ella + ' a ' + g.score.el) + '. Me debes ' + betNames(g.bets.el)); }
 }
 
 module.exports = async (req, res) => {
@@ -88,22 +94,23 @@ module.exports = async (req, res) => {
     }
     if (b.action === 'challenge') {
       if (g && (g.status === 'play' || g.status === 'invite')) return res.status(409).json({ error: 'busy' });
-      const bet = cleanCard(b.bet); if (!bet || !bet.name) return res.status(400).json({ error: 'bet' });
+      const bet = cleanBet(b.bet); if (!bet.length) return res.status(400).json({ error: 'bet' });
       g = T.create({ inviter: who, bet, elName: who === 'el' ? L.clip(b.name, 30) : L.clip(b.otherName, 30), ellaName: 'Ella' });
       if (who === 'ella' && b.otherName) g.names.el = L.clip(b.otherName, 30);
       if (who === 'el') g.names.el = L.clip(b.name, 30) || 'Él';
       g.seen = { [who]: Date.now() };
       await kv.set(gk, g);
-      await notify(T.other(who), uid, (who === 'el' ? g.names.el : 'Te reto') + (who === 'el' ? ' te reta al truco 👀' : ' al truco 😏'), 'Apuesta «' + bet.name + '». ¿Qué te juegas tú?');
+      await notify(T.other(who), uid, (who === 'el' ? g.names.el : 'Te reto') + (who === 'el' ? ' te reta al truco 👀' : ' al truco 😏'), 'Apuesta ' + betNames(bet) + '. ¿Qué te juegas tú?');
       return out();
     }
     if (!g) return res.status(404).json({ error: 'nogame' });
     if (b.action === 'accept') {
       if (g.status !== 'invite' || g.inviter === who) return res.status(409).json({ error: 'state' });
-      const bet = cleanCard(b.bet); if (!bet || !bet.name) return res.status(400).json({ error: 'bet' });
+      const bet = cleanBet(b.bet); if (!bet.length) return res.status(400).json({ error: 'bet' });
+      if (betVal(bet) < betVal(g.bets[g.inviter])) return res.status(400).json({ error: 'value', need: betVal(g.bets[g.inviter]), have: betVal(bet) });
       g.bets[who] = bet; T.start(g); g.v++; g.seen = Object.assign({}, g.seen, { [who]: Date.now() });
       await kv.set(gk, g);
-      await notify(T.other(who), uid, '¡Ha aceptado el truco! 🧉', 'Se juega «' + bet.name + '». ' + (g.hand.mano === T.other(who) ? 'Eres mano' : 'Es mano ' + g.names[who]));
+      await notify(T.other(who), uid, '¡Ha aceptado el truco! 🧉', 'Se juega ' + betNames(bet) + '. ' + (g.hand.mano === T.other(who) ? 'Eres mano' : 'Es mano ' + g.names[who]));
       return out();
     }
     if (b.action === 'decline' || b.action === 'cancel') {

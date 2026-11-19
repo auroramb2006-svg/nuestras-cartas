@@ -446,6 +446,11 @@ html[data-theme="dark"] .news{background:#2a2250;color:#fff}html[data-theme="dar
 @keyframes trShout{0%{transform:scale(.15) rotate(-16deg);opacity:0}16%{transform:scale(1.2) rotate(-4deg);opacity:1}28%{transform:scale(.96) rotate(-7deg)}38%{transform:scale(1) rotate(-6deg)}80%{transform:scale(1.03) rotate(-6deg);opacity:1}100%{transform:scale(1.6) rotate(-6deg);opacity:0}}
 @keyframes trFlash{0%{opacity:0;transform:scale(.4)}25%{opacity:1}100%{opacity:0;transform:scale(1.6)}}
 @media (prefers-reduced-motion:reduce){.tr-card.in-me,.tr-card.in-opp,.deal,#trShout .s,#trShout .fl{animation-duration:.01s}}
+
+.tr-rar{font-size:11px;text-align:right;line-height:1.25;opacity:.9;flex-shrink:0;padding-left:6px}
+.tr-rar.r-p{color:#9be7b0}.tr-rar.r-r{color:#9cc4ff}.tr-rar.r-l{color:#ffd86b}.tr-rar.r-s{color:#ffb3e6}.tr-rar.r-x{color:#e0b3ff}
+.tr-tot{text-align:center;margin-top:10px;font-size:14px;opacity:.9}.tr-tot.ok{color:#ffe27a;opacity:1}
+.tr-val{margin:0 0 8px;font-size:13px}.tr-val summary{cursor:pointer;opacity:.85}.tr-val table{margin:6px 0;border-collapse:collapse}.tr-val td{padding:2px 14px 2px 0}.tr-val p{margin:4px 0 0;opacity:.8}
 /*tr-end*/
 .trb{position:relative;width:calc(100% - 4px);margin:12px 2px 0;display:flex;align-items:center;gap:12px;text-align:left;border:none;border-radius:20px 16px 22px 14px;padding:12px 14px;font:inherit;cursor:pointer;background:#2f7d57;color:#fff;box-shadow:0 4px 0 #1d5a3e;transform:rotate(-.6deg)}.trb:active{transform:rotate(-.6deg) translateY(3px);box-shadow:0 1px 0 #1d5a3e}.trb .tri{display:grid;place-items:center;width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.16)}.trb b{display:block;font-size:15px;font-weight:700}.trb small{display:block;font-size:12px;opacity:.85}
 </style></head>
@@ -798,7 +803,10 @@ const e=s=>String(s==null?"":s).replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">
 const SPV=[1,2,3,4,5,6,7,10,11,12],SPS=["O","C","E","B"];
 const cardH=(c,big,extra="")=>c?`<div class="tr-card px${big?" big":""} ${extra}" style="--x:${SPV.indexOf(c.v)};--y:${SPS.indexOf(c.s)}" title="${c.v} de ${SUIT[c.s]}" role="img" aria-label="${c.v} de ${SUIT[c.s]}"></div>`:`<div class="tr-slot"></div>`;
 const back=()=>`<div class="tr-card back"></div>`;
-let S=null,LAST="",timer=0,bet=null,msg="",busy=false,sure=false,view="",PREV=null;
+let S=null,LAST="",timer=0,bet=[],msg="",busy=false,sure=false,view="",PREV=null;
+const VAL={c:2,p:3,r:4,l:8,s:12,x:16},RN={c:"Común",p:"Poco común",r:"Rara",l:"Legendaria",s:"Shiny",x:"Secreta"};
+const L_=b=>Array.isArray(b)?b:b?[b]:[];const bval=b=>L_(b).reduce((a,c)=>a+(VAL[c.r]||2),0);
+const bnames=b=>{const n=L_(b).map(c=>"«"+c.name+"»");return n.length>1?n.slice(0,-1).join(", ")+" y "+n[n.length-1]:n[0]||""};
 const SH=[];let shBusy=false;
 function shoutBox(){let b=document.getElementById("trShout");if(!b){b=document.createElement("div");b.id="trShout";document.body.appendChild(b)}return b}
 function shout(t,sub,kind){SH.push([t,sub,kind]);if(!shBusy)nextShout()}
@@ -816,7 +824,7 @@ function ov(){let o=document.getElementById("trOv");if(!o){o=document.createElem
 async function call(o){const r=await fetch(TRC.api,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(Object.assign(await TRC.auth(),o))});let j={};try{j=await r.json()}catch(x){}if(!r.ok){const er=new Error(j.error||"server");er.data=j;throw er}return j}
 async function load(force){try{const j=await call({action:"state"});const k=JSON.stringify(j);if(force||k!==LAST){LAST=k;S=j;draw()}}catch(x){if(force){S=S||{game:null,ledger:{prizes:[],debts:[]}};msg=x.message==="auth"?"Este móvil no puede jugar con esta cuenta 😒":"No conecta, prueba en un rato 🫠";draw()}}}
 function poll(){clearInterval(timer);timer=setInterval(()=>{if(!document.hidden&&ov().classList.contains("on"))load()},S&&S.redis?2000:3500)}
-async function send(o){if(busy)return;busy=true;msg="";try{const j=await call(o);LAST=JSON.stringify(j);S=j;sure=false}catch(x){if(x.data&&x.data.game&&S){S.game=x.data.game}msg=x.message==="busy"?"Ya hay una partida empezada":x.message==="move"?(x.data.message||"Esa no vale"):x.message==="stale"?"":"No se ha podido, prueba otra vez"}busy=false;draw()}
+async function send(o){if(busy)return;busy=true;msg="";try{const j=await call(o);LAST=JSON.stringify(j);S=j;sure=false}catch(x){if(x.data&&x.data.game&&S){S.game=x.data.game}msg=x.message==="value"?"Tu apuesta tiene que valer al menos "+x.data.need+" pts":x.message==="busy"?"Ya hay una partida empezada":x.message==="move"?(x.data.message||"Esa no vale"):x.message==="stale"?"":"No se ha podido, prueba otra vez"}busy=false;draw()}
 const act=m=>send({action:"act",v:S.game.v,move:m});
 function head(g){const n=g?g.names:{el:"Él",ella:"Ella"};const sc=g&&g.status==="play"||g&&g.status==="done"?g.score:null;
  return `<div class="tr-top"><h3>Truco</h3><button class="tr-x" data-tr="close">✕</button></div>${sc?`<div class="tr-score"><div class="me"><span>Tú</span><b>${sc[me()]}</b></div><div><span>${e(n[opp()])}</span><b>${sc[opp()]}</b></div></div>`:""}`}
@@ -825,23 +833,26 @@ function ledgerH(){const L=S.ledger||{prizes:[],debts:[]};const P=(L.prizes||[])
  const pr=P.map(p=>`<div class="tr-row"><div><b>${e(p.card.name)}</b><small>${me()==="el"?"Te la llevaste en el truco":"Se la llevó en el truco"}</small></div>${me()==="el"?`<button class="tr-b hot" data-tr="use" data-id="${e(p.id)}">Canjear</button>`:""}</div>`).join("");
  const de=D.map(d=>`<div class="tr-row"><div><b>${e(d.card.name)}</b><small>${me()==="el"?"Se lo debes: "+e(d.card.efecto||"")+" (pero al revés 😏)":"Te lo debe: "+e(d.card.efecto||"")}</small></div>${me()==="ella"?`<button class="tr-b hot" data-tr="pay" data-id="${e(d.id)}">Saldada</button>`:""}</div>`).join("");
  return `${P.length?`<div class="tr-panel"><h4>${me()==="el"?"Tus premios":"Lo que te ha ganado"}</h4>${pr}</div>`:""}${D.length?`<div class="tr-panel"><h4>${me()==="el"?"Lo que me debes":"Lo que te debe"}</h4>${de}</div>`:""}`}
-function pickH(){const cs=TRC.betCards();if(!cs.length)return `<p>${me()==="el"?"Primero abre algún sobre, que no tienes nada que apostar 🙄":"No hay cartas"}</p>`;
- return `<div class="tr-list">${cs.map(c=>`<button class="tr-pick${bet&&bet.n===c.n?" on":""}" data-tr="bet" data-n="${c.n}"><div><b>${e(c.name)}</b><small>${e((c.efecto||"").slice(0,70))}</small></div></button>`).join("")}</div>`}
+function pickH(need){const cs=TRC.betCards();if(!cs.length)return `<p>${me()==="el"?"Primero abre algún sobre, que no tienes nada que apostar 🙄":"Todavía no tiene ninguna carta, así que no hay nada que jugarse"}</p>`;
+ const v=bval(bet);const ok=need?v>=need:bet.length>0;
+ return `<details class="tr-val"><summary>¿Cuánto vale cada carta?</summary><table>${Object.keys(VAL).map(k=>`<tr><td>${RN[k]}</td><td>${VAL[k]} pts</td></tr>`).join("")}</table><p>O sea: 1 rara = 2 comunes, 1 legendaria = 2 raras, 1 secreta = 2 legendarias.</p></details>
+ <div class="tr-list">${cs.map(c=>`<button class="tr-pick${bet.some(x=>x.n===c.n)?" on":""}" data-tr="bet" data-n="${c.n}"><div style="flex:1"><b>${e(c.name)}</b><small>${e((c.efecto||"").slice(0,70))}</small></div><span class="tr-rar r-${e(c.r||"c")}">${RN[c.r]||"Común"}<br>${VAL[c.r]||2} pts</span></button>`).join("")}</div>
+ <div class="tr-tot${ok?" ok":""}">${need?`Tienes que igualar ${need} pts. Llevas ${v}`:`Te juegas ${v} pts${bet.length>1?" ("+bet.length+" cartas)":""}`}</div>`}
 function draw(){const o=ov();const g=S&&S.game;let h=head(g)+`<div class="tr-body">`;
  const P=PREV&&g&&PREV.id===g.id?PREV:null;const newHand=!!(g&&g.hand&&(!P||!P.hand||P.hand.n!==g.hand.n));
  const isNew=(i,w)=>{if(!g||!g.hand)return false;const b=g.hand.bazas[i];if(!b||!b[w])return false;if(!P||!P.hand||P.hand.n!==g.hand.n)return !newHand||true;const pb=P.hand.bazas[i];return !pb||!pb[w]};
  if(!S){h+=`<p class="tr-sub">Cargando…</p>`}
  else if(g&&g.status==="done"&&localStorage.getItem("tr-ack")!==g.id){const w=g.winner===me();const bE=g.bets.el,bA=g.bets.ella;
   h+=`<div class="tr-big">${w?"¡Has ganado! 🥰":"Has perdido 🫠"}</div><div class="tr-sub">${g.score[me()]} a ${g.score[opp()]}</div>
-  <div class="tr-panel" style="text-align:center">${me()==="el"?(w?`Te llevas «${e(bA.name)}». Ya la tienes en tus premios.`:`Me debes «${e(bE.name)}» 😏`):(w?`Te debe «${e(bE.name)}» 😏`:`Se lleva «${e(bA.name)}» 🙄`)}</div>
+  <div class="tr-panel" style="text-align:center">${me()==="el"?(w?`Te llevas ${e(bnames(bA))}. Ya lo tienes en tus premios.`:`Me debes ${e(bnames(bE))} 😏`):(w?`Te debe ${e(bnames(bE))} 😏`:`Se lleva ${e(bnames(bA))} 🙄`)}</div>
   <div class="tr-btns"><button class="tr-b hot" data-tr="ack">Vale</button></div>`}
  else if(!g||g.status==="done"||g.status==="declined"){
-  h+=`<div class="tr-panel"><h4>${g&&g.status==="declined"?"No ha querido jugar 🙄 ¿Otra?":"¿Echamos un truco?"}</h4><p style="margin:0 0 8px;font-size:13px;opacity:.85">Elige la carta que te juegas. Se juega a 15.</p>${pickH()}
-  <div class="tr-btns"><button class="tr-b hot" data-tr="challenge"${bet?"":" disabled"}>Retar</button></div></div>`+ledgerH()}
+  h+=`<div class="tr-panel"><h4>${g&&g.status==="declined"?"No ha querido jugar 🙄 ¿Otra?":"¿Echamos un truco?"}</h4><p style="margin:0 0 8px;font-size:13px;opacity:.85">Elige una o varias cartas para jugarte. Se juega a 15.</p>${pickH()}
+  <div class="tr-btns"><button class="tr-b hot" data-tr="challenge"${bet.length?"":" disabled"}>Retar</button></div></div>`+ledgerH()}
  else if(g.status==="invite"){
-  if(g.inviter===me())h+=`<div class="tr-big" style="font-size:20px">Esperando a que acepte 👀</div><div class="tr-sub">Te juegas «${e(g.bets[me()].name)}»</div><div class="tr-btns"><button class="tr-b ghost" data-tr="cancel">Cancelar</button></div>`+ledgerH();
-  else h+=`<div class="tr-panel"><h4>${e(g.names[opp()])} te reta al truco 😏</h4><p style="margin:0 0 8px">Se juega «${e(g.bets[opp()].name)}». ¿Qué te juegas tú?</p>${pickH()}
-   <div class="tr-btns"><button class="tr-b hot" data-tr="accept"${bet?"":" disabled"}>Acepto</button><button class="tr-b ghost" data-tr="decline">Ahora no</button></div></div>`}
+  if(g.inviter===me())h+=`<div class="tr-big" style="font-size:20px">Esperando a que acepte 👀</div><div class="tr-sub">Te juegas ${e(bnames(g.bets[me()]))}</div><div class="tr-btns"><button class="tr-b ghost" data-tr="cancel">Cancelar</button></div>`+ledgerH();
+  else h+=`<div class="tr-panel"><h4>${e(g.names[opp()])} te reta al truco 😏</h4><p style="margin:0 0 8px">Se juega ${e(bnames(g.bets[opp()]))} (${bval(g.bets[opp()])} pts). ¿Qué te juegas tú?</p>${pickH(bval(g.bets[opp()]))}
+   <div class="tr-btns"><button class="tr-b hot" data-tr="accept"${bet.length&&bval(bet)>=bval(g.bets[opp()])?"":" disabled"}>Acepto</button><button class="tr-b ghost" data-tr="decline">Ahora no</button></div></div>`}
  else{const H=g.hand,op=g.opts||{},N=g.names[opp()],mine=op.toAct===me(),pend=H.pend;
   let stt=mine?(pend?`${e(N)} te canta`:"Te toca"):`Le toca a ${e(N)}`;
   h+=`<div class="tr-status${mine?" go":""}">${stt}${H.mano===me()?" (eres mano)":""}</div>`;
@@ -862,19 +873,19 @@ function draw(){const o=ov();const g=S&&S.game;let h=head(g)+`<div class="tr-bod
  h+=`<div class="tr-msg">${e(msg)}</div></div>`;o.innerHTML=h;if(g){shoutsFrom(g);PREV=JSON.parse(JSON.stringify(g))}
  o.querySelectorAll("[data-tr]").forEach(el=>el.onclick=()=>{const t=el.dataset.tr;
   if(t==="close")return close();
-  if(t==="bet"){bet=TRC.betCards().find(c=>c.n==el.dataset.n)||null;draw();return}
-  if(t==="challenge"&&bet)return send(Object.assign({action:"challenge",bet},TRC.challengeExtra?TRC.challengeExtra():{}));
-  if(t==="accept"&&bet)return send({action:"accept",bet});
+  if(t==="bet"){const c=TRC.betCards().find(c=>c.n==el.dataset.n);if(c){bet=bet.some(x=>x.n===c.n)?bet.filter(x=>x.n!==c.n):bet.length<6?bet.concat([c]):bet}draw();return}
+  if(t==="challenge"&&bet.length)return send(Object.assign({action:"challenge",bet},TRC.challengeExtra?TRC.challengeExtra():{}));
+  if(t==="accept"&&bet.length&&bval(bet)>=bval(S.game.bets[opp()]))return send({action:"accept",bet});
   if(t==="decline")return send({action:"decline"});
   if(t==="cancel")return send({action:"cancel"});
   if(t==="give"){if(!sure){sure=true;draw();return}return send({action:"cancel"})}
-  if(t==="ack"){try{localStorage.setItem("tr-ack",S.game.id)}catch(x){}bet=null;draw();return}
+  if(t==="ack"){try{localStorage.setItem("tr-ack",S.game.id)}catch(x){}bet=[];draw();return}
   if(t==="use")return send({action:"useprize",id:el.dataset.id});
   if(t==="pay")return send({action:"paydebt",id:el.dataset.id});
   if(t==="play"){const op=S.game.opts||{};if(op.play&&!busy){const c=el.querySelector(".tr-card");if(c)c.classList.add("fly");setTimeout(()=>act({type:"play",i:+el.dataset.i}),160)}return}
   if(t==="m"){const m=el.dataset.m;act(m==="envido"?{type:"envido",k:el.dataset.k}:{type:m})}})}
 function close(){ov().classList.remove("on");clearInterval(timer);TRC.onClose&&TRC.onClose()}
-window.Truco={open(){if(TRC.ready&&!TRC.ready()){return}S=null;LAST="";PREV=null;msg="";bet=null;sure=false;ov().classList.add("on");draw();load(true).then(poll)},
+window.Truco={open(){if(TRC.ready&&!TRC.ready()){return}S=null;LAST="";PREV=null;msg="";bet=[];sure=false;ov().classList.add("on");draw();load(true).then(poll)},
  async status(){try{const j=await call({action:"state"});const g=j.game;if(!g)return null;if(g.status==="invite"&&g.inviter!==me())return "reto";if(g.status==="play"&&g.opts&&g.opts.toAct===me())return "toca";if(g.status==="done"&&localStorage.getItem("tr-ack")!==g.id)return "fin";return null}catch(x){return null}},
  close};
 })();
