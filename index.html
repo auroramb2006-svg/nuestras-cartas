@@ -681,7 +681,7 @@ function cardHTML(c,mini){
    </div></div>${s.done?`<div class="stamp"><span>CANJEADA</span></div>`:""}</div>`;
 }
 const $=id=>document.getElementById(id);
-function show(id){document.querySelectorAll(".screen").forEach(s=>s.classList.toggle("on",s.id==="s-"+id));
+function show(id){APPSND.p("tap");document.querySelectorAll(".screen").forEach(s=>s.classList.toggle("on",s.id==="s-"+id));
  document.querySelectorAll(".nav button").forEach(b=>b.classList.toggle("on",b.dataset.s===id));}
 document.querySelectorAll(".nav button").forEach(b=>b.onclick=()=>{show(b.dataset.s);render()});
 function owned(){return Object.values(DATA).sort((a,b)=>a.n-b.n)}
@@ -713,7 +713,7 @@ function msg(t){$("msg").textContent=t;if(t)setTimeout(()=>{if($("msg").textCont
 function redeem(){const v=$("code").value;if(!norm(v)){msg("Escribe el código del sobre");return}
   for(const n in ENC.packs){const cards=decrypt(n,v);if(cards){if(st.codes[n]){msg("Este sobre ya lo has abierto 😜");$("code").value="";return}
     $("code").value="";$("code").blur();startOpen(+n,norm(v),cards);return}}
-  msg(["Código incorrecto. Nada de trampas 👀","Que no, que ese no es 😒","Mira bien dentro del sobre…"][Math.floor(Math.random()*3)])}
+  APPSND.p("bonk");msg(["Código incorrecto. Nada de trampas 👀","Que no, que ese no es 😒","Mira bien dentro del sobre…"][Math.floor(Math.random()*3)])}
 $("go").onclick=redeem;$("code").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();redeem()}});
 function sparkle(color,x=innerWidth/2,y=innerHeight/2.4){for(let i=0;i<20;i++){const s=document.createElement("div");s.className="spark";s.textContent=["✦","★","♥","✧"][i%4];s.style.color=color;
   s.style.left=x+"px";s.style.top=y+"px";const a=Math.random()*6.28,r=110+Math.random()*130;s.style.setProperty("--dx",Math.cos(a)*r+"px");s.style.setProperty("--dy",Math.sin(a)*r+"px");
@@ -746,7 +746,7 @@ function soonList(){return owned().filter(c=>!st.cards[c.n]?.done&&daysLeft(c)!=
 function expiredList(){return owned().filter(c=>!st.cards[c.n]?.done&&daysLeft(c)!==null&&daysLeft(c)<=0)}
 function updateBadge(){const b=document.querySelector('.nav button[data-s="col"]');if(!b)return;let x=b.querySelector(".nbadge");const n=soonList().length;
  if(!n){if(x)x.remove();return}if(!x){x=document.createElement("span");x.className="nbadge";b.appendChild(x)}x.textContent=n}
-function showToast(html,btn,fn){const t=$("toast2");$("t2tx").innerHTML=html;$("t2b").textContent=btn;$("t2b").onclick=()=>{t.classList.remove("on");fn&&fn()};
+function showToast(html,btn,fn){APPSND.p("bell");const t=$("toast2");$("t2tx").innerHTML=html;$("t2b").textContent=btn;$("t2b").onclick=()=>{t.classList.remove("on");fn&&fn()};
  t.classList.add("on");clearTimeout(showToast.h);showToast.h=setTimeout(()=>t.classList.remove("on"),7000)}
 function todayAlert(){const k=dkey(Date.now());const E=events()[k]||[];
  const pk=E.find(e=>e.t==="pack"&&!e.done);const pl=E.filter(e=>e.t==="plan");
@@ -866,7 +866,7 @@ function checkAch(quiet){if(ACHBUSY)return;ACHBUSY=true;try{st.ach=st.ach||{};co
  for(const k in st.cards){if(st.cards[k].plan)st.cards[k].wasPlan=1}
  ACH.forEach(a=>{if(!st.ach[a[0]]){let ok=false;try{ok=a[4](x)}catch(e){}if(ok){st.ach[a[0]]=Date.now();nu.push(a)}}});
  if(nu.length){_save0();updAchCount();
-  if(!quiet){$("toast2").querySelector(".ic").textContent="🥰";buzz([40,60,40,60,80]);showToast(nu.length===1?`<b>Logro desbloqueado</b>${nu[0][1]} ${esc(nu[0][2])}`:`<b>${nu.length} logros nuevos</b>${nu.map(a=>a[1]).join(" ")}`,"Ver",openAch)}
+  if(!quiet){APPSND.p("fanfare");$("toast2").querySelector(".ic").textContent="🥰";buzz([40,60,40,60,80]);showToast(nu.length===1?`<b>Logro desbloqueado</b>${nu[0][1]} ${esc(nu[0][2])}`:`<b>${nu.length} logros nuevos</b>${nu.map(a=>a[1]).join(" ")}`,"Ver",openAch)}
   if(!quiet&&ENC.sync&&getUser())nu.forEach(a=>{try{fetch("/api/push",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"event",name:getUser(),text:"Ha desbloqueado el logro «"+a[2]+"»"}),keepalive:true})}catch(e){}})}
  }finally{ACHBUSY=false}}
 function updAchCount(){const e=$("achCount");if(e)e.textContent=Object.keys(st.ach||{}).filter(k=>ACH.some(a=>a[0]===k)).length+"/"+ACH.length}
@@ -898,7 +898,7 @@ function openReq(){const can=ENC.sync&&getUser();const H=(st.reqs||[]).slice(-5)
   const day=w.value==="day"?d.value:"";if(w.value==="day"&&!day){$("reqM").textContent="Elige el día";return}
   $("reqS").disabled=true;$("reqM").textContent="Enviando…";
   try{const r=await fetch("/api/push",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"request",name:getUser(),uid:userId(getUser()),title:ti,text:t,day,at:day?new Date(day+"T"+($("reqH").value||"10:00")).getTime():0})});if(!r.ok)throw 0;
-   st.reqs=(st.reqs||[]).concat([{t:ti||t,ts:Date.now(),day}]).slice(-30);_save0();buzz(30);
+   st.reqs=(st.reqs||[]).concat([{t:ti||t,ts:Date.now(),day}]).slice(-30);_save0();buzz(30);APPSND.p("send");
    $("reqM").textContent=day?"Programada, me llegará ese día a las "+($("reqH").value||"10:00").replace(/^0/,"")+" 😏":"Enviada, ya me ha llegado 💕";setTimeout(()=>$("ovReq").classList.remove("on"),1400)}
   catch(e){$("reqM").textContent="No se ha enviado 😒 Prueba otra vez";$("reqS").disabled=false}}}
 
@@ -906,7 +906,7 @@ function devTok(){let t="";try{t=localStorage.getItem("nc-chat-tok")||""}catch(e
 window.TRC={api:"/api/truco",sprite:"/truco-cartas.png",me:"el",vibe:()=>SET.vibe!==false,auth:()=>({uid:userId(getUser()),tok:devTok(),name:getUser()}),
  betCards:()=>owned().map(c=>({n:c.n,name:c.name,efecto:c.efecto,r:c.r,type:c.type})),
  ready:()=>{if(!ENC.sync||!getUser()){showToast("<b>Antes tienes que iniciar sesión</b>Ponte tu nombre y vuelve","Vale");return false}return true},
- onClose:()=>trBadge()};
+ onClose:()=>{APPSND.duck(false);trBadge()}};
 // ---------- truco (pantalla compartida por la app y el editor) ----------
 // Necesita window.TRC = {api, me:'el'|'ella', auth:()=>({...}), betCards:()=>[cards], ready:()=>bool}
 (function(){
@@ -1109,7 +1109,7 @@ window.Truco={open(){if(TRC.ready&&!TRC.ready()){return}S=null;LAST="";PREV=null
 
 async function trBadge(){if(!ENC.sync||!getUser())return;const s=await Truco.status();const b=$("trBadge"),sub=$("trSub");if(!b)return;
  const tx={reto:"Te reta",toca:"Te toca",fin:"Ya ha acabado"}[s]||"";b.textContent=tx;b.style.display=tx?"grid":"none";if(sub)sub.textContent=s==="reto"?"Te han retado 😏":s==="toca"?"Hay una partida esperándote":"A 15, apostando una carta"}
-$("trBtn").onclick=()=>Truco.open();
+$("trBtn").onclick=()=>{APPSND.duck(true);Truco.open()};
 $("reqBtn").onclick=openReq;$("ovReq").addEventListener("click",e=>{if(e.target.id==="ovReq")e.target.classList.remove("on")});
 
 // ---------- avisos por WhatsApp ----------
@@ -1171,7 +1171,7 @@ function startOpen(n,code,cards){
   pw.onpointerup=()=>{if(done)return;const w=parseFloat(cp.style.width)||0;if(w<3){taps++;if(taps>=2)tear();else $("ph").textContent="Desliza de izquierda a derecha (o toca otra vez)"}else cp.style.width="0";x0=null};
   function tear(){if(done)return;done=true;buzz(30);cp.style.width="92%";pw.querySelectorAll(".bp").forEach(b=>b.style.transform="");
     pw.classList.add("torn");const f=pw.querySelector(".finger");if(f)f.remove();cp.style.opacity="0";pw.querySelector(".cutline").style.opacity="0";
-    sparkle("#ffd36e",innerWidth/2,pw.getBoundingClientRect().top+30);$("ph").textContent="";
+    sparkle("#ffd36e",innerWidth/2,pw.getBoundingClientRect().top+30);APPSND.p("rip");$("ph").textContent="";
     setTimeout(()=>{ov.classList.remove("on");deck(n,code,cards)},1350)}
 }
 function deck(n,code,cards){
@@ -1183,11 +1183,11 @@ function deck(n,code,cards){
   let i=0,x0=null,dx=0;
   function onTop(){const c=order[i];const lab={r:["¡Carta rara!","#9cc3ff"],l:["¡¡LEGENDARIA!!","#ffd23f"],s:["✦ ¡SHINY! ✦","#ffb3e6"],x:["…¿y esta qué es?","#c9a6ff"]}[c.r];
     $("rl").textContent=lab?lab[0]:"";$("rl").style.color=lab?lab[1]:"";
-    if(lab){const f=$("flash");f.style.background=`radial-gradient(circle,${lab[1]},transparent 70%)`;f.classList.remove("go");void f.offsetWidth;f.classList.add("go");sparkle(lab[1]);buzz([20,40,20])}
+    if(lab){const f=$("flash");f.style.background=`radial-gradient(circle,${lab[1]},transparent 70%)`;f.classList.remove("go");void f.offsetWidth;f.classList.add("go");sparkle(lab[1]);APPSND.p("rare");buzz([20,40,20])}
     [...$("dots").children].forEach((d,k)=>d.classList.toggle("on",k===i));
     $("dh").textContent=i<order.length-1?"Toca para la siguiente":"Toca para acabar"}
   onTop();
-  function next(dir=1){const el=dk.children[i];el.style.transform=`translateX(${dir*130}%) rotate(${dir*18}deg)`;el.classList.add("out");i++;
+  function next(dir=1){APPSND.p("flip");const el=dk.children[i];el.style.transform=`translateX(${dir*130}%) rotate(${dir*18}deg)`;el.classList.add("out");i++;
     if(i>=order.length){setTimeout(()=>finish(n,code,cards),350);return}
     [...dk.children].forEach((d,k)=>{if(k>=i){const j=k-i;d.style.transform=`translateY(${Math.min(j,3)*6}px) scale(${1-Math.min(j,3)*.03})`}});onTop()}
   dk.onpointerdown=e=>{x0=e.clientX;dx=0;dk.setPointerCapture(e.pointerId);dk.children[i].style.transition="none"};
@@ -1221,9 +1221,9 @@ function detail(c){
      ${s.plan?`<div class="calrow"><a href="${planGcal(c,s.plan)}" target="_blank" rel="noopener">Pasar a Google Calendar</a><a href="#" id="planDel">Quitar</a></div>`:""}</div>`:""}
    ${(!s.done&&!holder&&R[c.r].d&&d>0)?`<div class="calrow"><a href="${gcalLink(c)}" target="_blank" rel="noopener">Ponerlo en Google Calendar</a>${SANDBOXED?"":`<a href="${icsHref(c)}" download="recordatorio-${c.n}.ics">Calendario del móvil</a>`}</div>`:""}`;
   const wb=$("waBtn");if(wb)wb.addEventListener("click",()=>{NOTE=null;setTimeout(()=>detail(c),300)});
-  const u=$("use");if(u)u.onclick=()=>{st.cards[c.n].done=Date.now();save();NOTE={n:c.n,txt:holder?`💗 Ya me has jugado la carta "${c.name}" ♥`:`💗 Canjeo la carta "${c.name}"\n${c.efecto}`};sparkle("#ff8fb8");buzz(40);detail(c);render()};
+  const u=$("use");if(u)u.onclick=()=>{st.cards[c.n].done=Date.now();save();NOTE={n:c.n,txt:holder?`💗 Ya me has jugado la carta "${c.name}" ♥`:`💗 Canjeo la carta "${c.name}"\n${c.efecto}`};sparkle("#ff8fb8");APPSND.p("stamp");buzz(40);detail(c);render()};
   const un=$("undo");if(un)un.onclick=()=>{delete st.cards[c.n].done;save();detail(c);render()};
-  const po=$("planOk");if(po)po.onclick=()=>{const v=$("planIn").value;if(!v)return;const ts=new Date(v).getTime();if(isNaN(ts))return;st.cards[c.n].plan=ts;save();NOTE={n:c.n,txt:`He agendado la carta "${c.name}" para el ${new Date(ts).toLocaleString("es-ES",{weekday:"long",day:"numeric",month:"long",hour:"2-digit",minute:"2-digit"})} ✨`};sparkle("#ff8fb8");buzz(25);detail(c);render()};
+  const po=$("planOk");if(po)po.onclick=()=>{const v=$("planIn").value;if(!v)return;const ts=new Date(v).getTime();if(isNaN(ts))return;st.cards[c.n].plan=ts;save();APPSND.p("ding");NOTE={n:c.n,txt:`He agendado la carta "${c.name}" para el ${new Date(ts).toLocaleString("es-ES",{weekday:"long",day:"numeric",month:"long",hour:"2-digit",minute:"2-digit"})} ✨`};sparkle("#ff8fb8");buzz(25);detail(c);render()};
   const pd=$("planDel");if(pd)pd.onclick=e=>{e.preventDefault();delete st.cards[c.n].plan;save();detail(c);render()};
 }
 $("dclose").onclick=()=>$("ovDet").classList.remove("on");
@@ -1233,16 +1233,65 @@ $("ovDet").addEventListener("click",e=>{if(e.target.id==="ovDet")e.target.classL
 const SKEY="nuestras-cartas-ajustes";let SET={theme:"dark",splash:"always",anim:true,vibe:true,cols:3};
 try{Object.assign(SET,JSON.parse(localStorage.getItem(SKEY)||"{}"))}catch(e){}
 function saveSet(){try{localStorage.setItem(SKEY,JSON.stringify(SET))}catch(e){}}
+// ---------- sonido de la app: efectitos y música tenue (todo generado, sin archivos) ----------
+const APPSND=(()=>{let ac=null,master=null,sfxBus=null,musBus=null,playing=false,ducked=false,timer=0,nextBar=0,bar=0;
+ const sfxOn=()=>SET.sfx!==false,musOn=()=>SET.music!==false;
+ function ctx(){if(!ac){const A=window.AudioContext||window.webkitAudioContext;if(!A)return null;ac=new A();master=ac.createGain();master.gain.value=1;master.connect(ac.destination);
+   sfxBus=ac.createGain();sfxBus.gain.value=.9;sfxBus.connect(master);
+   const lp=ac.createBiquadFilter();lp.type="lowpass";lp.frequency.value=2600;lp.Q.value=.3;musBus=ac.createGain();musBus.gain.value=0;musBus.connect(lp);lp.connect(master)}
+  if(ac.state==="suspended")ac.resume();return ac}
+ const N=n=>440*Math.pow(2,(n-69)/12);
+ function tone(bus,f,t,d,type="sine",v=.04,f2,att=.006){const o=ac.createOscillator(),g=ac.createGain();o.type=type;o.frequency.setValueAtTime(f,t);if(f2)o.frequency.exponentialRampToValueAtTime(f2,t+d);
+  g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v,t+att);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g).connect(bus);o.start(t);o.stop(t+d+.05)}
+ function noise(bus,t,d,v=.04,hp=1200,hp2){const b=ac.createBuffer(1,Math.max(1,Math.floor(ac.sampleRate*d)),ac.sampleRate);const a=b.getChannelData(0);for(let i=0;i<a.length;i++)a[i]=(Math.random()*2-1)*(1-i/a.length);
+  const s=ac.createBufferSource();s.buffer=b;const f=ac.createBiquadFilter();f.type="highpass";f.frequency.setValueAtTime(hp,t);if(hp2)f.frequency.exponentialRampToValueAtTime(hp2,t+d);const g=ac.createGain();g.gain.value=v;s.connect(f).connect(g).connect(bus);s.start(t)}
+ const S=(f,o=0,d=.2,type="sine",v=.04,f2)=>tone(sfxBus,f,ac.currentTime+o,d,type,v,f2);
+ const FX={
+  tap:()=>S(900,0,.06,"sine",.035,1300),
+  open:()=>S(520,0,.14,"triangle",.04,820),
+  bell:()=>{S(N(88),0,.6,"sine",.04);S(N(93),.07,.7,"sine",.03)},
+  rip:()=>{noise(sfxBus,ac.currentTime,.38,.07,600,5000);[84,88,91,96].forEach((n,i)=>S(N(n),.3+i*.06,.35,"triangle",.03))},
+  flip:()=>{noise(sfxBus,ac.currentTime,.06,.04,3000);S(700,0,.04,"triangle",.025,900)},
+  rare:()=>{[72,76,79,84,88].forEach((n,i)=>S(N(n),i*.055,.4,"triangle",.04));S(N(96),.3,.8,"sine",.03)},
+  stamp:()=>{S(170,0,.16,"sine",.12,60);noise(sfxBus,ac.currentTime,.05,.06,400);S(N(84),.12,.5,"sine",.04);S(N(91),.18,.6,"sine",.03)},
+  ding:()=>{S(N(81),0,.45,"sine",.05);S(N(76),.18,.6,"sine",.045)},
+  bonk:()=>S(180,0,.14,"square",.025,110),
+  send:()=>{noise(sfxBus,ac.currentTime,.2,.04,1500,6000);S(N(79),.12,.12,"triangle",.04);S(N(86),.2,.25,"triangle",.04)},
+  fanfare:()=>{[[72,0],[76,.1],[79,.2],[84,.32]].forEach(([n,o])=>S(N(n),o,.3,"square",.022));[72,76,79,84].forEach(n=>S(N(n),.46,.9,"triangle",.03))},
+  start:()=>{[72,79,84].forEach((n,i)=>S(N(n),i*.09,.7,"sine",.035))}};
+ // --- música: caja de música + pad suave, Fa maj7 → Mi m7 → Re m7 → Do maj7 (cambia un poco cada vuelta) ---
+ const CH=[[53,57,60,64],[52,55,59,62],[50,53,57,60],[48,52,55,59]];
+ const PAT=[[0,2,1,3,2,1,3,2],[0,1,2,3,2,3,1,2],[3,2,1,0,1,2,3,1],[0,2,3,2,1,2,0,3]];
+ const BAR=3.4;
+ function schedBar(t,b){const ch=CH[b%4],loop=Math.floor(b/4);
+  ch.forEach(n=>tone(musBus,N(n),t,BAR*1.05,"sine",.012,null,.9));                       // pad
+  tone(musBus,N(ch[0]-12),t,BAR*.48,"triangle",.035,null,.02);tone(musBus,N(ch[0]-12),t+BAR/2,BAR*.48,"triangle",.028,null,.02); // bajo
+  const p=PAT[(loop+b)%PAT.length];
+  p.forEach((k,i)=>{if((i*7+b*3+loop)%5===4)return;const n=ch[k]+24;const tt=t+i*BAR/8+(i%2?.02:0);tone(musBus,N(n),tt,.9,"triangle",.016);tone(musBus,N(n+12),tt,.35,"sine",.006)});
+  if(b%4===3)tone(musBus,N(ch[3]+24),t+BAR*.875,1.4,"sine",.012)}
+ function pump(){if(!playing||!ac)return;while(nextBar<ac.currentTime+1.2){schedBar(nextBar,bar++);nextBar+=BAR}}
+ function fade(v,s=1.2){if(!musBus)return;const t=ac.currentTime;musBus.gain.cancelScheduledValues(t);musBus.gain.setValueAtTime(musBus.gain.value,t);musBus.gain.linearRampToValueAtTime(v,t+s)}
+ const LEVEL=1.4;
+ function startMusic(){if(!musOn()||!ctx())return;if(!playing){playing=true;nextBar=ac.currentTime+.15;pump();clearInterval(timer);timer=setInterval(pump,250)}fade(ducked?0:LEVEL,2.5)}
+ function stopMusic(){if(!ac)return;fade(0,.8);setTimeout(()=>{if(!musOn()||ducked){playing=false;clearInterval(timer)}},900)}
+ document.addEventListener("visibilitychange",()=>{if(!ac)return;if(document.hidden)ac.suspend();else{ac.resume();if(playing)nextBar=Math.max(nextBar,ac.currentTime+.1)}});
+ let first=false;const touch=()=>{if(first)return;first=true;ctx();if(musOn())startMusic()};
+ document.addEventListener("pointerdown",touch,{passive:true,capture:true});
+ return{p(k){if(!sfxOn())return;try{if(!ctx())return;FX[k]&&FX[k]()}catch(e){}},start(){touch();try{if(sfxOn()&&ctx())FX.start()}catch(e){}},
+  music(on){if(on)startMusic();else stopMusic()},duck(d){ducked=d;if(!ac)return;if(d)fade(0,.6);else if(musOn()){startMusic()}}}})();
+
 function applySet(){const r=document.documentElement;let th=SET.theme;if(th==="auto")th=matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";
  r.dataset.theme=th;r.classList.toggle("cols2",SET.cols===2);r.classList.toggle("noanim",SET.anim===false);
  const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=th==="dark"?"#17122b":"#eef4ff"}
 try{matchMedia("(prefers-color-scheme: dark)").addEventListener("change",()=>{if(SET.theme==="auto")applySet()})}catch(e){}
 const _buzz=buzz;buzz=function(ms){if(SET.vibe!==false)_buzz(ms)};
-function openSettings(){const seg=(k,opts)=>`<div class="seg">${opts.map(([v,l])=>`<button data-k="${k}" data-v="${v}" class="${String(SET[k])===String(v)?"on":""}">${l}</button>`).join("")}</div>`;
+function openSettings(){APPSND.p("open");const seg=(k,opts)=>`<div class="seg">${opts.map(([v,l])=>`<button data-k="${k}" data-v="${v}" class="${String(SET[k])===String(v)?"on":""}">${l}</button>`).join("")}</div>`;
  $("setp").innerHTML=`<h3>Ajustes</h3>
  <div class="srow"><div class="l">Tema</div>${seg("theme",[["light","Claro"],["dark","Oscuro"],["auto","Automático"]])}</div>
  <div class="srow"><div class="l">Pantalla de inicio</div><div class="d">La portada del principio</div>${seg("splash",[["always","Siempre"],["day","Una vez al día"],["never","Nunca"]])}</div>
  <div class="srow"><div class="l">Brillos y animaciones</div>${seg("anim",[["true","Activados"],["false","Desactivados"]])}</div>
+ <div class="srow"><div class="l">Sonidos</div>${seg("sfx",[["true","Sí"],["false","No"]])}</div>
+ <div class="srow"><div class="l">Música</div>${seg("music",[["true","Sí"],["false","No"]])}</div>
  <div class="srow"><div class="l">Vibración</div>${seg("vibe",[["true","Sí"],["false","No"]])}</div>
  <div class="srow"><div class="l">Cartas por fila</div>${seg("cols",[["2","2, grandes"],["3","3, pequeñas"]])}</div>
  ${(ENC.sync&&getUser())?`<div class="srow"><div class="l">Notificaciones</div><div class="d" id="pushD">${!PUSHOK()&&!(ISIOS&&!STANDALONE())?"Este navegador no deja 😒":ISIOS&&!STANDALONE()?"En iPhone tienes que añadirla a la pantalla de inicio (Compartir → Añadir a pantalla de inicio) y abrirla desde ahí":pushOn()?"Activadas":"Te aviso de los planes, de lo que caduca y de los sobres nuevos"}</div>${PUSHOK()&&!(ISIOS&&!STANDALONE())?`<div class="seg">${pushOn()?`<button id="pushT">Probar</button><button id="pushX">Desactivar</button>`:`<button id="pushA">Activar</button>`}</div>`:""}</div>`:""}
@@ -1250,7 +1299,7 @@ function openSettings(){const seg=(k,opts)=>`<div class="seg">${opts.map(([v,l])
  <div class="btns" style="margin-top:14px"><button class="cta pink" id="setOk" style="width:100%">Listo</button></div>`;
  $("ovSet").classList.add("on");
  $("setp").querySelectorAll(".seg button").forEach(b=>b.onclick=()=>{const k=b.dataset.k;let v=b.dataset.v;if(v==="true")v=true;else if(v==="false")v=false;else if(k==="cols")v=+v;
-  SET[k]=v;saveSet();applySet();openSettings()});
+  SET[k]=v;saveSet();applySet();if(k==="music")APPSND.music(v!==false);APPSND.p("tap");openSettings()});
  const pd=t=>{const e=$("pushD");if(e)e.textContent=t};
  const pa=$("pushA");if(pa)pa.onclick=async()=>{pd("Activando…");try{await enablePush();openSettings();pd("Activadas, dale a Probar")}catch(e){pd(e.message==="denied"?"Les has dicho que no 🙄 Actívalas en los ajustes del móvil":e.message==="ios"?"En iPhone tienes que añadirla a la pantalla de inicio y abrirla desde ahí":"No ha ido, prueba en un rato")}};
  const pt=$("pushT");if(pt)pt.onclick=async()=>{pd("Enviando…");try{await testPush();pd("Enviada, te tendría que llegar ya")}catch(e){pd("No ha salido. Quítalas y vuelve a ponerlas")}};
@@ -1261,7 +1310,7 @@ $("gearBtn").onclick=openSettings;$("ovSet").addEventListener("click",e=>{if(e.t
 applySet();
 (function(){const sp=$("splash");if(!sp)return;
  let showIt=SET.splash!=="never";if(SET.splash==="day"){let last="";try{last=localStorage.getItem("nc-splash-day")||""}catch(e){}const today=new Date().toDateString();showIt=last!==today;try{localStorage.setItem("nc-splash-day",today)}catch(e){}}
- if(!showIt){sp.remove();setTimeout(()=>showLogin(()=>showNews(()=>{checkAlerts();if(/[?&]truco/.test(location.search))Truco.open()})),600);return}
+ if(!showIt){sp.remove();setTimeout(()=>showLogin(()=>showNews(()=>{checkAlerts();if(/[?&]truco/.test(location.search)){APPSND.duck(true);Truco.open()}})),600);return}
  const fc=$("flc");const R=(a,b)=>a+Math.random()*(b-a);
  for(let i=0;i<14;i++){const d=document.createElement("div");const depth=Math.random();d.className="fl"+(i%5===0?" h":"");
   const ang=i/14*6.283+R(-.2,.2),rx=R(36,56),ry=R(36,52);
@@ -1270,7 +1319,7 @@ applySet();
  const msgs=["Barajando cartas…","Sellando sobres…","Puliendo los brillos…","Escondiendo la secreta…","¡Listo!"];
  const iv=setInterval(()=>{p=Math.min(100,p+8+Math.random()*14);bar.style.width=p+"%";lt.textContent=msgs[Math.min(msgs.length-1,Math.floor(p/25))];
   if(p>=100){clearInterval(iv);setTimeout(()=>{ready=true;sp.classList.add("ready")},250)}},160);
- function go(){sp.style.transition="";sp.style.transform="";sp.classList.add("gone");buzz(20);setTimeout(()=>sp.remove(),700);setTimeout(()=>showLogin(()=>showNews(()=>{checkAlerts();if(/[?&]truco/.test(location.search))Truco.open()})),900)}
+ function go(){sp.style.transition="";sp.style.transform="";sp.classList.add("gone");buzz(20);APPSND.start();setTimeout(()=>sp.remove(),700);setTimeout(()=>showLogin(()=>showNews(()=>{checkAlerts();if(/[?&]truco/.test(location.search)){APPSND.duck(true);Truco.open()}})),900)}
  sp.addEventListener("pointerdown",e=>{y0=e.clientY;dy=0;try{sp.setPointerCapture(e.pointerId)}catch(x){}});
  sp.addEventListener("pointermove",e=>{if(y0===null||!ready)return;dy=Math.min(0,e.clientY-y0);sp.style.transition="none";sp.style.transform=`translateY(${dy}px)`});
  sp.addEventListener("pointerup",()=>{if(y0===null)return;y0=null;if(!ready)return;if(dy<-60||Math.abs(dy)<6)go();else{sp.style.transition="";sp.style.transform=""}});
