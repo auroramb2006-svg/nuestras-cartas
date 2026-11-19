@@ -1,5 +1,20 @@
 // Notificaciones: guardar suscripciones, mandar una de prueba y avisarla a ella al momento.
 const L = require('./_push_lib.js');
+const crypto = require('crypto');
+const sha = x => crypto.createHash('sha256').update(String(x)).digest('hex');
+const madrid = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Madrid', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
+// Solo el editor de ella conoce la clave: la primera vez que se usa, queda guardada (su huella) y después se exige siempre.
+async function isAdmin(secret) {
+  if (!secret || String(secret).length < 32) return false;
+  const a = await L.readJSON('push/admin.json');
+  if (!a || !a.h) { await L.writeJSON('push/admin.json', { h: sha(secret), ts: Date.now() }); return true; }
+  return a.h === sha(secret);
+}
+async function sendCustom(c) {
+  const subs = (await L.allSubs()).filter(s => s.role === 'user' && (c.to === 'all' || s.uid === c.to));
+  let n = 0; for (const s of subs) if (await L.send(s, { title: c.title, body: c.body, url: '/' })) n++;
+  return { n, devices: subs.length };
+}
 
 module.exports = async (req, res) => {
   L.cors(res);
@@ -38,9 +53,34 @@ module.exports = async (req, res) => {
       let n = 0; for (const s of subs) if (await L.send(s, { title: '👀 ' + (L.clip(b.name, 30) || 'Alguien'), body: text, url: 'https://editor-aurora-81d3.vercel.app/editor-81d32a46c8.html' })) n++;
       return res.status(200).json({ ok: true, sent: n });
     }
+    if (b.action === 'custom' || b.action === 'customList' || b.action === 'customDel') {
+      if (!(await isAdmin(b.secret))) return res.status(403).json({ error: 'auth' });
+      if (b.action === 'customList') {
+        const r = await require('@vercel/blob').list({ prefix: 'push/custom/', limit: 200 });
+        const items = []; for (const x of r.blobs || []) { const o = await L.readJSON(x.pathname); if (o) items.push(o); }
+        return res.status(200).json({ items: items.sort((a, c) => a.day < c.day ? -1 : 1) });
+      }
+      if (b.action === 'customDel') {
+        if (!/^[a-z0-9]{6,20}$/.test(String(b.id))) return res.status(400).json({ error: 'bad' });
+        try { await require('@vercel/blob').del('push/custom/' + b.id + '.json'); } catch (e) {}
+        return res.status(200).json({ ok: true });
+      }
+      const c = { to: b.to === 'all' ? 'all' : L.clip(b.to, 13), toName: L.clip(b.toName, 30), title: L.clip(b.title, 80), body: L.clip(b.body, 200) };
+      if (!c.title && !c.body) return res.status(400).json({ error: 'empty' });
+      if (!c.title) c.title = '💌 Nuestras cartas';
+      if (b.day && /^\d{4}-\d{2}-\d{2}$/.test(b.day) && b.day > madrid()) {
+        c.id = crypto.randomBytes(6).toString('hex'); c.day = b.day; c.ts = Date.now();
+        await L.writeJSON('push/custom/' + c.id + '.json', c);
+        return res.status(200).json({ ok: true, scheduled: c.day });
+      }
+      const r = await sendCustom(c);
+      return res.status(200).json({ ok: true, sent: r.n, devices: r.devices });
+    }
     return res.status(400).json({ error: 'action' });
   } catch (e) {
     const msg = String(e && e.message || e);
     return res.status(500).json({ error: /token|store/i.test(msg) ? 'no_store' : 'server', message: msg.slice(0, 200) });
   }
 };
+
+module.exports.sendCustom = sendCustom;

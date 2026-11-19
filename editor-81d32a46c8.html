@@ -92,7 +92,7 @@ const TYPES=["Argentina","Dulce","Planes","Especial","Gamer","Calma","Amor","Mot
 const RAR={c:"Común",p:"Poco común",r:"Rara",l:"Legendaria",s:"Shiny",x:"Secreta"};
 const KEY="editor-cartas-v1";
 const REPO="auroramb2006-svg/nuestras-cartas",BRANCH="main",DATAF="cartas-datos.enc",EDF=location.pathname.split("/").pop()||"editor.html";
-const EDITOR_VER="2026-11-19d";
+const EDITOR_VER="2026-11-19e";
 async function checkEdUpdate(){try{const r=await fetch(location.pathname+"?v="+Date.now(),{cache:"no-store"});if(!r.ok)return;const t=await r.text();const m=t.match(/const EDITOR_VER="([^"]+)"/);
  if(m&&m[1]!==EDITOR_VER){let n=0;try{n=+sessionStorage.getItem("nc-edreload")||0}catch(e){}if(n<2){try{sessionStorage.setItem("nc-edreload",n+1)}catch(e){}location.reload()}}}catch(e){}}
 checkEdUpdate();document.addEventListener("visibilitychange",()=>{if(!document.hidden)checkEdUpdate()});
@@ -242,6 +242,10 @@ async function loadAct(manual){ACTERR="";try{const r=await fetch("https://nuestr
  drawAct();if(manual)toast(ACT?"Actividad actualizada ✓":"Todavía no hay actividad")}
 function drawAct(el0){const el=el0||document.querySelector(".act");if(!el)return;el.innerHTML=actHTML();const rb=el.querySelector("#actR");if(rb)rb.onclick=()=>loadAct(true);
  el.querySelectorAll("[data-ep]").forEach(b=>b.onclick=()=>{EPMSG="…";b.disabled=true;ePushAction(b.dataset.ep)});
+ const g=id=>el.querySelector("#"+id);
+ if(g("cnTo"))g("cnTo").onchange=e=>CN.to=e.target.value;if(g("cnTitle"))g("cnTitle").oninput=e=>CN.title=e.target.value;if(g("cnBody"))g("cnBody").oninput=e=>CN.body=e.target.value;
+ if(g("cnWhen"))g("cnWhen").onchange=e=>{CN.when=e.target.value;drawAct(el)};if(g("cnDay"))g("cnDay").onchange=e=>CN.day=e.target.value;if(g("cnSend"))g("cnSend").onclick=cnSend;
+ el.querySelectorAll("[data-cndel]").forEach(b=>b.onclick=async()=>{try{await cnCall({action:"customDel",id:b.dataset.cndel})}catch(e){}cnLoad()});
  el.querySelectorAll("[data-calm]").forEach(b=>b.onclick=()=>{CAL.m+=+b.dataset.calm;CAL.d=null;drawAct(el)});
  el.querySelectorAll("[data-calw]").forEach(b=>b.onclick=()=>{CAL.w=b.dataset.calw;CAL.d=null;drawAct(el)});
  el.querySelectorAll("[data-cald]").forEach(b=>b.onclick=()=>{CAL.d=CAL.d===b.dataset.cald?null:b.dataset.cald;drawAct(el)});
@@ -296,7 +300,34 @@ function pushBoxHTML(){const b=(id,t)=>`<button data-ep="${id}" style="padding:6
  const msg=EPMSG||(!EPUSHOK()&&!(EIOS&&!ESTAND())?"Este navegador no permite notificaciones.":EIOS&&!ESTAND()?"En iPhone: añade el editor a la pantalla de inicio y ábrelo desde ahí.":ePushOn()?"Activados en este móvil.":"Te aviso al momento cuando alguien agenda, canjea o abre un sobre.");
  const btns=EPUSHOK()&&!(EIOS&&!ESTAND())?(ePushOn()?b("test","Probar")+b("off","Desactivar"):b("on","Activar")):"";
  return `<div style="margin-top:10px;padding:10px;border-radius:12px;background:rgba(255,255,255,.05);display:flex;align-items:center;justify-content:space-between;gap:8px"><div style="font-size:12px"><b style="color:#fff">🔔 Avisos en el móvil</b><br><span style="color:#a59cc4;font-weight:700">${esc(msg)}</span></div><div style="display:flex;flex-shrink:0">${btns}</div></div>`}
-function actHTML(){const h=actHTML0();const k=h.indexOf("</div>")+6;return h.slice(0,k)+pushBoxHTML()+h.slice(k)}
+const CN={to:"all",title:"",body:"",when:"now",day:"",msg:"",list:null,busy:false};
+async function adminSecret(){const d=D&&D.syncKeys&&D.syncKeys.priv&&D.syncKeys.priv.d;if(!d)throw new Error("nokey");
+ const h=await crypto.subtle.digest("SHA-256",new TextEncoder().encode("nc-admin:"+d));return [...new Uint8Array(h)].map(b=>b.toString(16).padStart(2,"0")).join("")}
+async function cnCall(o){const r=await ePost(Object.assign({secret:await adminSecret()},o));let j={};try{j=await r.json()}catch(e){}if(!r.ok)throw new Error(j.error||"server");return j}
+async function cnLoad(){try{CN.list=(await cnCall({action:"customList"})).items||[]}catch(e){CN.list=[]}drawAct()}
+async function cnSend(){if(CN.busy)return;if(!CN.title.trim()&&!CN.body.trim()){CN.msg="Escribe algo primero";drawAct();return}
+ if(CN.when==="day"&&!CN.day){CN.msg="Elige el día";drawAct();return}
+ CN.busy=true;CN.msg="Enviando…";drawAct();
+ try{const P=ACTS.find(x=>x.id===CN.to);const j=await cnCall({action:"custom",to:CN.to,toName:P?P.name:"Todos",title:CN.title.trim(),body:CN.body.trim(),day:CN.when==="day"?CN.day:""});
+  if(j.scheduled){CN.msg="Programada para el "+new Date(j.scheduled+"T12:00").toLocaleDateString("es-ES",{weekday:"long",day:"numeric",month:"long"})+" (llega sobre las 10:00) ✓";cnLoad()}
+  else CN.msg=j.devices?"Enviada ✓ Le llega ya"+(j.devices>1?" ("+j.devices+" móviles)":""):"Enviada, pero nadie con ese nombre tiene las notificaciones activadas todavía.";
+  CN.title="";CN.body=""}
+ catch(e){CN.msg=e.message==="auth"?"Este editor no tiene permiso para enviar.":e.message==="nokey"?"Pulsa Publicar una vez y vuelve a intentarlo.":"No se ha podido enviar. Prueba en un rato."}
+ CN.busy=false;drawAct()}
+function customHTML(){const inp="width:100%;box-sizing:border-box;padding:9px 10px;border-radius:12px;font:inherit;font-weight:700;margin-top:6px";
+ const opts=`<option value="all"${CN.to==="all"?" selected":""}>Todos</option>`+ACTS.filter(x=>x.id!=="_old").map(x=>`<option value="${esc(x.id)}"${CN.to===x.id?" selected":""}>${esc(x.name)}</option>`).join("");
+ const tmr=new Date(Date.now()+864e5);const min=tmr.getFullYear()+"-"+String(tmr.getMonth()+1).padStart(2,"0")+"-"+String(tmr.getDate()).padStart(2,"0");
+ const L=CN.list;
+ return `<div style="margin-top:14px;font-size:12px;font-weight:900;letter-spacing:1px;color:#ff8fb8">✍️ NOTIFICACIÓN PERSONALIZADA</div>
+ <select id="cnTo" style="${inp}">${opts}</select>
+ <input id="cnTitle" maxlength="80" placeholder="Título (ej: 💗 Te echo de menos)" value="${esc(CN.title)}" style="${inp}">
+ <textarea id="cnBody" maxlength="200" rows="2" placeholder="Mensaje" style="${inp};resize:vertical">${esc(CN.body)}</textarea>
+ <div style="display:flex;gap:6px;margin-top:6px"><select id="cnWhen" style="${inp};margin-top:0;flex:1"><option value="now"${CN.when==="now"?" selected":""}>Ahora</option><option value="day"${CN.when==="day"?" selected":""}>Otro día (a las 10:00)</option></select>${CN.when==="day"?`<input type="date" id="cnDay" min="${min}" value="${esc(CN.day)}" style="${inp};margin-top:0;flex:1">`:""}</div>
+ <button id="cnSend" style="width:100%;margin-top:8px;padding:10px;font-weight:900">${CN.busy?"Enviando…":CN.when==="day"?"Programar":"Enviar ahora"}</button>
+ ${CN.msg?`<p style="margin:6px 0 0;font-size:12px;font-weight:800;color:#fff">${esc(CN.msg)}</p>`:""}
+ ${L&&L.length?`<div style="margin-top:8px;font-size:12px;font-weight:800;color:#a59cc4">Programadas</div>`+L.map(c=>`<div style="display:flex;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.07)"><div style="flex:1;min-width:0"><div style="font-weight:800;color:#fff">${esc(c.title)}</div><small style="color:#a59cc4;font-weight:700">${esc(c.body||"")} · ${new Date(c.day+"T12:00").toLocaleDateString("es-ES",{day:"numeric",month:"short"})} · ${esc(c.toName||"Todos")}</small></div><button data-cndel="${esc(c.id)}" style="padding:4px 9px">✕</button></div>`).join(""):""}
+ <small style="display:block;margin-top:6px;color:#a59cc4;font-weight:700">Solo les llega a quienes tengan las notificaciones activadas en la app.</small>`}
+function actHTML(){const h=actHTML0();const k=h.indexOf("</div>")+6;if(CN.list===null&&D&&D.syncKeys){CN.list=[];setTimeout(cnLoad,0)}return h.slice(0,k)+pushBoxHTML()+customHTML()+h.slice(k)}
 function actHTML0(){
  const head=`<div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><b>👀 Actividad${ACT&&ACT.id!=="_old"?" de "+esc(ACT.name):" de él"}</b><button id="actR" style="padding:6px 10px;font-size:12px">Actualizar</button></div>`;
  if(NEEDPUB)return head+`<p style="margin:8px 0 0">Pulsa <b>🚀 Publicar</b> una vez para activarlo. A partir de ahí, lo que él abra, canjee o agende aparecerá aquí.</p>`;
