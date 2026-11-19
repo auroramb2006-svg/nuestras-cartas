@@ -478,7 +478,7 @@ function render(){
   const g=$("cgrid");g.innerHTML="";
   const list=o.filter(c=>{const d=st.cards[c.n]?.done;return filter==="todo"?!d:filter==="done"?d:true});
   if(!o.length)g.innerHTML=`<div class="panel emptyc" style="grid-column:1/-1">Tu colección está vacía.<br>Cuando tengas un sobre, ábrelo desde Inicio.</div>`;
-  else if(!list.length)g.innerHTML=`<div class="panel emptyc" style="grid-column:1/-1">${filter==="done"?"Todavía no has canjeado ninguna 🙄":"¡Las has canjeado todas! 🥰"}</div>`;
+  else if(!list.length)g.innerHTML=`<div class="panel emptyc" style="grid-column:1/-1">${filter==="done"?"Todavía no has canjeado ninguna 👀":"¡Las has canjeado todas! 🥰"}</div>`;
   list.forEach(c=>g.appendChild(mini(c)));
   updateBadge();renderCal();
   $("rtable").innerHTML=Object.values(R).map(r=>`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.08)"><span><b>${r.sym}</b> ${r.n}</span><span>se cumple: <b>${r.canje}</b> · dura: <b>${r.val}</b></span></div>`).join("");
@@ -487,7 +487,7 @@ function msg(t){$("msg").textContent=t;if(t)setTimeout(()=>{if($("msg").textCont
 function redeem(){const v=$("code").value;if(!norm(v)){msg("Escribe el código del sobre");return}
   for(const n in ENC.packs){const cards=decrypt(n,v);if(cards){if(st.codes[n]){msg("Este sobre ya lo has abierto 😜");$("code").value="";return}
     $("code").value="";$("code").blur();startOpen(+n,norm(v),cards);return}}
-  msg(["Código incorrecto. Nada de trampas 😏","Que no, que ese no es 😒","Mira bien dentro del sobre…"][Math.floor(Math.random()*3)])}
+  msg(["Código incorrecto. Nada de trampas 👀","Que no, que ese no es 😒","Mira bien dentro del sobre…"][Math.floor(Math.random()*3)])}
 $("go").onclick=redeem;$("code").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();redeem()}});
 function sparkle(color,x=innerWidth/2,y=innerHeight/2.4){for(let i=0;i<20;i++){const s=document.createElement("div");s.className="spark";s.textContent=["✦","★","♥","✧"][i%4];s.style.color=color;
   s.style.left=x+"px";s.style.top=y+"px";const a=Math.random()*6.28,r=110+Math.random()*130;s.style.setProperty("--dx",Math.cos(a)*r+"px");s.style.setProperty("--dy",Math.sin(a)*r+"px");
@@ -625,7 +625,7 @@ const ACH=[
  ["medio","🙄","Medio álbum","Abre 4 sobres",x=>x.packs>=4],
  ["album","🥰","Álbum completo","Abre todos los sobres",x=>x.packs>=Object.keys(ENC.packs||{}).length&&x.packs>0],
  ["shiny","✨","Shiny encontrada","Consigue una carta shiny",x=>owned().some(c=>c.r==="s")],
- ["secreta","😏","Secreto descubierto","Consigue la carta secreta",x=>owned().some(c=>c.r==="x")],
+ ["secreta","👀","Secreto descubierto","Consigue la carta secreta",x=>owned().some(c=>c.r==="x")],
  ["leyenda","💕","Leyenda","Canjea una carta legendaria",x=>x.done.some(c=>c.r==="l")],
  ["buho","🫩","Búho nocturno","Canjea una carta de madrugada (00:00–6:00)",x=>x.done.some(c=>new Date(st.cards[c.n].done).getHours()<6)],
  ["limpio","😒","Sin dejar caducar","Canjea 5 cartas sin que caduque ninguna",x=>x.done.length>=5&&!expiredList().length],

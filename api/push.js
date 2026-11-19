@@ -50,7 +50,7 @@ module.exports = async (req, res) => {
       // Aviso inmediato para ella (los móviles con el editor y los avisos activados).
       const text = L.clip(b.text, 160); if (!text) return res.status(400).json({ error: 'bad' });
       const subs = (await L.allSubs()).filter(s => s.role === 'admin');
-      let n = 0; for (const s of subs) if (await L.send(s, { title: L.clip(b.name, 30) || 'Alguien', body: text, url: 'https://editor-aurora-81d3.vercel.app/editor-81d32a46c8.html' })) n++;
+      let n = 0; for (const s of subs) if (await L.send(s, { title: (L.clip(b.name, 30) || 'Alguien') + ' 👀', body: text, url: 'https://editor-aurora-81d3.vercel.app/editor-81d32a46c8.html' })) n++;
       return res.status(200).json({ ok: true, sent: n });
     }
     if (b.action === 'request') {
