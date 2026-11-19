@@ -546,7 +546,7 @@ function showNews(then){const N=ENC.news;if(!N||!N.id||!(N.text||N.title)||st.ne
 
 // ---------- actividad para el editor (cifrada, solo ella puede leerla) ----------
 let syncT=0;
-function queueSync(){if(!ENC.sync||!window.crypto||!crypto.subtle)return;clearTimeout(syncT);syncT=setTimeout(doSync,1500)}
+var NOSYNC=(function(){try{var q=new URLSearchParams(location.search);if(q.has('yo'))localStorage.setItem('nc-nosync','1');if(q.has('el'))localStorage.removeItem('nc-nosync');return localStorage.getItem('nc-nosync')==='1'}catch(e){return false}})();function queueSync(){if(!ENC.sync||NOSYNC||!window.crypto||!crypto.subtle)return;clearTimeout(syncT);syncT=setTimeout(doSync,1500)}
 async function doSync(){try{
   const cards={};for(const k in st.cards){const s=st.cards[k];cards[k]={got:s.got||0,done:s.done||0,plan:s.plan||0}}
   const payload={ts:Date.now(),opened:st.opened||{},packs:Object.keys(st.codes||{}).map(Number),cards,newsSeen:st.newsSeen||""};
