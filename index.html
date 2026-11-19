@@ -274,6 +274,20 @@ html[data-theme="dark"] #splash .load{background:rgba(255,255,255,.14)}
 .tright{display:flex;gap:8px;align-items:center}
 .setp{width:min(92vw,420px);background:#fff;border-radius:24px;padding:18px;box-shadow:0 10px 40px rgba(0,0,0,.25);color:#2b2a3d;max-height:86vh;overflow:auto}
 .setp h3{margin:0 0 12px;font-size:22px;font-weight:700}
+.cdw{display:flex;flex-direction:column;gap:8px;margin:14px 2px 0}
+.cdi{display:flex;align-items:center;gap:12px;width:100%;text-align:left;border:none;font:inherit;cursor:pointer;padding:11px 12px;border-radius:18px 14px 20px 16px;background:#fff;color:#2b2a3d;box-shadow:0 4px 0 #e2dcf5}
+.cdi:active{transform:translateY(3px);box-shadow:0 1px 0 #e2dcf5}
+html[data-theme="dark"] .cdi{background:#2a2250;color:#fff;box-shadow:0 4px 0 #1a1438}
+.cdic{display:grid;place-items:center;width:36px;height:36px;border-radius:50%;color:#fff;font-size:18px;flex-shrink:0}
+.cdi.k-plan .cdic{background:#ff6f9f}.cdi.k-pack .cdic{background:#ffc94d}
+.cdtx{flex:1;min-width:0}.cdtx small{display:block;font-size:11px;font-weight:600;color:#8a85a6}.cdtx b{display:block;font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cdt{display:flex;gap:4px;flex-shrink:0}
+.cdn{display:flex;align-items:baseline;gap:1px;background:rgba(143,123,255,.12);padding:4px 6px;border-radius:8px}
+.cdn b{font-size:16px;font-weight:700;font-variant-numeric:tabular-nums}.cdn i{font-style:normal;font-size:10px;font-weight:600;color:#8a85a6}
+.cdn.bump b{animation:cdBump .35s cubic-bezier(.3,1.8,.5,1)}
+@keyframes cdBump{0%{transform:translateY(-6px);opacity:.3}100%{transform:none;opacity:1}}
+.cdt em.today{font-style:normal;font-weight:700;font-size:14px;color:#ff6f9f;animation:cdPulse 1.4s ease-in-out infinite}
+@keyframes cdPulse{50%{transform:scale(1.08)}}
 .hx{display:flex;gap:12px;margin:18px 2px 2px}#achBtn{transform:rotate(-1.2deg);border-radius:16px 22px 14px 20px}#reqBtn{transform:rotate(1deg);border-radius:22px 14px 20px 16px}.hxb .hxi{display:grid;place-items:center;width:38px;height:38px;border-radius:50%;font-size:20px !important;color:#fff}#achBtn .hxi{background:#ffc94d}#reqBtn .hxi{background:#ff6f9f}.hxb{flex:1;display:flex;align-items:center;gap:10px;text-align:left;border:none;border-radius:18px;padding:12px;font:inherit;cursor:pointer;background:#fff;color:#2b2a3d;box-shadow:0 4px 14px rgba(80,90,160,.15)}.hxb:active{transform:scale(.97)}.hxb .hxi{font-size:26px}.hxb b{display:block;font-size:14px;font-weight:700}.hxb small{display:block;font-size:11px;font-weight:600;color:#8a85a6}
 html[data-theme="dark"] .hxb{background:#2a2250;color:#fff}
 .achbar{height:8px;border-radius:9px;background:rgba(143,123,255,.18);overflow:hidden;margin:6px 0 14px}.achbar i{display:block;height:100%;border-radius:9px;background:linear-gradient(90deg,#ffd36e,#ff6f9f)}
@@ -591,6 +605,7 @@ html[data-theme="dark"] .news{background:#2a2250;color:#fff}html[data-theme="dar
      <div class="codebox"><input id="code" autocomplete="off" autocapitalize="characters" spellcheck="false" enterkeyhint="go" placeholder="CÓDIGO DEL SOBRE"><button class="cta" id="go" type="button">Abrir</button></div>
      <div class="msg" id="msg"></div>
    </div>
+   <div id="cdown"></div>
    <div class="hx"><button class="hxb" id="achBtn"><span class="hxi">✦</span><span><b>Logros</b><small id="achCount">0/0</small></span></button><button class="hxb" id="reqBtn"><span class="hxi">♥</span><span><b>Mándame algo</b><small>me llega como noti</small></span></button></div>
    <button class="trb" id="trBtn"><span class="tri"><svg viewBox="0 0 40 60" width="20" height="30"><path d="M20 2l5 8v30H15V10z" fill="#fff" stroke="#fff" stroke-width="1"/><rect x="8" y="40" width="24" height="5" rx="2" fill="#ffe27a"/><rect x="17.5" y="45" width="5" height="9" fill="#ffe27a"/><circle cx="20" cy="56.5" r="3" fill="#ffe27a"/></svg></span><span><b>Truco</b><small id="trSub">A 15, apostando una carta</small></span><i class="cbadge" id="trBadge"></i></button>
    <h2 class="sec">Lo último que te ha tocado</h2>
@@ -698,6 +713,7 @@ function render(){
   const byGot=[...o].sort((a,b)=>(st.cards[b.n]?.got||0)-(st.cards[a.n]?.got||0)).slice(0,8);
   if(!byGot.length)rec.innerHTML=`<div class="panel emptyc" style="flex:1">Aún no tienes cartas, abre tu primer sobre ✨</div>`;
   byGot.forEach(c=>rec.appendChild(mini(c)));
+  renderCountdown();
   const soon=$("soon");soon.innerHTML="";
   const pend=o.filter(c=>!st.cards[c.n]?.done&&daysLeft(c)!==null).sort((a,b)=>daysLeft(a)-daysLeft(b)).slice(0,3);
   soon.innerHTML=pend.length?`<div class="panel">${pend.map(c=>{const d=daysLeft(c);return `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.08)"><span>${esc(c.name)}</span><b style="color:${d<=7?"#e0457b":"inherit"}">${d<=0?"caducada":d+" días"}</b></div>`}).join("")}</div>`
@@ -765,6 +781,30 @@ function checkAlerts(force){const s=soonList(),ex=expiredList();const ta=todayAl
  else if(s.length>1)h=`<b>${s.length} cartas caducan esta semana</b>La primera, ${esc(s[0].name)}, en ${daysLeft(s[0])} día${daysLeft(s[0])===1?"":"s"}.`;
  else h=`<b>Se te ha caducado ${ex.length===1?"una carta":ex.length+" cartas"}</b>Pierdes tú… 😜`;
  buzz([30,60,30]);showToast(h,"Ver",()=>{filter="todo";show("col");render()})}
+
+// ---------- cuenta atrás: lo próximo que toca ----------
+function nextThings(){const now=Date.now(),out=[];
+ const plans=owned().map(c=>({c,s:st.cards[c.n]||{}})).filter(x=>x.s.plan&&!x.s.done&&x.s.plan>now-36e5).sort((a,b)=>a.s.plan-b.s.plan);
+ if(plans[0]){const x=plans[0];out.push({k:"plan",at:x.s.plan,ic:"♥",t:"Próximo plan",sub:x.c.r==="x"?"La carta secreta 👀":x.c.name,go:()=>detail(x.c)})}
+ const days=ENC.days||{};const packs=Object.keys(days).filter(n=>days[n]&&!st.codes[n]).map(n=>({n,at:new Date(days[n]+"T00:00").getTime()})).sort((a,b)=>a.at-b.at);
+ if(packs[0]){const p=packs[0];out.push({k:"pack",at:p.at,ic:"✦",t:"Próximo sobre",sub:"Sobre "+p.n,go:()=>{show("home");$("code").focus()}})}
+ return out}
+let CDK="";
+function renderCountdown(){const el=$("cdown");if(!el)return;const L=nextThings();const key=L.map(x=>x.k+x.at+x.sub).join("|");
+ if(!L.length){el.innerHTML="";CDK="";return}
+ if(key!==CDK){CDK=key;el.innerHTML=`<div class="cdw">${L.map((x,i)=>`<button class="cdi k-${x.k}" data-i="${i}"><span class="cdic">${x.ic}</span><span class="cdtx"><small>${x.t}</small><b>${esc(x.sub)}</b></span><span class="cdt" id="cdt${i}"></span></button>`).join("")}</div>`;
+  el.querySelectorAll(".cdi").forEach(b=>b.onclick=()=>{APPSND.p("tap");L[+b.dataset.i].go()})}
+ tickCountdown(L)}
+function tickCountdown(L){L=L||nextThings();const now=Date.now();
+ L.forEach((x,i)=>{const box=$("cdt"+i);if(!box)return;let d=x.at-now;
+  if(x.k==="pack"&&d<=0&&d>-864e5){if(box.dataset.v!=="hoy"){box.dataset.v="hoy";box.innerHTML=`<em class="today">¡Hoy toca!</em>`;if(box.dataset.was){APPSND.p("toast");sparkle("#ffd36e")}}box.dataset.was=1;return}
+  if(d<=0){if(box.dataset.v!=="ya"){box.dataset.v="ya";box.innerHTML=`<em class="today">¡Es ahora! 🥰</em>`}box.dataset.was=1;return}
+  const D=Math.floor(d/864e5),H=Math.floor(d%864e5/36e5),M=Math.floor(d%36e5/6e4),S=Math.floor(d%6e4/1e3);
+  const parts=D>0?[[D,"d"],[H,"h"],[M,"m"]]:[[H,"h"],[M,"m"],[S,"s"]];
+  const v=parts.map(p=>p[0]+p[1]).join(" ");if(box.dataset.v===v)return;
+  const old=(box.dataset.v||"").split(" ");box.dataset.v=v;box.dataset.was=1;
+  box.innerHTML=parts.map((p,j)=>`<span class="cdn${old[j]&&old[j]!==p[0]+p[1]?" bump":""}"><b>${String(p[0]).padStart(2,"0")}</b><i>${p[1]}</i></span>`).join("")})}
+setInterval(()=>{if(!document.hidden)tickCountdown()},1000);
 // ---------- recordatorio en calendario ----------
 function remindDate(c){const s=st.cards[c.n];const d=R[c.r].d;if(!s||!s.got||!d)return null;const exp=new Date(s.got+d*864e5);
  const r=new Date(exp.getTime()-2*864e5);r.setHours(10,0,0,0);if(r<new Date()){const n=new Date(Date.now()+36e5);n.setMinutes(0,0,0);return{r:n,exp}}return{r,exp}}
