@@ -380,7 +380,7 @@ html[data-theme="dark"] .news{background:#2a2250;color:#fff}html[data-theme="dar
 .tr-card{position:relative;width:58px;height:88px;border-radius:8px;background:#fffaf0;color:#222;box-shadow:0 2px 0 rgba(0,0,0,.25);flex-shrink:0;overflow:hidden}
 .tr-card.big{width:86px;height:130px;border-radius:11px;cursor:pointer;transition:transform .15s}
 .tr-card.big.can:active,.tr-card.big.can:hover{transform:translateY(-8px)}
-.tr-card.big:not(.can){opacity:.8}
+
 .tr-card .n{position:absolute;top:3px;left:5px;font-weight:700;font-size:15px;line-height:1}
 .tr-card.big .n{font-size:22px;top:5px;left:7px}
 .tr-card .n2{display:none;position:absolute;bottom:3px;right:5px;font-weight:700;font-size:15px;line-height:1;transform:rotate(180deg)}
@@ -412,6 +412,14 @@ html[data-theme="dark"] .news{background:#2a2250;color:#fff}html[data-theme="dar
 .tr-big{font-size:26px;font-weight:700;text-align:center;margin:18px 0 6px}
 .tr-sub{text-align:center;opacity:.9;margin-bottom:10px}
 .tr-msg{text-align:center;color:#ffe27a;min-height:20px;margin-top:8px;font-size:14px}
+
+/* baraja pixel art: cada carta se recorta de la hoja con background-position, sin redibujar ni suavizar */
+#trOv{--cw:64px;--ch:calc(64px * 146 / 107)}
+.tr-card.px{--w:var(--cw);--h:var(--ch);width:var(--w);height:var(--h);border-radius:0;background:var(--sp) no-repeat;background-size:calc(var(--w) * 10) calc(var(--h) * 4);background-position:calc(var(--x) * var(--w) * -1) calc(var(--y) * var(--h) * -1);image-rendering:pixelated;image-rendering:crisp-edges;box-shadow:none;overflow:visible;filter:drop-shadow(0 2px 0 rgba(0,0,0,.28))}
+.tr-card.px.big{--w:96px;--h:calc(96px * 146 / 107);border-radius:0}
+.tr-card.px.win{filter:drop-shadow(0 0 2px #ffe27a) drop-shadow(0 0 4px #ffe27a)}
+.tr-card.back,.tr-slot{width:var(--cw);height:var(--ch);border-radius:7px}
+.tr-baza{width:68px}
 .trb{position:relative;width:calc(100% - 4px);margin:12px 2px 0;display:flex;align-items:center;gap:12px;text-align:left;border:none;border-radius:20px 16px 22px 14px;padding:12px 14px;font:inherit;cursor:pointer;background:#2f7d57;color:#fff;box-shadow:0 4px 0 #1d5a3e;transform:rotate(-.6deg)}.trb:active{transform:rotate(-.6deg) translateY(3px);box-shadow:0 1px 0 #1d5a3e}.trb .tri{display:grid;place-items:center;width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.16)}.trb b{display:block;font-size:15px;font-weight:700}.trb small{display:block;font-size:12px;opacity:.85}
 </style></head>
 <body>
@@ -744,28 +752,25 @@ function openReq(){const can=ENC.sync&&getUser();const H=(st.reqs||[]).slice(-5)
   catch(e){$("reqM").textContent="No se ha enviado 😒 Prueba otra vez";$("reqS").disabled=false}}}
 
 function devTok(){let t="";try{t=localStorage.getItem("nc-chat-tok")||""}catch(e){}if(!t){t=[...crypto.getRandomValues(new Uint8Array(18))].map(b=>b.toString(16).padStart(2,"0")).join("");try{localStorage.setItem("nc-chat-tok",t)}catch(e){}}return t}
-window.TRC={api:"/api/truco",me:"el",auth:()=>({uid:userId(getUser()),tok:devTok(),name:getUser()}),
+window.TRC={api:"/api/truco",sprite:"/truco-cartas.png",me:"el",auth:()=>({uid:userId(getUser()),tok:devTok(),name:getUser()}),
  betCards:()=>owned().map(c=>({n:c.n,name:c.name,efecto:c.efecto,r:c.r,type:c.type})),
  ready:()=>{if(!ENC.sync||!getUser()){showToast("<b>Antes tienes que iniciar sesión</b>Ponte tu nombre y vuelve","Vale");return false}return true},
  onClose:()=>trBadge()};
 // ---------- truco (pantalla compartida por la app y el editor) ----------
 // Necesita window.TRC = {api, me:'el'|'ella', auth:()=>({...}), betCards:()=>[cards], ready:()=>bool}
 (function(){
-const SV={
- O:'<svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="16" fill="#e8b923" stroke="#a67c00" stroke-width="2"/><circle cx="20" cy="20" r="9" fill="none" stroke="#a67c00" stroke-width="2"/><circle cx="20" cy="20" r="3" fill="#a67c00"/></svg>',
- C:'<svg viewBox="0 0 40 48"><path d="M8 6h24c0 10-4 17-12 18C12 23 8 16 8 6z" fill="#d9443f" stroke="#8c1f1c" stroke-width="2"/><rect x="18" y="24" width="4" height="11" fill="#e8b923"/><path d="M11 42h18l-3-7H14z" fill="#e8b923" stroke="#a67c00" stroke-width="1.5"/></svg>',
- E:'<svg viewBox="0 0 40 60"><path d="M20 2l5 8v30H15V10z" fill="#b9cbe4" stroke="#3d5a80" stroke-width="2"/><rect x="8" y="40" width="24" height="5" rx="2" fill="#3d5a80"/><rect x="17.5" y="45" width="5" height="9" fill="#7a4b2a"/><circle cx="20" cy="56.5" r="3" fill="#3d5a80"/></svg>',
- B:'<svg viewBox="0 0 40 60"><path d="M15 56c-2-14 0-30 2-44 1-6 9-6 10 0 2 14 2 30-2 44z" fill="#6aa646" stroke="#2f5e1c" stroke-width="2"/><circle cx="18" cy="22" r="2.5" fill="#2f5e1c"/><circle cx="24" cy="32" r="2.5" fill="#2f5e1c"/><circle cx="18.5" cy="43" r="2.5" fill="#2f5e1c"/></svg>'};
 const COL={E:"#3d5a80",B:"#2f5e1c",O:"#a67c00",C:"#8c1f1c"};
 const FIG={10:"SOTA",11:"CABALLO",12:"REY"};
 const SUIT={E:"espadas",B:"bastos",O:"oros",C:"copas"};
 const TN={2:"Truco",3:"Retruco",4:"Vale cuatro"},EN={E:"Envido",R:"Real envido",F:"Falta envido"};
 const e=s=>String(s==null?"":s).replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]));
-const cardH=(c,big,extra="")=>c?`<div class="tr-card${big?" big":""} ${extra}" title="${c.v} de ${SUIT[c.s]}"><span class="n" style="color:${COL[c.s]}">${c.v}</span>${SV[c.s]}${FIG[c.v]?`<span class="fig" style="color:${COL[c.s]}">${FIG[c.v]}</span>`:""}<span class="n2" style="color:${COL[c.s]}">${c.v}</span></div>`:`<div class="tr-slot"></div>`;
+// Cartas de la baraja pixel art (una sola imagen de 10 columnas x 4 filas: oros, copas, espadas, bastos)
+const SPV=[1,2,3,4,5,6,7,10,11,12],SPS=["O","C","E","B"];
+const cardH=(c,big,extra="")=>c?`<div class="tr-card px${big?" big":""} ${extra}" style="--x:${SPV.indexOf(c.v)};--y:${SPS.indexOf(c.s)}" title="${c.v} de ${SUIT[c.s]}" role="img" aria-label="${c.v} de ${SUIT[c.s]}"></div>`:`<div class="tr-slot"></div>`;
 const back=()=>`<div class="tr-card back"></div>`;
 let S=null,LAST="",timer=0,bet=null,msg="",busy=false,sure=false,view="";
 const me=()=>TRC.me,opp=()=>me()==="el"?"ella":"el";
-function ov(){let o=document.getElementById("trOv");if(!o){o=document.createElement("div");o.id="trOv";document.body.appendChild(o)}return o}
+function ov(){let o=document.getElementById("trOv");if(!o){o=document.createElement("div");o.id="trOv";o.style.setProperty("--sp","url("+TRC.sprite+")");document.body.appendChild(o);const pre=new Image();pre.src=TRC.sprite}return o}
 async function call(o){const r=await fetch(TRC.api,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(Object.assign(await TRC.auth(),o))});let j={};try{j=await r.json()}catch(x){}if(!r.ok){const er=new Error(j.error||"server");er.data=j;throw er}return j}
 async function load(force){try{const j=await call({action:"state"});const k=JSON.stringify(j);if(force||k!==LAST){LAST=k;S=j;draw()}}catch(x){if(force){S=S||{game:null,ledger:{prizes:[],debts:[]}};msg=x.message==="auth"?"Este móvil no puede jugar con esta cuenta 😒":"No conecta, prueba en un rato 🫠";draw()}}}
 function poll(){clearInterval(timer);timer=setInterval(()=>{if(!document.hidden&&ov().classList.contains("on"))load()},S&&S.redis?2000:3500)}
