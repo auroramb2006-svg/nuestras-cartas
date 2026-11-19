@@ -271,6 +271,7 @@ html[data-theme="dark"] #splash .load{background:rgba(255,255,255,.14)}
 .tright{display:flex;gap:8px;align-items:center}
 .setp{width:min(92vw,420px);background:#fff;border-radius:24px;padding:18px;box-shadow:0 10px 40px rgba(0,0,0,.25);color:#2b2a3d;max-height:86vh;overflow:auto}
 .setp h3{margin:0 0 12px;font-size:22px;font-weight:900}
+#loginp{text-align:center}#loginp .heart{font-size:42px}#loginp h3{margin:6px 0 4px}#loginp p{font-size:14px;color:#8a85a6;margin:0 0 14px}#loginp input{width:100%;box-sizing:border-box;padding:13px 14px;border-radius:14px;border:2px solid rgba(143,123,255,.35);font:inherit;font-weight:800;font-size:16px;background:rgba(143,123,255,.08);color:inherit;outline:none;margin-bottom:12px;text-align:center}#loginp input:focus{border-color:#8f7bff}#loginp .err{color:#ff6b9a;font-size:13px;font-weight:800;min-height:18px;margin:-4px 0 8px}
 .srow{padding:12px 0;border-bottom:1px solid rgba(0,0,0,.07)}
 .srow:last-of-type{border-bottom:none}
 .srow .l{font-weight:800;font-size:15px}.srow .d{font-size:12px;color:#8a85a6;margin-top:2px}
@@ -393,6 +394,7 @@ html[data-theme="dark"] .news{background:#2a2250;color:#fff}html[data-theme="dar
 <div class="toast2" id="toast2"><div class="ic">⏳</div><div class="tx" id="t2tx"></div><button id="t2b">Ver</button></div>
 <div class="ov" id="ovNews"><div class="news" id="newsBox"></div></div>
 <div class="ov" id="ovSet"><div class="setp" id="setp"></div></div>
+<div class="ov" id="ovLogin"><div class="setp" id="loginp"></div></div>
 
 <script>
 
@@ -546,10 +548,19 @@ function showNews(then){const N=ENC.news;if(!N||!N.id||!(N.text||N.title)||st.ne
 
 // ---------- actividad para el editor (cifrada, solo ella puede leerla) ----------
 let syncT=0;
-var NOSYNC=(function(){try{var q=new URLSearchParams(location.search);if(q.has('yo'))localStorage.setItem('nc-nosync','1');if(q.has('el'))localStorage.removeItem('nc-nosync');return localStorage.getItem('nc-nosync')==='1'}catch(e){return false}})();function queueSync(){if(!ENC.sync||NOSYNC||!window.crypto||!crypto.subtle)return;clearTimeout(syncT);syncT=setTimeout(doSync,1500)}
+var NOSYNC=false;try{localStorage.removeItem('nc-nosync')}catch(e){}
+function getUser(){try{return localStorage.getItem('nc-user')||''}catch(e){return ''}}
+function userId(n){return (fnv(n.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' '))>>>0).toString(36)}
+function showLogin(then){if(!ENC.sync||NOSYNC||getUser()){then&&then();return}
+ $("loginp").innerHTML=`<div class="heart">💌</div><h3>Inicia sesión</h3><p>Solo la primera vez. Escribe tu nombre para guardar tus cartas.</p><input id="loginName" maxlength="30" placeholder="Tu nombre" autocomplete="name"><div class="err" id="loginErr"></div><button class="cta pink" id="loginOk" style="width:100%">Entrar</button>`;
+ $("ovLogin").classList.add("on");const inp=$("loginName");setTimeout(()=>{try{inp.focus()}catch(e){}},300);
+ const ok=()=>{const n=inp.value.trim().replace(/\s+/g,' ');if(n.length<2){$("loginErr").textContent="Escribe tu nombre";return}
+  try{localStorage.setItem('nc-user',n)}catch(e){}$("ovLogin").classList.remove("on");buzz(20);queueSync();setTimeout(()=>then&&then(),300)};
+ $("loginOk").onclick=ok;inp.addEventListener("keydown",e=>{if(e.key==="Enter")ok()})}
+function queueSync(){if(!ENC.sync||NOSYNC||!getUser()||!window.crypto||!crypto.subtle)return;clearTimeout(syncT);syncT=setTimeout(doSync,1500)}
 async function doSync(){try{
   const cards={};for(const k in st.cards){const s=st.cards[k];cards[k]={got:s.got||0,done:s.done||0,plan:s.plan||0}}
-  const payload={ts:Date.now(),opened:st.opened||{},packs:Object.keys(st.codes||{}).map(Number),cards,newsSeen:st.newsSeen||""};
+  const who=getUser();if(!who)return;const payload={name:who,ts:Date.now(),opened:st.opened||{},packs:Object.keys(st.codes||{}).map(Number),cards,newsSeen:st.newsSeen||""};
   const pub=await crypto.subtle.importKey("jwk",ENC.sync,{name:"RSA-OAEP",hash:"SHA-256"},false,["encrypt"]);
   const key=await crypto.subtle.generateKey({name:"AES-GCM",length:256},true,["encrypt"]);
   const iv=crypto.getRandomValues(new Uint8Array(12));
@@ -557,7 +568,7 @@ async function doSync(){try{
   const raw=new Uint8Array(await crypto.subtle.exportKey("raw",key));
   const wk=new Uint8Array(await crypto.subtle.encrypt({name:"RSA-OAEP"},pub,raw));
   const B=u=>{let s="";for(let i=0;i<u.length;i+=32768)s+=String.fromCharCode.apply(null,u.subarray(i,i+32768));return btoa(s)};
-  await fetch("/api/sync",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({v:1,k:B(wk),iv:B(iv),ct:B(ct)}),keepalive:true});
+  await fetch("/api/sync",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({v:1,u:userId(who),k:B(wk),iv:B(iv),ct:B(ct)}),keepalive:true});
  }catch(e){}}
 const _save0=save;save=function(){_save0();queueSync()};
 // ---------- avisos por WhatsApp ----------
@@ -693,16 +704,18 @@ function openSettings(){const seg=(k,opts)=>`<div class="seg">${opts.map(([v,l])
  <div class="srow"><div class="l">Brillos y animaciones</div><div class="d">Destellos, reflejos y cartas flotando</div>${seg("anim",[["true","Activados"],["false","Desactivados"]])}</div>
  <div class="srow"><div class="l">Vibración</div><div class="d">Al abrir sobres y canjear cartas</div>${seg("vibe",[["true","Sí"],["false","No"]])}</div>
  <div class="srow"><div class="l">Cartas por fila</div><div class="d">En la colección</div>${seg("cols",[["2","2 · grandes"],["3","3 · pequeñas"]])}</div>
+ ${(getUser()&&!NOSYNC)?`<div class="srow"><div class="l">Sesión</div><div class="d">Has entrado como <b>${esc(getUser())}</b></div><div class="seg"><button id="logoutB">Cerrar sesión</button></div></div>`:""}
  <div class="btns" style="margin-top:14px"><button class="cta pink" id="setOk" style="width:100%">Listo</button></div>`;
  $("ovSet").classList.add("on");
  $("setp").querySelectorAll(".seg button").forEach(b=>b.onclick=()=>{const k=b.dataset.k;let v=b.dataset.v;if(v==="true")v=true;else if(v==="false")v=false;else if(k==="cols")v=+v;
   SET[k]=v;saveSet();applySet();openSettings()});
+ const lo=$("logoutB");if(lo)lo.onclick=()=>{try{localStorage.removeItem('nc-user')}catch(e){}$("ovSet").classList.remove("on");showLogin()};
  $("setOk").onclick=()=>$("ovSet").classList.remove("on")}
 $("gearBtn").onclick=openSettings;$("ovSet").addEventListener("click",e=>{if(e.target.id==="ovSet")e.target.classList.remove("on")});
 applySet();
 (function(){const sp=$("splash");if(!sp)return;
  let showIt=SET.splash!=="never";if(SET.splash==="day"){let last="";try{last=localStorage.getItem("nc-splash-day")||""}catch(e){}const today=new Date().toDateString();showIt=last!==today;try{localStorage.setItem("nc-splash-day",today)}catch(e){}}
- if(!showIt){sp.remove();setTimeout(()=>showNews(()=>checkAlerts()),600);return}
+ if(!showIt){sp.remove();setTimeout(()=>showLogin(()=>showNews(()=>checkAlerts())),600);return}
  const fc=$("flc");const R=(a,b)=>a+Math.random()*(b-a);
  for(let i=0;i<14;i++){const d=document.createElement("div");const depth=Math.random();d.className="fl"+(i%5===0?" h":"");
   const ang=i/14*6.283+R(-.2,.2),rx=R(36,56),ry=R(36,52);
@@ -711,7 +724,7 @@ applySet();
  const msgs=["Barajando cartas…","Sellando sobres…","Puliendo los brillos…","Escondiendo la secreta…","¡Listo!"];
  const iv=setInterval(()=>{p=Math.min(100,p+8+Math.random()*14);bar.style.width=p+"%";lt.textContent=msgs[Math.min(msgs.length-1,Math.floor(p/25))];
   if(p>=100){clearInterval(iv);setTimeout(()=>{ready=true;sp.classList.add("ready")},250)}},160);
- function go(){sp.style.transition="";sp.style.transform="";sp.classList.add("gone");buzz(20);setTimeout(()=>sp.remove(),700);setTimeout(()=>showNews(()=>checkAlerts()),900)}
+ function go(){sp.style.transition="";sp.style.transform="";sp.classList.add("gone");buzz(20);setTimeout(()=>sp.remove(),700);setTimeout(()=>showLogin(()=>showNews(()=>checkAlerts())),900)}
  sp.addEventListener("pointerdown",e=>{y0=e.clientY;dy=0;try{sp.setPointerCapture(e.pointerId)}catch(x){}});
  sp.addEventListener("pointermove",e=>{if(y0===null||!ready)return;dy=Math.min(0,e.clientY-y0);sp.style.transition="none";sp.style.transform=`translateY(${dy}px)`});
  sp.addEventListener("pointerup",()=>{if(y0===null)return;y0=null;if(!ready)return;if(dy<-60||Math.abs(dy)<6)go();else{sp.style.transition="";sp.style.transform=""}});

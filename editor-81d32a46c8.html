@@ -92,6 +92,10 @@ const TYPES=["Argentina","Dulce","Planes","Especial","Gamer","Calma","Amor","Mot
 const RAR={c:"Común",p:"Poco común",r:"Rara",l:"Legendaria",s:"Shiny",x:"Secreta"};
 const KEY="editor-cartas-v1";
 const REPO="auroramb2006-svg/nuestras-cartas",BRANCH="main",DATAF="cartas-datos.enc",EDF=location.pathname.split("/").pop()||"editor.html";
+const EDITOR_VER="2026-11-19b";
+async function checkEdUpdate(){try{const r=await fetch(location.pathname+"?v="+Date.now(),{cache:"no-store"});if(!r.ok)return;const t=await r.text();const m=t.match(/const EDITOR_VER="([^"]+)"/);
+ if(m&&m[1]!==EDITOR_VER){let n=0;try{n=+sessionStorage.getItem("nc-edreload")||0}catch(e){}if(n<2){try{sessionStorage.setItem("nc-edreload",n+1)}catch(e){}location.reload()}}}catch(e){}}
+checkEdUpdate();document.addEventListener("visibilitychange",()=>{if(!document.hidden)checkEdUpdate()});
 let D=null,PW=null,DIRTY=false,FIRSTPW=false,NEEDPUB=false,ACT=null,ACTS=[],ACTERR="";const DEFAULT={};
 const LS={get:k=>{try{return localStorage.getItem(k)}catch(e){return null}},set:(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}},del:k=>{try{localStorage.removeItem(k)}catch(e){}}};
 // ---- cifrado AES-GCM con contraseña ----
