@@ -700,7 +700,7 @@ function render(){
    :`<div class="panel emptyc">Nada pendiente</div>`;
   // colección
   const ch=$("chips");ch.innerHTML="";
-  [["all","Todas"],["todo","Por canjear"],["done","Canjeadas"]].forEach(([k,l])=>{const b=document.createElement("button");b.className="chip"+(filter===k?" on":"");b.textContent=l;b.onclick=()=>{filter=k;render()};ch.appendChild(b)});
+  [["all","Todas"],["todo","Por canjear"],["done","Canjeadas"]].forEach(([k,l])=>{const b=document.createElement("button");b.className="chip"+(filter===k?" on":"");b.textContent=l;b.onclick=()=>{APPSND.p("tick");filter=k;render()};ch.appendChild(b)});
   const g=$("cgrid");g.innerHTML="";
   const list=o.filter(c=>{const d=st.cards[c.n]?.done;return filter==="todo"?!d:filter==="done"?d:true});
   if(!o.length)g.innerHTML=`<div class="panel emptyc" style="grid-column:1/-1">Aquí no hay nada todavía. Abre un sobre desde Inicio</div>`;
@@ -746,7 +746,7 @@ function soonList(){return owned().filter(c=>!st.cards[c.n]?.done&&daysLeft(c)!=
 function expiredList(){return owned().filter(c=>!st.cards[c.n]?.done&&daysLeft(c)!==null&&daysLeft(c)<=0)}
 function updateBadge(){const b=document.querySelector('.nav button[data-s="col"]');if(!b)return;let x=b.querySelector(".nbadge");const n=soonList().length;
  if(!n){if(x)x.remove();return}if(!x){x=document.createElement("span");x.className="nbadge";b.appendChild(x)}x.textContent=n}
-function showToast(html,btn,fn){APPSND.p("bell");const t=$("toast2");$("t2tx").innerHTML=html;$("t2b").textContent=btn;$("t2b").onclick=()=>{t.classList.remove("on");fn&&fn()};
+function showToast(html,btn,fn){const t=$("toast2");$("t2tx").innerHTML=html;$("t2b").textContent=btn;$("t2b").onclick=()=>{t.classList.remove("on");fn&&fn()};
  t.classList.add("on");clearTimeout(showToast.h);showToast.h=setTimeout(()=>t.classList.remove("on"),7000)}
 function todayAlert(){const k=dkey(Date.now());const E=events()[k]||[];
  const pk=E.find(e=>e.t==="pack"&&!e.done);const pl=E.filter(e=>e.t==="plan");
@@ -906,7 +906,7 @@ function devTok(){let t="";try{t=localStorage.getItem("nc-chat-tok")||""}catch(e
 window.TRC={api:"/api/truco",sprite:"/truco-cartas.png",me:"el",vibe:()=>SET.vibe!==false,auth:()=>({uid:userId(getUser()),tok:devTok(),name:getUser()}),
  betCards:()=>owned().map(c=>({n:c.n,name:c.name,efecto:c.efecto,r:c.r,type:c.type})),
  ready:()=>{if(!ENC.sync||!getUser()){showToast("<b>Antes tienes que iniciar sesión</b>Ponte tu nombre y vuelve","Vale");return false}return true},
- onClose:()=>{APPSND.duck(false);trBadge()}};
+ onClose:()=>{APPSND.duck(false);APPSND.p("wOut");trBadge()}};
 // ---------- truco (pantalla compartida por la app y el editor) ----------
 // Necesita window.TRC = {api, me:'el'|'ella', auth:()=>({...}), betCards:()=>[cards], ready:()=>bool}
 (function(){
@@ -1109,7 +1109,7 @@ window.Truco={open(){if(TRC.ready&&!TRC.ready()){return}S=null;LAST="";PREV=null
 
 async function trBadge(){if(!ENC.sync||!getUser())return;const s=await Truco.status();const b=$("trBadge"),sub=$("trSub");if(!b)return;
  const tx={reto:"Te reta",toca:"Te toca",fin:"Ya ha acabado"}[s]||"";b.textContent=tx;b.style.display=tx?"grid":"none";if(sub)sub.textContent=s==="reto"?"Te han retado 😏":s==="toca"?"Hay una partida esperándote":"A 15, apostando una carta"}
-$("trBtn").onclick=()=>{APPSND.duck(true);Truco.open()};
+$("trBtn").onclick=()=>{APPSND.duck(true);APPSND.p("wIn");Truco.open()};
 $("reqBtn").onclick=openReq;$("ovReq").addEventListener("click",e=>{if(e.target.id==="ovReq")e.target.classList.remove("on")});
 
 // ---------- avisos por WhatsApp ----------
@@ -1142,7 +1142,7 @@ function renderCal(){const g=$("cGrid");if(!g)return;const E=events();
   if(i>=35&&d.getMonth()!==calM.getMonth())break;
   const ev=E[k]||[];const types=[...new Set(ev.map(e=>e.t))].slice(0,4);
   h+=`<button class="cd ${d.getMonth()!==calM.getMonth()?"out":""} ${k===dkey(Date.now())?"today":""} ${k===calSel?"sel":""}" data-k="${k}">${d.getDate()}<span class="dots">${types.map(t=>`<i style="background:${EV[t][1]}"></i>`).join("")}</span></button>`}
- g.innerHTML=h;g.querySelectorAll(".cd").forEach(b=>b.onclick=()=>{calSel=b.dataset.k;renderCal()});
+ g.innerHTML=h;g.querySelectorAll(".cd").forEach(b=>b.onclick=()=>{APPSND.p("tick");calSel=b.dataset.k;renderCal()});
  const sd=new Date(calSel+"T12:00");const isToday=calSel===dkey(Date.now());
  $("cDayT").textContent=(isToday?"Hoy, ":"")+sd.toLocaleDateString("es-ES",{weekday:"long",day:"numeric",month:"long"});
  const list=E[calSel]||[];
@@ -1187,7 +1187,7 @@ function deck(n,code,cards){
     [...$("dots").children].forEach((d,k)=>d.classList.toggle("on",k===i));
     $("dh").textContent=i<order.length-1?"Toca para la siguiente":"Toca para acabar"}
   onTop();
-  function next(dir=1){APPSND.p("flip");const el=dk.children[i];el.style.transform=`translateX(${dir*130}%) rotate(${dir*18}deg)`;el.classList.add("out");i++;
+  function next(dir=1){APPSND.p("swipe",dir);const el=dk.children[i];el.style.transform=`translateX(${dir*130}%) rotate(${dir*18}deg)`;el.classList.add("out");i++;
     if(i>=order.length){setTimeout(()=>finish(n,code,cards),350);return}
     [...dk.children].forEach((d,k)=>{if(k>=i){const j=k-i;d.style.transform=`translateY(${Math.min(j,3)*6}px) scale(${1-Math.min(j,3)*.03})`}});onTop()}
   dk.onpointerdown=e=>{x0=e.clientX;dx=0;dk.setPointerCapture(e.pointerId);dk.children[i].style.transition="none"};
@@ -1246,19 +1246,29 @@ const APPSND=(()=>{let ac=null,master=null,sfxBus=null,musBus=null,playing=false
  function noise(bus,t,d,v=.04,hp=1200,hp2){const b=ac.createBuffer(1,Math.max(1,Math.floor(ac.sampleRate*d)),ac.sampleRate);const a=b.getChannelData(0);for(let i=0;i<a.length;i++)a[i]=(Math.random()*2-1)*(1-i/a.length);
   const s=ac.createBufferSource();s.buffer=b;const f=ac.createBiquadFilter();f.type="highpass";f.frequency.setValueAtTime(hp,t);if(hp2)f.frequency.exponentialRampToValueAtTime(hp2,t+d);const g=ac.createGain();g.gain.value=v;s.connect(f).connect(g).connect(bus);s.start(t)}
  const S=(f,o=0,d=.2,type="sine",v=.04,f2)=>tone(sfxBus,f,ac.currentTime+o,d,type,v,f2);
+ // "woosh": ruido suave por un filtro que barre de grave a agudo (o al revés); pan = de qué lado viene
+ function wh(o,d,f1,f2,v=.08,pan=0,q=1.1){const t=ac.currentTime+o;const b=ac.createBuffer(1,Math.floor(ac.sampleRate*d),ac.sampleRate);const a=b.getChannelData(0);for(let i=0;i<a.length;i++)a[i]=Math.random()*2-1;
+  const src=ac.createBufferSource();src.buffer=b;const bp=ac.createBiquadFilter();bp.type="bandpass";bp.Q.value=q;bp.frequency.setValueAtTime(f1,t);bp.frequency.exponentialRampToValueAtTime(f2,t+d);
+  const g=ac.createGain();g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v,t+d*.42);g.gain.exponentialRampToValueAtTime(.0001,t+d);
+  let out=g;if(pan&&ac.createStereoPanner){const p=ac.createStereoPanner();p.pan.setValueAtTime(-pan,t);p.pan.linearRampToValueAtTime(pan,t+d);g.connect(p);out=p}
+  src.connect(bp).connect(g);out.connect(sfxBus);src.start(t)}
  const FX={
-  tap:()=>S(900,0,.06,"sine",.035,1300),
-  open:()=>S(520,0,.14,"triangle",.04,820),
-  bell:()=>{S(N(88),0,.6,"sine",.04);S(N(93),.07,.7,"sine",.03)},
-  rip:()=>{noise(sfxBus,ac.currentTime,.38,.07,600,5000);[84,88,91,96].forEach((n,i)=>S(N(n),.3+i*.06,.35,"triangle",.03))},
-  flip:()=>{noise(sfxBus,ac.currentTime,.06,.04,3000);S(700,0,.04,"triangle",.025,900)},
-  rare:()=>{[72,76,79,84,88].forEach((n,i)=>S(N(n),i*.055,.4,"triangle",.04));S(N(96),.3,.8,"sine",.03)},
-  stamp:()=>{S(170,0,.16,"sine",.12,60);noise(sfxBus,ac.currentTime,.05,.06,400);S(N(84),.12,.5,"sine",.04);S(N(91),.18,.6,"sine",.03)},
-  ding:()=>{S(N(81),0,.45,"sine",.05);S(N(76),.18,.6,"sine",.045)},
-  bonk:()=>S(180,0,.14,"square",.025,110),
-  send:()=>{noise(sfxBus,ac.currentTime,.2,.04,1500,6000);S(N(79),.12,.12,"triangle",.04);S(N(86),.2,.25,"triangle",.04)},
-  fanfare:()=>{[[72,0],[76,.1],[79,.2],[84,.32]].forEach(([n,o])=>S(N(n),o,.3,"square",.022));[72,76,79,84].forEach(n=>S(N(n),.46,.9,"triangle",.03))},
-  start:()=>{[72,79,84].forEach((n,i)=>S(N(n),i*.09,.7,"sine",.035))}};
+  tap:()=>{S(N(84),0,.07,"sine",.03,N(89));wh(0,.09,1500,3500,.025)},
+  tick:()=>S(N(96),0,.03,"sine",.02),
+  wIn:()=>{wh(0,.3,380,2400,.085);S(N(89),.16,.35,"sine",.018)},
+  wOut:()=>wh(0,.26,1900,380,.065),
+  wBig:()=>{wh(0,.55,240,4200,.12,0,.8);[77,84,89].forEach((n,i)=>S(N(n),.25+i*.08,.6,"sine",.03))},
+  toast:()=>{wh(0,.22,700,2600,.05,-.3);S(N(84),.12,.55,"sine",.035);S(N(89),.19,.65,"sine",.028)},
+  swipe:dir=>{wh(0,.22,900,3200,.07,dir||1);S(N(81),.05,.05,"triangle",.015)},
+  rip:()=>{wh(0,.4,500,5200,.1,0,.7);noise(sfxBus,ac.currentTime,.3,.035,2500);[89,93,96,101].forEach((n,i)=>S(N(n),.34+i*.06,.4,"triangle",.028))},
+  flip:()=>{wh(0,.12,1200,3800,.04);S(N(84),0,.04,"triangle",.02)},
+  rare:()=>{[77,81,84,89,93].forEach((n,i)=>S(N(n),i*.055,.45,"triangle",.035));S(N(101),.3,.9,"sine",.025);wh(.2,.5,2000,7000,.04)},
+  stamp:()=>{S(175,0,.16,"sine",.12,60);noise(sfxBus,ac.currentTime,.05,.06,400);S(N(84),.12,.55,"sine",.04);S(N(89),.18,.65,"sine",.03)},
+  ding:()=>{S(N(81),0,.45,"sine",.05);S(N(77),.18,.6,"sine",.045)},
+  bonk:()=>{S(175,0,.15,"triangle",.07,116);S(N(53),.02,.12,"square",.012)},
+  send:()=>{wh(0,.34,500,6000,.08,.6);S(N(84),.16,.12,"triangle",.035);S(N(91),.24,.3,"triangle",.035)},
+  fanfare:()=>{[[77,0],[81,.1],[84,.2],[89,.32]].forEach(([n,o])=>S(N(n),o,.3,"square",.02));[77,81,84,89].forEach(n=>S(N(n),.46,.9,"triangle",.028));wh(.4,.5,1500,6000,.04)},
+  start:()=>{}};
  // --- música: caja de música + pad suave, Fa maj7 → Mi m7 → Re m7 → Do maj7 (cambia un poco cada vuelta) ---
  const CH=[[53,57,60,64],[52,55,59,62],[50,53,57,60],[48,52,55,59]];
  const PAT=[[0,2,1,3,2,1,3,2],[0,1,2,3,2,3,1,2],[3,2,1,0,1,2,3,1],[0,2,3,2,1,2,0,3]];
@@ -1275,9 +1285,14 @@ const APPSND=(()=>{let ac=null,master=null,sfxBus=null,musBus=null,playing=false
  function startMusic(){if(!musOn()||!ctx())return;if(!playing){playing=true;nextBar=ac.currentTime+.15;pump();clearInterval(timer);timer=setInterval(pump,250)}fade(ducked?0:LEVEL,2.5)}
  function stopMusic(){if(!ac)return;fade(0,.8);setTimeout(()=>{if(!musOn()||ducked){playing=false;clearInterval(timer)}},900)}
  document.addEventListener("visibilitychange",()=>{if(!ac)return;if(document.hidden)ac.suspend();else{ac.resume();if(playing)nextBar=Math.max(nextBar,ac.currentTime+.1)}});
+ function watch(){const obs=new MutationObserver(ms=>ms.forEach(m=>{const el=m.target;const on=el.classList.contains("on");if(el._snd===on)return;el._snd=on;
+   if(el.id==="toast2"){if(on)p("toast");return}if(el.id==="ovDeck"&&!on)return;p(on?"wIn":"wOut")}));
+  document.querySelectorAll(".ov,#toast2").forEach(el=>{el._snd=el.classList.contains("on");obs.observe(el,{attributes:true,attributeFilter:["class"]})})}
+ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",watch);else setTimeout(watch,0);
  let first=false;const touch=()=>{if(first)return;first=true;ctx();if(musOn())startMusic()};
  document.addEventListener("pointerdown",touch,{passive:true,capture:true});
- return{p(k){if(!sfxOn())return;try{if(!ctx())return;FX[k]&&FX[k]()}catch(e){}},start(){touch();try{if(sfxOn()&&ctx())FX.start()}catch(e){}},
+ function p(k,x){if(!sfxOn())return;try{if(!ctx())return;FX[k]&&FX[k](x)}catch(e){}}
+ return{p,start(){touch();try{if(sfxOn()&&ctx())FX.wBig()}catch(e){}},
   music(on){if(on)startMusic();else stopMusic()},duck(d){ducked=d;if(!ac)return;if(d)fade(0,.6);else if(musOn()){startMusic()}}}})();
 
 function applySet(){const r=document.documentElement;let th=SET.theme;if(th==="auto")th=matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";
@@ -1285,7 +1300,7 @@ function applySet(){const r=document.documentElement;let th=SET.theme;if(th==="a
  const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=th==="dark"?"#17122b":"#eef4ff"}
 try{matchMedia("(prefers-color-scheme: dark)").addEventListener("change",()=>{if(SET.theme==="auto")applySet()})}catch(e){}
 const _buzz=buzz;buzz=function(ms){if(SET.vibe!==false)_buzz(ms)};
-function openSettings(){APPSND.p("open");const seg=(k,opts)=>`<div class="seg">${opts.map(([v,l])=>`<button data-k="${k}" data-v="${v}" class="${String(SET[k])===String(v)?"on":""}">${l}</button>`).join("")}</div>`;
+function openSettings(){const seg=(k,opts)=>`<div class="seg">${opts.map(([v,l])=>`<button data-k="${k}" data-v="${v}" class="${String(SET[k])===String(v)?"on":""}">${l}</button>`).join("")}</div>`;
  $("setp").innerHTML=`<h3>Ajustes</h3>
  <div class="srow"><div class="l">Tema</div>${seg("theme",[["light","Claro"],["dark","Oscuro"],["auto","Automático"]])}</div>
  <div class="srow"><div class="l">Pantalla de inicio</div><div class="d">La portada del principio</div>${seg("splash",[["always","Siempre"],["day","Una vez al día"],["never","Nunca"]])}</div>
