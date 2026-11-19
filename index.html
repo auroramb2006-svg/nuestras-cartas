@@ -355,6 +355,64 @@ html[data-theme="dark"] .calrow a{background:#181330;color:#ece6ff}
 .news .heart{font-size:46px;animation:beat 1.2s ease-in-out infinite}
 @keyframes beat{0%,100%{transform:scale(1)}20%{transform:scale(1.18)}40%{transform:scale(1)}}
 html[data-theme="dark"] .news{background:#2a2250;color:#fff}html[data-theme="dark"] .news .nb{color:#d9d1f2}
+
+#trOv{position:fixed;inset:0;z-index:70;display:none;flex-direction:column;background:radial-gradient(circle at 50% 40%,#2f7d57 0%,#1d5a3e 60%,#123b29 100%);color:#fff;font-family:"Quicksand",ui-rounded,system-ui,sans-serif;font-weight:600;overflow:hidden}
+#trOv.on{display:flex}
+#trOv *{box-sizing:border-box}
+.tr-top{display:flex;align-items:center;gap:8px;padding:calc(env(safe-area-inset-top) + 10px) 14px 6px}
+.tr-top h3{margin:0;font-size:20px;font-weight:700;flex:1}
+.tr-x{border:none;background:rgba(255,255,255,.15);color:#fff;width:36px;height:36px;border-radius:50%;font-size:16px;cursor:pointer}
+.tr-score{display:flex;gap:6px;padding:0 14px}
+.tr-score div{flex:1;background:rgba(0,0,0,.22);border-radius:12px;padding:6px 10px;display:flex;justify-content:space-between;align-items:center;font-size:14px}
+.tr-score b{font-size:20px}
+.tr-score .me{outline:2px solid rgba(255,255,255,.35)}
+.tr-body{flex:1;overflow-y:auto;padding:8px 14px calc(env(safe-area-inset-bottom) + 14px);display:flex;flex-direction:column}
+.tr-status{text-align:center;font-size:15px;min-height:22px;margin:6px 0}
+.tr-status.go{color:#ffe27a}
+.tr-call{align-self:center;background:#ffe27a;color:#3b2a00;font-weight:700;font-size:20px;padding:8px 18px;border-radius:16px 20px 14px 18px;transform:rotate(-2deg);margin:4px 0;box-shadow:0 4px 0 #c9a93b}
+.tr-opp,.tr-hand{display:flex;justify-content:center;gap:8px}
+.tr-opp{margin:4px 0 8px}
+.tr-table{display:flex;justify-content:center;gap:14px;margin:6px 0;min-height:190px}
+.tr-baza{display:flex;flex-direction:column;gap:6px;align-items:center;width:64px}
+.tr-baza small{font-size:11px;opacity:.75}
+.tr-slot{width:58px;height:88px;border-radius:8px;border:2px dashed rgba(255,255,255,.2)}
+.tr-hand{margin-top:auto;padding-top:8px}
+.tr-card{position:relative;width:58px;height:88px;border-radius:8px;background:#fffaf0;color:#222;box-shadow:0 2px 0 rgba(0,0,0,.25);flex-shrink:0;overflow:hidden}
+.tr-card.big{width:86px;height:130px;border-radius:11px;cursor:pointer;transition:transform .15s}
+.tr-card.big.can:active,.tr-card.big.can:hover{transform:translateY(-8px)}
+.tr-card.big:not(.can){opacity:.8}
+.tr-card .n{position:absolute;top:3px;left:5px;font-weight:700;font-size:15px;line-height:1}
+.tr-card.big .n{font-size:22px;top:5px;left:7px}
+.tr-card .n2{display:none;position:absolute;bottom:3px;right:5px;font-weight:700;font-size:15px;line-height:1;transform:rotate(180deg)}
+.tr-card.big .n2{font-size:22px;bottom:5px;right:7px}
+.tr-card svg{position:absolute;left:50%;top:47%;transform:translate(-50%,-50%);width:50%;height:58%}
+.tr-card .fig{position:absolute;bottom:5px;left:0;right:0;text-align:center;font-size:8px;font-weight:700;letter-spacing:.5px;opacity:.75}
+.tr-card.big .fig{font-size:10px;bottom:8px}
+.tr-card.win{outline:3px solid #ffe27a}
+.tr-card.back{background:#b8323f;background-image:repeating-linear-gradient(45deg,rgba(255,255,255,.18) 0 4px,transparent 4px 10px),repeating-linear-gradient(-45deg,rgba(255,255,255,.18) 0 4px,transparent 4px 10px);border:3px solid #fffaf0}
+.tr-btns{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:12px}
+.tr-b{border:none;border-radius:14px;padding:11px 14px;font:inherit;font-weight:700;font-size:15px;cursor:pointer;background:#fffaf0;color:#1d5a3e;box-shadow:0 4px 0 #b9b3a3}
+.tr-b:active{transform:translateY(3px);box-shadow:0 1px 0 #b9b3a3}
+.tr-b.hot{background:#ffe27a;color:#3b2a00;box-shadow:0 4px 0 #c9a93b}
+.tr-b.red{background:#ff6f9f;color:#fff;box-shadow:0 4px 0 #cf4a7a}
+.tr-b.ghost{background:rgba(255,255,255,.14);color:#fff;box-shadow:none}
+.tr-b:disabled{opacity:.5}
+.tr-log{margin-top:12px;font-size:12px;opacity:.8;line-height:1.5}
+.tr-env{text-align:center;font-size:13px;opacity:.85}
+.tr-panel{background:rgba(0,0,0,.22);border-radius:16px;padding:12px;margin-top:10px}
+.tr-panel h4{margin:0 0 8px;font-size:16px}
+.tr-list{display:flex;flex-direction:column;gap:6px;max-height:42vh;overflow-y:auto}
+.tr-pick{display:flex;gap:10px;align-items:center;text-align:left;border:2px solid transparent;border-radius:12px;padding:8px 10px;background:rgba(255,255,255,.1);color:#fff;font:inherit;cursor:pointer}
+.tr-pick.on{border-color:#ffe27a;background:rgba(255,226,122,.18)}
+.tr-pick small{display:block;opacity:.7;font-size:12px}
+.tr-row{display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.12)}
+.tr-row:last-child{border-bottom:none}
+.tr-row div{flex:1;min-width:0}
+.tr-row small{display:block;opacity:.7;font-size:12px}
+.tr-big{font-size:26px;font-weight:700;text-align:center;margin:18px 0 6px}
+.tr-sub{text-align:center;opacity:.9;margin-bottom:10px}
+.tr-msg{text-align:center;color:#ffe27a;min-height:20px;margin-top:8px;font-size:14px}
+.trb{position:relative;width:calc(100% - 4px);margin:12px 2px 0;display:flex;align-items:center;gap:12px;text-align:left;border:none;border-radius:20px 16px 22px 14px;padding:12px 14px;font:inherit;cursor:pointer;background:#2f7d57;color:#fff;box-shadow:0 4px 0 #1d5a3e;transform:rotate(-.6deg)}.trb:active{transform:rotate(-.6deg) translateY(3px);box-shadow:0 1px 0 #1d5a3e}.trb .tri{display:grid;place-items:center;width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.16)}.trb b{display:block;font-size:15px;font-weight:700}.trb small{display:block;font-size:12px;opacity:.85}
 </style></head>
 <body>
 <div id="splash"><div class="halo"></div><div id="flc"></div>
@@ -374,6 +432,7 @@ html[data-theme="dark"] .news{background:#2a2250;color:#fff}html[data-theme="dar
      <div class="msg" id="msg"></div>
    </div>
    <div class="hx"><button class="hxb" id="achBtn"><span class="hxi">✦</span><span><b>Logros</b><small id="achCount">0/0</small></span></button><button class="hxb" id="reqBtn"><span class="hxi">♥</span><span><b>Mándame algo</b><small>me llega como noti</small></span></button></div>
+   <button class="trb" id="trBtn"><span class="tri"><svg viewBox="0 0 40 60" width="20" height="30"><path d="M20 2l5 8v30H15V10z" fill="#fff" stroke="#fff" stroke-width="1"/><rect x="8" y="40" width="24" height="5" rx="2" fill="#ffe27a"/><rect x="17.5" y="45" width="5" height="9" fill="#ffe27a"/><circle cx="20" cy="56.5" r="3" fill="#ffe27a"/></svg></span><span><b>Truco</b><small id="trSub">A 15, apostando una carta</small></span><i class="cbadge" id="trBadge"></i></button>
    <h2 class="sec">Lo último que te ha tocado</h2>
    <div class="rowscroll" id="recent"></div>
    <h2 class="sec">Ojo, que caducan</h2>
@@ -683,6 +742,97 @@ function openReq(){const can=ENC.sync&&getUser();const H=(st.reqs||[]).slice(-5)
    st.reqs=(st.reqs||[]).concat([{t:ti||t,ts:Date.now(),day}]).slice(-30);_save0();buzz(30);
    $("reqM").textContent=day?"Programada, me llegará ese día sobre las 10 😏":"Enviada, ya me ha llegado 💕";setTimeout(()=>$("ovReq").classList.remove("on"),1400)}
   catch(e){$("reqM").textContent="No se ha enviado 😒 Prueba otra vez";$("reqS").disabled=false}}}
+
+function devTok(){let t="";try{t=localStorage.getItem("nc-chat-tok")||""}catch(e){}if(!t){t=[...crypto.getRandomValues(new Uint8Array(18))].map(b=>b.toString(16).padStart(2,"0")).join("");try{localStorage.setItem("nc-chat-tok",t)}catch(e){}}return t}
+window.TRC={api:"/api/truco",me:"el",auth:()=>({uid:userId(getUser()),tok:devTok(),name:getUser()}),
+ betCards:()=>owned().map(c=>({n:c.n,name:c.name,efecto:c.efecto,r:c.r,type:c.type})),
+ ready:()=>{if(!ENC.sync||!getUser()){showToast("<b>Antes tienes que iniciar sesión</b>Ponte tu nombre y vuelve","Vale");return false}return true},
+ onClose:()=>trBadge()};
+// ---------- truco (pantalla compartida por la app y el editor) ----------
+// Necesita window.TRC = {api, me:'el'|'ella', auth:()=>({...}), betCards:()=>[cards], ready:()=>bool}
+(function(){
+const SV={
+ O:'<svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="16" fill="#e8b923" stroke="#a67c00" stroke-width="2"/><circle cx="20" cy="20" r="9" fill="none" stroke="#a67c00" stroke-width="2"/><circle cx="20" cy="20" r="3" fill="#a67c00"/></svg>',
+ C:'<svg viewBox="0 0 40 48"><path d="M8 6h24c0 10-4 17-12 18C12 23 8 16 8 6z" fill="#d9443f" stroke="#8c1f1c" stroke-width="2"/><rect x="18" y="24" width="4" height="11" fill="#e8b923"/><path d="M11 42h18l-3-7H14z" fill="#e8b923" stroke="#a67c00" stroke-width="1.5"/></svg>',
+ E:'<svg viewBox="0 0 40 60"><path d="M20 2l5 8v30H15V10z" fill="#b9cbe4" stroke="#3d5a80" stroke-width="2"/><rect x="8" y="40" width="24" height="5" rx="2" fill="#3d5a80"/><rect x="17.5" y="45" width="5" height="9" fill="#7a4b2a"/><circle cx="20" cy="56.5" r="3" fill="#3d5a80"/></svg>',
+ B:'<svg viewBox="0 0 40 60"><path d="M15 56c-2-14 0-30 2-44 1-6 9-6 10 0 2 14 2 30-2 44z" fill="#6aa646" stroke="#2f5e1c" stroke-width="2"/><circle cx="18" cy="22" r="2.5" fill="#2f5e1c"/><circle cx="24" cy="32" r="2.5" fill="#2f5e1c"/><circle cx="18.5" cy="43" r="2.5" fill="#2f5e1c"/></svg>'};
+const COL={E:"#3d5a80",B:"#2f5e1c",O:"#a67c00",C:"#8c1f1c"};
+const FIG={10:"SOTA",11:"CABALLO",12:"REY"};
+const SUIT={E:"espadas",B:"bastos",O:"oros",C:"copas"};
+const TN={2:"Truco",3:"Retruco",4:"Vale cuatro"},EN={E:"Envido",R:"Real envido",F:"Falta envido"};
+const e=s=>String(s==null?"":s).replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]));
+const cardH=(c,big,extra="")=>c?`<div class="tr-card${big?" big":""} ${extra}" title="${c.v} de ${SUIT[c.s]}"><span class="n" style="color:${COL[c.s]}">${c.v}</span>${SV[c.s]}${FIG[c.v]?`<span class="fig" style="color:${COL[c.s]}">${FIG[c.v]}</span>`:""}<span class="n2" style="color:${COL[c.s]}">${c.v}</span></div>`:`<div class="tr-slot"></div>`;
+const back=()=>`<div class="tr-card back"></div>`;
+let S=null,LAST="",timer=0,bet=null,msg="",busy=false,sure=false,view="";
+const me=()=>TRC.me,opp=()=>me()==="el"?"ella":"el";
+function ov(){let o=document.getElementById("trOv");if(!o){o=document.createElement("div");o.id="trOv";document.body.appendChild(o)}return o}
+async function call(o){const r=await fetch(TRC.api,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(Object.assign(await TRC.auth(),o))});let j={};try{j=await r.json()}catch(x){}if(!r.ok){const er=new Error(j.error||"server");er.data=j;throw er}return j}
+async function load(force){try{const j=await call({action:"state"});const k=JSON.stringify(j);if(force||k!==LAST){LAST=k;S=j;draw()}}catch(x){if(force){S=S||{game:null,ledger:{prizes:[],debts:[]}};msg=x.message==="auth"?"Este móvil no puede jugar con esta cuenta 😒":"No conecta, prueba en un rato 🫠";draw()}}}
+function poll(){clearInterval(timer);timer=setInterval(()=>{if(!document.hidden&&ov().classList.contains("on"))load()},S&&S.redis?2000:3500)}
+async function send(o){if(busy)return;busy=true;msg="";try{const j=await call(o);LAST=JSON.stringify(j);S=j;sure=false}catch(x){if(x.data&&x.data.game&&S){S.game=x.data.game}msg=x.message==="busy"?"Ya hay una partida empezada":x.message==="move"?(x.data.message||"Esa no vale"):x.message==="stale"?"":"No se ha podido, prueba otra vez"}busy=false;draw()}
+const act=m=>send({action:"act",v:S.game.v,move:m});
+function head(g){const n=g?g.names:{el:"Él",ella:"Ella"};const sc=g&&g.status==="play"||g&&g.status==="done"?g.score:null;
+ return `<div class="tr-top"><h3>Truco</h3><button class="tr-x" data-tr="close">✕</button></div>${sc?`<div class="tr-score"><div class="me"><span>Tú</span><b>${sc[me()]}</b></div><div><span>${e(n[opp()])}</span><b>${sc[opp()]}</b></div></div>`:""}`}
+function ledgerH(){const L=S.ledger||{prizes:[],debts:[]};const P=(L.prizes||[]).filter(p=>!p.used),D=(L.debts||[]).filter(d=>!d.paid);
+ if(!P.length&&!D.length)return "";
+ const pr=P.map(p=>`<div class="tr-row"><div><b>${e(p.card.name)}</b><small>${me()==="el"?"Te la llevaste en el truco":"Se la llevó en el truco"}</small></div>${me()==="el"?`<button class="tr-b hot" data-tr="use" data-id="${e(p.id)}">Canjear</button>`:""}</div>`).join("");
+ const de=D.map(d=>`<div class="tr-row"><div><b>${e(d.card.name)}</b><small>${me()==="el"?"Se lo debes: "+e(d.card.efecto||"")+" (pero al revés 😏)":"Te lo debe: "+e(d.card.efecto||"")}</small></div>${me()==="ella"?`<button class="tr-b hot" data-tr="pay" data-id="${e(d.id)}">Saldada</button>`:""}</div>`).join("");
+ return `${P.length?`<div class="tr-panel"><h4>${me()==="el"?"Tus premios":"Lo que te ha ganado"}</h4>${pr}</div>`:""}${D.length?`<div class="tr-panel"><h4>${me()==="el"?"Lo que me debes":"Lo que te debe"}</h4>${de}</div>`:""}`}
+function pickH(){const cs=TRC.betCards();if(!cs.length)return `<p>${me()==="el"?"Primero abre algún sobre, que no tienes nada que apostar 🙄":"No hay cartas"}</p>`;
+ return `<div class="tr-list">${cs.map(c=>`<button class="tr-pick${bet&&bet.n===c.n?" on":""}" data-tr="bet" data-n="${c.n}"><div><b>${e(c.name)}</b><small>${e((c.efecto||"").slice(0,70))}</small></div></button>`).join("")}</div>`}
+function draw(){const o=ov();const g=S&&S.game;let h=head(g)+`<div class="tr-body">`;
+ if(!S){h+=`<p class="tr-sub">Cargando…</p>`}
+ else if(g&&g.status==="done"&&localStorage.getItem("tr-ack")!==g.id){const w=g.winner===me();const bE=g.bets.el,bA=g.bets.ella;
+  h+=`<div class="tr-big">${w?"¡Has ganado! 🥰":"Has perdido 🫠"}</div><div class="tr-sub">${g.score[me()]} a ${g.score[opp()]}</div>
+  <div class="tr-panel" style="text-align:center">${me()==="el"?(w?`Te llevas «${e(bA.name)}». Ya la tienes en tus premios.`:`Me debes «${e(bE.name)}» 😏`):(w?`Te debe «${e(bE.name)}» 😏`:`Se lleva «${e(bA.name)}» 🙄`)}</div>
+  <div class="tr-btns"><button class="tr-b hot" data-tr="ack">Vale</button></div>`}
+ else if(!g||g.status==="done"||g.status==="declined"){
+  h+=`<div class="tr-panel"><h4>${g&&g.status==="declined"?"No ha querido jugar 🙄 ¿Otra?":"¿Echamos un truco?"}</h4><p style="margin:0 0 8px;font-size:13px;opacity:.85">Elige la carta que te juegas. Se juega a 15.</p>${pickH()}
+  <div class="tr-btns"><button class="tr-b hot" data-tr="challenge"${bet?"":" disabled"}>Retar</button></div></div>`+ledgerH()}
+ else if(g.status==="invite"){
+  if(g.inviter===me())h+=`<div class="tr-big" style="font-size:20px">Esperando a que acepte 👀</div><div class="tr-sub">Te juegas «${e(g.bets[me()].name)}»</div><div class="tr-btns"><button class="tr-b ghost" data-tr="cancel">Cancelar</button></div>`+ledgerH();
+  else h+=`<div class="tr-panel"><h4>${e(g.names[opp()])} te reta al truco 😏</h4><p style="margin:0 0 8px">Se juega «${e(g.bets[opp()].name)}». ¿Qué te juegas tú?</p>${pickH()}
+   <div class="tr-btns"><button class="tr-b hot" data-tr="accept"${bet?"":" disabled"}>Acepto</button><button class="tr-b ghost" data-tr="decline">Ahora no</button></div></div>`}
+ else{const H=g.hand,op=g.opts||{},N=g.names[opp()],mine=op.toAct===me(),pend=H.pend;
+  let stt=mine?(pend?`${e(N)} te canta`:"Te toca"):`Le toca a ${e(N)}`;
+  h+=`<div class="tr-status${mine?" go":""}">${stt}${H.mano===me()?" (eres mano)":""}</div>`;
+  if(pend)h+=`<div class="tr-call">${pend.who===me()?"Tú: ":e(N)+": "}¡${pend.kind==="truco"?TN[pend.pts]:EN[pend.chain[pend.chain.length-1]]}!</div>`;
+  h+=`<div class="tr-opp">${Array.from({length:H.oppLeft},back).join("")}</div>`;
+  h+=`<div class="tr-table">${[0,1,2].map(i=>{const b=H.bazas[i]||{};return `<div class="tr-baza">${cardH(b[opp()],false,b.win===opp()?"win":"")}${cardH(b[me()],false,b.win===me()?"win":"")}<small>${b.win?(b.win==="parda"?"parda":b.win===me()?"tuya":"suya"):""}</small></div>`}).join("")}</div>`;
+  const env=H.envido&&H.envido.winner?`Envido: tú ${H.envido[me()]}, ${e(N)} ${H.envido[opp()]}`:(!H.envido&&H.bazas.length===1?`Tienes ${g.myEnvido} de envido`:"");
+  if(env)h+=`<div class="tr-env">${env}${H.truco>1?". Se juega "+TN[H.truco].toLowerCase():""}</div>`;else if(H.truco>1)h+=`<div class="tr-env">Se juega ${TN[H.truco].toLowerCase()}</div>`;
+  h+=`<div class="tr-hand">${H.mine.map((c,i)=>`<div data-tr="play" data-i="${i}">${cardH(c,true,op.play?"can":"")}</div>`).join("")}</div>`;
+  const B=[];if(op.quiero){B.push(`<button class="tr-b hot" data-tr="m" data-m="quiero">Quiero</button>`,`<button class="tr-b red" data-tr="m" data-m="noquiero">No quiero</button>`)}
+  if(op.truco)B.push(`<button class="tr-b" data-tr="m" data-m="truco">${pend&&pend.kind==="truco"?"Quiero ":""}${TN[op.truco]}</button>`);
+  (op.envido||[]).forEach(k=>B.push(`<button class="tr-b" data-tr="m" data-m="envido" data-k="${k}">${EN[k]}</button>`));
+  if(op.mazo)B.push(`<button class="tr-b ghost" data-tr="m" data-m="mazo">Me voy al mazo</button>`);
+  if(B.length)h+=`<div class="tr-btns">${B.join("")}</div>`;
+  h+=`<div class="tr-log">${(g.log||[]).slice(-4).map(l=>(l.who?`<b>${l.who===me()?"Tú":e(g.names[l.who])}:</b> `:"")+e(l.t)).join("<br>")}</div>`;
+  if(g.lastHand&&H.bazas.length===1&&!H.bazas[0].el&&!H.bazas[0].ella)h+=`<div class="tr-env" style="margin-top:6px">En la mano anterior ${e(N)} tenía ${g.lastHand.opp.map(c=>c.v+" de "+SUIT[c.s]).join(", ")}</div>`;
+  h+=`<div class="tr-btns"><button class="tr-b ghost" data-tr="give" style="font-size:12px;padding:7px 10px">${sure?"¿Seguro? Pierdes la apuesta":"Abandonar"}</button></div>`}
+ h+=`<div class="tr-msg">${e(msg)}</div></div>`;o.innerHTML=h;
+ o.querySelectorAll("[data-tr]").forEach(el=>el.onclick=()=>{const t=el.dataset.tr;
+  if(t==="close")return close();
+  if(t==="bet"){bet=TRC.betCards().find(c=>c.n==el.dataset.n)||null;draw();return}
+  if(t==="challenge"&&bet)return send(Object.assign({action:"challenge",bet},TRC.challengeExtra?TRC.challengeExtra():{}));
+  if(t==="accept"&&bet)return send({action:"accept",bet});
+  if(t==="decline")return send({action:"decline"});
+  if(t==="cancel")return send({action:"cancel"});
+  if(t==="give"){if(!sure){sure=true;draw();return}return send({action:"cancel"})}
+  if(t==="ack"){try{localStorage.setItem("tr-ack",S.game.id)}catch(x){}bet=null;draw();return}
+  if(t==="use")return send({action:"useprize",id:el.dataset.id});
+  if(t==="pay")return send({action:"paydebt",id:el.dataset.id});
+  if(t==="play"){const op=S.game.opts||{};if(op.play)act({type:"play",i:+el.dataset.i});return}
+  if(t==="m"){const m=el.dataset.m;act(m==="envido"?{type:"envido",k:el.dataset.k}:{type:m})}})}
+function close(){ov().classList.remove("on");clearInterval(timer);TRC.onClose&&TRC.onClose()}
+window.Truco={open(){if(TRC.ready&&!TRC.ready()){return}S=null;LAST="";msg="";bet=null;sure=false;ov().classList.add("on");draw();load(true).then(poll)},
+ async status(){try{const j=await call({action:"state"});const g=j.game;if(!g)return null;if(g.status==="invite"&&g.inviter!==me())return "reto";if(g.status==="play"&&g.opts&&g.opts.toAct===me())return "toca";if(g.status==="done"&&localStorage.getItem("tr-ack")!==g.id)return "fin";return null}catch(x){return null}},
+ close};
+})();
+
+async function trBadge(){if(!ENC.sync||!getUser())return;const s=await Truco.status();const b=$("trBadge"),sub=$("trSub");if(!b)return;
+ const tx={reto:"Te reta",toca:"Te toca",fin:"Ya ha acabado"}[s]||"";b.textContent=tx;b.style.display=tx?"grid":"none";if(sub)sub.textContent=s==="reto"?"Te han retado 😏":s==="toca"?"Hay una partida esperándote":"A 15, apostando una carta"}
+$("trBtn").onclick=()=>Truco.open();
 $("reqBtn").onclick=openReq;$("ovReq").addEventListener("click",e=>{if(e.target.id==="ovReq")e.target.classList.remove("on")});
 
 // ---------- avisos por WhatsApp ----------
@@ -834,7 +984,7 @@ $("gearBtn").onclick=openSettings;$("ovSet").addEventListener("click",e=>{if(e.t
 applySet();
 (function(){const sp=$("splash");if(!sp)return;
  let showIt=SET.splash!=="never";if(SET.splash==="day"){let last="";try{last=localStorage.getItem("nc-splash-day")||""}catch(e){}const today=new Date().toDateString();showIt=last!==today;try{localStorage.setItem("nc-splash-day",today)}catch(e){}}
- if(!showIt){sp.remove();setTimeout(()=>showLogin(()=>showNews(()=>checkAlerts())),600);return}
+ if(!showIt){sp.remove();setTimeout(()=>showLogin(()=>showNews(()=>{checkAlerts();if(/[?&]truco/.test(location.search))Truco.open()})),600);return}
  const fc=$("flc");const R=(a,b)=>a+Math.random()*(b-a);
  for(let i=0;i<14;i++){const d=document.createElement("div");const depth=Math.random();d.className="fl"+(i%5===0?" h":"");
   const ang=i/14*6.283+R(-.2,.2),rx=R(36,56),ry=R(36,52);
@@ -843,12 +993,12 @@ applySet();
  const msgs=["Barajando cartas…","Sellando sobres…","Puliendo los brillos…","Escondiendo la secreta…","¡Listo!"];
  const iv=setInterval(()=>{p=Math.min(100,p+8+Math.random()*14);bar.style.width=p+"%";lt.textContent=msgs[Math.min(msgs.length-1,Math.floor(p/25))];
   if(p>=100){clearInterval(iv);setTimeout(()=>{ready=true;sp.classList.add("ready")},250)}},160);
- function go(){sp.style.transition="";sp.style.transform="";sp.classList.add("gone");buzz(20);setTimeout(()=>sp.remove(),700);setTimeout(()=>showLogin(()=>showNews(()=>checkAlerts())),900)}
+ function go(){sp.style.transition="";sp.style.transform="";sp.classList.add("gone");buzz(20);setTimeout(()=>sp.remove(),700);setTimeout(()=>showLogin(()=>showNews(()=>{checkAlerts();if(/[?&]truco/.test(location.search))Truco.open()})),900)}
  sp.addEventListener("pointerdown",e=>{y0=e.clientY;dy=0;try{sp.setPointerCapture(e.pointerId)}catch(x){}});
  sp.addEventListener("pointermove",e=>{if(y0===null||!ready)return;dy=Math.min(0,e.clientY-y0);sp.style.transition="none";sp.style.transform=`translateY(${dy}px)`});
  sp.addEventListener("pointerup",()=>{if(y0===null)return;y0=null;if(!ready)return;if(dy<-60||Math.abs(dy)<6)go();else{sp.style.transition="";sp.style.transform=""}});
  document.addEventListener("keydown",e=>{if(ready&&document.getElementById("splash")&&(e.key==="Enter"||e.key===" "))go()});
 })();
-render();checkAch(true);updAchCount();queueSync();queuePush();
+render();checkAch(true);updAchCount();queueSync();queuePush();trBadge();setInterval(()=>{if(!document.hidden)trBadge()},60000);
 document.addEventListener("visibilitychange",()=>{if(!document.hidden){render();checkAlerts()}else{queueSync()}});
 </script></body></html>
