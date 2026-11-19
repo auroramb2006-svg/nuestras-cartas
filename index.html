@@ -570,7 +570,39 @@ async function doSync(){try{
   const B=u=>{let s="";for(let i=0;i<u.length;i+=32768)s+=String.fromCharCode.apply(null,u.subarray(i,i+32768));return btoa(s)};
   await fetch("/api/sync",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({v:1,u:userId(who),k:B(wk),iv:B(iv),ct:B(ct)}),keepalive:true});
  }catch(e){}}
-const _save0=save;save=function(){_save0();queueSync()};
+
+// ---------- notificaciones (avisos en el móvil aunque la app esté cerrada) ----------
+const PUSHOK=()=>"serviceWorker" in navigator&&"PushManager" in window&&"Notification" in window;
+const ISIOS=/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
+const STANDALONE=()=>(window.matchMedia&&matchMedia("(display-mode: standalone)").matches)||navigator.standalone===true;
+const pushOn=()=>{try{return localStorage.getItem("nc-push")==="1"}catch(e){return false}};
+function u8key(b64){const p="=".repeat((4-b64.length%4)%4);const r=atob((b64+p).replace(/-/g,"+").replace(/_/g,"/"));return Uint8Array.from(r,c=>c.charCodeAt(0))}
+async function pushSub(create){const reg=await navigator.serviceWorker.register("/sw.js");await navigator.serviceWorker.ready;let sub=await reg.pushManager.getSubscription();
+ if(!sub&&create){const k=await (await fetch("/api/push")).json();sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:u8key(k.publicKey)})}return sub}
+function reminders(){const out=[];const add=(ts,id,title,body)=>{const day=dkey(ts);if(day>=dkey(Date.now()))out.push({id,day,title,body})};
+ const days=ENC.days||{};for(const n in days){if(days[n]&&!st.codes[n]){const t=new Date(days[n]+"T12:00").getTime();add(t,"pack"+n+days[n],"📦 ¡Hoy toca sobre nuevo!","Sobre "+n+" · "+pname(n)+". Busca el de papel y mete su código.")}}
+ owned().forEach(c=>{const s=st.cards[c.n]||{};const nm=c.r==="x"?"la carta secreta":c.name;
+  if(s.plan&&!s.done){const h=new Date(s.plan).toLocaleTimeString("es-ES",{hour:"2-digit",minute:"2-digit"});
+   add(s.plan-DAY,"plan1-"+c.n+"-"+s.plan,"💗 Mañana tenéis plan",nm+" · a las "+h);add(s.plan,"plan0-"+c.n+"-"+s.plan,"💗 Hoy tenéis plan",nm+" · a las "+h)}
+  const d=R[c.r].d;if(d&&s.got&&!s.done){const e=s.got+d*DAY;add(e-3*DAY,"exp3-"+c.n+"-"+s.got,"⏳ Caduca en 3 días",nm+". ¡Aún estás a tiempo de canjearla!");add(e-DAY,"exp1-"+c.n+"-"+s.got,"⏳ ¡Caduca mañana!",nm+". Úsala o la pierdes 😝")}});
+ return out.slice(0,80)}
+let pushT=0;function queuePush(){if(!ENC.sync||!pushOn()||!getUser()||!PUSHOK())return;clearTimeout(pushT);pushT=setTimeout(sendPush,2500)}
+async function sendPush(){try{const sub=await pushSub(false);if(!sub){try{localStorage.removeItem("nc-push")}catch(e){}return}
+ await fetch("/api/push",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"sub",role:"user",name:getUser(),uid:userId(getUser()),sub:sub.toJSON(),reminders:reminders()}),keepalive:true})}catch(e){}}
+async function enablePush(){if(ISIOS&&!STANDALONE())throw new Error("ios");const p=await Notification.requestPermission();if(p!=="granted")throw new Error("denied");
+ const sub=await pushSub(true);try{localStorage.setItem("nc-push","1")}catch(e){}
+ const r=await fetch("/api/push",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"sub",role:"user",name:getUser(),uid:userId(getUser()),sub:sub.toJSON(),reminders:reminders()})});if(!r.ok)throw new Error("server");return sub}
+async function testPush(){const sub=await pushSub(false);if(!sub)throw new Error("nosub");const r=await fetch("/api/push",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"test",role:"user",sub:sub.toJSON(),url:"/"})});if(!r.ok)throw new Error("send")}
+async function disablePush(){try{const sub=await pushSub(false);if(sub){await fetch("/api/push",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"unsub",sub:sub.toJSON()})});await sub.unsubscribe()}}catch(e){}try{localStorage.removeItem("nc-push")}catch(e){}}
+// Aviso al momento para ella cuando alguien agenda, canjea o abre un sobre.
+function snap(){const o={p:{},d:{},o:Object.keys(st.codes||{}).join(",")};for(const k in st.cards){const c=st.cards[k];if(c.plan)o.p[k]=c.plan;if(c.done)o.d[k]=c.done}return o}
+let SNAP=snap();
+function notifyChanges(){const a=SNAP,b=snap();SNAP=b;if(!ENC.sync||!getUser())return;const msgs=[];const nm=n=>{const c=DATA[n];return c?(c.r==="x"?"la carta secreta":"«"+c.name+"»"):"una carta"};
+ for(const k in b.p)if(b.p[k]!==a.p[k]&&!b.d[k])msgs.push("Ha agendado "+nm(k)+" para el "+new Date(b.p[k]).toLocaleString("es-ES",{weekday:"long",day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}));
+ for(const k in b.d)if(!a.d[k])msgs.push("Ha canjeado "+nm(k));
+ const ao=a.o?a.o.split(","):[];(b.o?b.o.split(","):[]).forEach(n=>{if(n&&!ao.includes(n))msgs.push("Ha abierto el sobre "+n+" · "+pname(n))});
+ msgs.forEach(text=>{try{fetch("/api/push",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"event",name:getUser(),text}),keepalive:true})}catch(e){}})}
+const _save0=save;save=function(){_save0();queueSync();queuePush();notifyChanges()};
 // ---------- avisos por WhatsApp ----------
 let NOTE=null;
 function waLink(txt){return "https://wa.me/"+ENC.wa+"?text="+encodeURIComponent(txt)}
@@ -704,11 +736,16 @@ function openSettings(){const seg=(k,opts)=>`<div class="seg">${opts.map(([v,l])
  <div class="srow"><div class="l">Brillos y animaciones</div><div class="d">Destellos, reflejos y cartas flotando</div>${seg("anim",[["true","Activados"],["false","Desactivados"]])}</div>
  <div class="srow"><div class="l">Vibración</div><div class="d">Al abrir sobres y canjear cartas</div>${seg("vibe",[["true","Sí"],["false","No"]])}</div>
  <div class="srow"><div class="l">Cartas por fila</div><div class="d">En la colección</div>${seg("cols",[["2","2 · grandes"],["3","3 · pequeñas"]])}</div>
+ ${(ENC.sync&&getUser())?`<div class="srow"><div class="l">Notificaciones</div><div class="d" id="pushD">${!PUSHOK()&&!(ISIOS&&!STANDALONE())?"Este navegador no permite notificaciones.":ISIOS&&!STANDALONE()?"En iPhone primero añade la app a la pantalla de inicio (Compartir → Añadir a pantalla de inicio) y ábrela desde ese icono.":pushOn()?"Activadas: te aviso de planes, cartas que caducan y sobres nuevos.":"Te aviso de tus planes, de las cartas que caducan y de los sobres nuevos, aunque la app esté cerrada."}</div>${PUSHOK()&&!(ISIOS&&!STANDALONE())?`<div class="seg">${pushOn()?`<button id="pushT">Probar</button><button id="pushX">Desactivar</button>`:`<button id="pushA">Activar</button>`}</div>`:""}</div>`:""}
  ${(getUser()&&!NOSYNC)?`<div class="srow"><div class="l">Sesión</div><div class="d">Has entrado como <b>${esc(getUser())}</b></div><div class="seg"><button id="logoutB">Cerrar sesión</button></div></div>`:""}
  <div class="btns" style="margin-top:14px"><button class="cta pink" id="setOk" style="width:100%">Listo</button></div>`;
  $("ovSet").classList.add("on");
  $("setp").querySelectorAll(".seg button").forEach(b=>b.onclick=()=>{const k=b.dataset.k;let v=b.dataset.v;if(v==="true")v=true;else if(v==="false")v=false;else if(k==="cols")v=+v;
   SET[k]=v;saveSet();applySet();openSettings()});
+ const pd=t=>{const e=$("pushD");if(e)e.textContent=t};
+ const pa=$("pushA");if(pa)pa.onclick=async()=>{pd("Activando…");try{await enablePush();openSettings();pd("¡Activadas! Pulsa Probar para ver una.")}catch(e){pd(e.message==="denied"?"Has dicho que no a las notificaciones. Actívalas en los ajustes del móvil para esta app.":e.message==="ios"?"En iPhone primero añade la app a la pantalla de inicio y ábrela desde ahí.":"No se han podido activar. Prueba otra vez en un rato.")}};
+ const pt=$("pushT");if(pt)pt.onclick=async()=>{pd("Enviando…");try{await testPush();pd("Enviada. Debería llegarte en unos segundos 💌")}catch(e){pd("No ha llegado a salir. Desactívalas y vuelve a activarlas.")}};
+ const px=$("pushX");if(px)px.onclick=async()=>{await disablePush();openSettings()};
  const lo=$("logoutB");if(lo)lo.onclick=()=>{try{localStorage.removeItem('nc-user')}catch(e){}$("ovSet").classList.remove("on");showLogin()};
  $("setOk").onclick=()=>$("ovSet").classList.remove("on")}
 $("gearBtn").onclick=openSettings;$("ovSet").addEventListener("click",e=>{if(e.target.id==="ovSet")e.target.classList.remove("on")});
@@ -730,6 +767,6 @@ applySet();
  sp.addEventListener("pointerup",()=>{if(y0===null)return;y0=null;if(!ready)return;if(dy<-60||Math.abs(dy)<6)go();else{sp.style.transition="";sp.style.transform=""}});
  document.addEventListener("keydown",e=>{if(ready&&document.getElementById("splash")&&(e.key==="Enter"||e.key===" "))go()});
 })();
-render();queueSync();
+render();queueSync();queuePush();
 document.addEventListener("visibilitychange",()=>{if(!document.hidden){render();checkAlerts()}else{queueSync()}});
 </script></body></html>
