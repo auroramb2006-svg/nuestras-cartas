@@ -53,6 +53,30 @@ module.exports = async (req, res) => {
       let n = 0; for (const s of subs) if (await L.send(s, { title: '👀 ' + (L.clip(b.name, 30) || 'Alguien'), body: text, url: 'https://editor-aurora-81d3.vercel.app/editor-81d32a46c8.html' })) n++;
       return res.status(200).json({ ok: true, sent: n });
     }
+    if (b.action === 'request') {
+      // Él te pide algo: se guarda para el editor y te avisa al momento.
+      const text = L.clip(b.text, 200).trim(); if (!text) return res.status(400).json({ error: 'empty' });
+      const r = { id: crypto.randomBytes(6).toString('hex'), name: L.clip(b.name, 30) || 'Alguien', uid: L.clip(b.uid, 13), text, ts: Date.now() };
+      await L.writeJSON('push/requests/' + r.id + '.json', r);
+      const subs = (await L.allSubs()).filter(s => s.role === 'admin');
+      let n = 0; for (const s of subs) if (await L.send(s, { title: '🙋 ' + r.name + ' te pide algo', body: text, url: 'https://editor-aurora-81d3.vercel.app/editor-81d32a46c8.html' })) n++;
+      return res.status(200).json({ ok: true, notified: n });
+    }
+    if (b.action === 'reqList' || b.action === 'reqDone') {
+      if (!(await isAdmin(b.secret))) return res.status(403).json({ error: 'auth' });
+      const { list, del } = require('@vercel/blob');
+      if (b.action === 'reqList') {
+        const r = await list({ prefix: 'push/requests/', limit: 200 });
+        const items = []; for (const x of r.blobs || []) { const o = await L.readJSON(x.pathname); if (o) items.push(o); }
+        return res.status(200).json({ items: items.sort((a, c) => c.ts - a.ts) });
+      }
+      if (!/^[a-z0-9]{6,20}$/.test(String(b.id))) return res.status(400).json({ error: 'bad' });
+      const r = await L.readJSON('push/requests/' + b.id + '.json');
+      let n = 0;
+      if (r && b.grant) { const subs = (await L.allSubs()).filter(s => s.role === 'user' && s.uid === r.uid); for (const s of subs) if (await L.send(s, { title: '💗 ¡Concedido!', body: '«' + r.text + '»' + (b.note ? ' · ' + L.clip(b.note, 100) : ''), url: '/' })) n++; }
+      try { await del('push/requests/' + b.id + '.json'); } catch (e) {}
+      return res.status(200).json({ ok: true, notified: n });
+    }
     if (b.action === 'custom' || b.action === 'customList' || b.action === 'customDel') {
       if (!(await isAdmin(b.secret))) return res.status(403).json({ error: 'auth' });
       if (b.action === 'customList') {
