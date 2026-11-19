@@ -38,7 +38,7 @@ module.exports = async (req, res) => {
     }
     if (b.action === 'test') {
       if (!okSub) return res.status(400).json({ error: 'bad_sub' });
-      const ok = await L.send({ sub }, { title: b.role === 'admin' ? 'Avisos del editor activados ✨' : '¡Notificaciones activadas! ✨', body: b.role === 'admin' ? 'Así te llegará cuando alguien agende, canjee o abra un sobre.' : 'Así te avisaré de tus planes y de las cartas que caducan.', url: b.url || '/' });
+      const ok = await L.send({ sub }, { title: b.role === 'admin' ? 'Funciona 👀' : 'Funciona ✨', body: b.role === 'admin' ? 'Así te llegará lo que haga' : 'Así te llegarán los avisos', url: b.url || '/' });
       return res.status(ok ? 200 : 502).json({ ok });
     }
     if (b.action === 'unsub') {

@@ -362,7 +362,7 @@ html[data-theme="dark"] .news{background:#2a2250;color:#fff}html[data-theme="dar
      <div class="codebox"><input id="code" autocomplete="off" autocapitalize="characters" spellcheck="false" enterkeyhint="go" placeholder="CÓDIGO DEL SOBRE"><button class="cta" id="go" type="button">Abrir</button></div>
      <div class="msg" id="msg"></div>
    </div>
-   <div class="hx"><button class="hxb" id="achBtn"><span class="hxi">✨</span><span><b>Logros</b><small id="achCount">0/0</small></span></button><button class="hxb" id="reqBtn"><span class="hxi">🫣</span><span><b>Pedirte algo</b><small>Le llega al momento</small></span></button></div>
+   <div class="hx"><button class="hxb" id="achBtn"><span class="hxi">✨</span><span><b>Logros</b><small id="achCount">0/0</small></span></button><button class="hxb" id="reqBtn"><span class="hxi">🫣</span><span><b>Pedirte algo</b><small>lo que sea, me llega</small></span></button></div>
    <h2 class="sec">RECIÉN CONSEGUIDAS</h2>
    <div class="rowscroll" id="recent"></div>
    <h2 class="sec">POR CANJEAR PRONTO</h2>
@@ -466,7 +466,7 @@ function render(){
   // inicio
   const rec=$("recent");rec.innerHTML="";
   const byGot=[...o].sort((a,b)=>(st.cards[b.n]?.got||0)-(st.cards[a.n]?.got||0)).slice(0,8);
-  if(!byGot.length)rec.innerHTML=`<div class="panel emptyc" style="flex:1">Aún no tienes cartas. ¡Abre tu primer sobre! ✨</div>`;
+  if(!byGot.length)rec.innerHTML=`<div class="panel emptyc" style="flex:1">Aún no tienes cartas, abre tu primer sobre ✨</div>`;
   byGot.forEach(c=>rec.appendChild(mini(c)));
   const soon=$("soon");soon.innerHTML="";
   const pend=o.filter(c=>!st.cards[c.n]?.done&&daysLeft(c)!==null).sort((a,b)=>daysLeft(a)-daysLeft(b)).slice(0,3);
@@ -525,7 +525,7 @@ function showToast(html,btn,fn){const t=$("toast2");$("t2tx").innerHTML=html;$("
 function todayAlert(){const k=dkey(Date.now());const E=events()[k]||[];
  const pk=E.find(e=>e.t==="pack"&&!e.done);const pl=E.filter(e=>e.t==="plan");
  if(pk)return{ic:"✨",h:`<b>¡Hoy toca sobre nuevo!</b>Sobre ${pk.n} · ${pname(pk.n)}. Busca el de papel y mete su código.`,go:()=>{show("home");$("code").focus()}};
- if(pl.length)return{ic:"💕",h:`<b>Hoy tenéis plan</b>${pl.map(e=>esc(e.c.name)).join(", ")}`,go:()=>{calSel=k;show("cal");render()}};return null}
+ if(pl.length)return{ic:"💕",h:`<b>Hoy tenemos plan</b>${pl.map(e=>esc(e.c.name)).join(", ")}`,go:()=>{calSel=k;show("cal");render()}};return null}
 function checkAlerts(force){const s=soonList(),ex=expiredList();const ta=todayAlert();if(!s.length&&!ex.length&&!ta)return;
  const today=new Date().toDateString();let last="";try{last=localStorage.getItem("nc-alert-day")||""}catch(e){}
  if(!force&&last===today)return;try{localStorage.setItem("nc-alert-day",today)}catch(e){}
@@ -562,7 +562,7 @@ var NOSYNC=false;try{localStorage.removeItem('nc-nosync')}catch(e){}
 function getUser(){try{return localStorage.getItem('nc-user')||''}catch(e){return ''}}
 function userId(n){return (fnv(n.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' '))>>>0).toString(36)}
 function showLogin(then){if(!ENC.sync||NOSYNC||getUser()){then&&then();return}
- $("loginp").innerHTML=`<div class="heart">💕</div><h3>Inicia sesión</h3><p>Solo la primera vez. Escribe tu nombre para guardar tus cartas.</p><input id="loginName" maxlength="30" placeholder="Tu nombre" autocomplete="name"><div class="err" id="loginErr"></div><button class="cta pink" id="loginOk" style="width:100%">Entrar</button>`;
+ $("loginp").innerHTML=`<div class="heart">💕</div><h3>Inicia sesión</h3><p>Pon tu nombre, solo te lo pido esta vez</p><input id="loginName" maxlength="30" placeholder="Tu nombre" autocomplete="name"><div class="err" id="loginErr"></div><button class="cta pink" id="loginOk" style="width:100%">Entrar</button>`;
  $("ovLogin").classList.add("on");const inp=$("loginName");setTimeout(()=>{try{inp.focus()}catch(e){}},300);
  const ok=()=>{const n=inp.value.trim().replace(/\s+/g,' ');if(n.length<2){$("loginErr").textContent="Escribe tu nombre";return}
   try{localStorage.setItem('nc-user',n)}catch(e){}$("ovLogin").classList.remove("on");buzz(20);queueSync();setTimeout(()=>then&&then(),300)};
@@ -590,11 +590,11 @@ function u8key(b64){const p="=".repeat((4-b64.length%4)%4);const r=atob((b64+p).
 async function pushSub(create){const reg=await navigator.serviceWorker.register("/sw.js");await navigator.serviceWorker.ready;let sub=await reg.pushManager.getSubscription();
  if(!sub&&create){const k=await (await fetch("/api/push")).json();sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:u8key(k.publicKey)})}return sub}
 function reminders(){const out=[];const add=(ts,id,title,body)=>{const day=dkey(ts);if(day>=dkey(Date.now()))out.push({id,day,title,body})};
- const days=ENC.days||{};for(const n in days){if(days[n]&&!st.codes[n]){const t=new Date(days[n]+"T12:00").getTime();add(t,"pack"+n+days[n],"¡Hoy toca sobre nuevo! ✨","Sobre "+n+" · "+pname(n)+". Busca el de papel y mete su código.")}}
+ const days=ENC.days||{};for(const n in days){if(days[n]&&!st.codes[n]){const t=new Date(days[n]+"T12:00").getTime();add(t,"pack"+n+days[n],"Hoy toca sobre nuevo ✨","El sobre "+n+". Búscalo y mete el código")}}
  owned().forEach(c=>{const s=st.cards[c.n]||{};const nm=c.r==="x"?"la carta secreta":c.name;
   if(s.plan&&!s.done){const h=new Date(s.plan).toLocaleTimeString("es-ES",{hour:"2-digit",minute:"2-digit"});
-   add(s.plan-DAY,"plan1-"+c.n+"-"+s.plan,"Mañana tenéis plan 🥰",nm+" · a las "+h);add(s.plan,"plan0-"+c.n+"-"+s.plan,"Hoy tenéis plan 💕",nm+" · a las "+h)}
-  const d=R[c.r].d;if(d&&s.got&&!s.done){const e=s.got+d*DAY;add(e-3*DAY,"exp3-"+c.n+"-"+s.got,"Caduca en 3 días 🫣",nm+". ¡Aún estás a tiempo de canjearla!");add(e-DAY,"exp1-"+c.n+"-"+s.got,"¡Caduca mañana! 🫠",nm+". Úsala o la pierdes 😜")}});
+   add(s.plan-DAY,"plan1-"+c.n+"-"+s.plan,"Mañana tenemos plan 🥰",nm+" · a las "+h);add(s.plan,"plan0-"+c.n+"-"+s.plan,"Hoy tenemos plan 💕",nm+" · a las "+h)}
+  const d=R[c.r].d;if(d&&s.got&&!s.done){const e=s.got+d*DAY;add(e-3*DAY,"exp3-"+c.n+"-"+s.got,"Caduca en 3 días 🫣",nm+", aún estás a tiempo");add(e-DAY,"exp1-"+c.n+"-"+s.got,"¡Caduca mañana! 🫠",nm+", o la usas o la pierdes 😜")}});
  return out.slice(0,80)}
 let pushT=0;function queuePush(){if(!ENC.sync||!pushOn()||!getUser()||!PUSHOK())return;clearTimeout(pushT);pushT=setTimeout(sendPush,2500)}
 async function sendPush(){try{const sub=await pushSub(false);if(!sub){try{localStorage.removeItem("nc-push")}catch(e){}return}
@@ -650,12 +650,12 @@ $("achBtn").onclick=openAch;$("ovAch").addEventListener("click",e=>{if(e.target.
 // ---------- pedirte algo ----------
 const QREQ=["🧉 Un mate","Un abrazo 🥰","Que me llames","Algo dulce","Jugar juntos 😜","Hablar un rato","Siesta juntos 🫩"];
 function openReq(){const can=ENC.sync&&getUser();const H=(st.reqs||[]).slice(-5).reverse();
- $("reqp").innerHTML=`<h3>Pedirte algo 🫣</h3><p style="font-size:13px;color:#8a85a6;margin:0 0 8px">Le llega al momento al móvil. Elige una o escribe lo que quieras.</p>
+ $("reqp").innerHTML=`<h3>Pedirte algo 🫣</h3><p style="font-size:13px;color:#8a85a6;margin:0 0 8px">Me llega al móvil. Elige una o escribe lo que sea</p>
  <div class="qchips">${QREQ.map(q=>`<button data-q="${esc(q)}">${esc(q)}</button>`).join("")}</div>
  <textarea id="reqT" rows="3" maxlength="200" placeholder="Ej: quiero un mate hoy"></textarea>
  <div class="msg" id="reqM" style="margin-top:6px"></div>
  <div class="btns" style="margin-top:8px;display:flex;gap:8px"><button class="cta ghost" id="reqX" style="flex:1">Cerrar</button><button class="cta pink" id="reqS" style="flex:2"${can?"":" disabled"}>Enviar</button></div>
- ${can?"":`<p style="font-size:12px;color:#e0457b;font-weight:800;margin:8px 0 0">Inicia sesión con tu nombre para poder pedir cosas.</p>`}
+ ${can?"":`<p style="font-size:12px;color:#e0457b;font-weight:800;margin:8px 0 0">Antes tienes que iniciar sesión</p>`}
  ${H.length?`<div class="reqh">Lo último que has pedido${H.map(r=>`<div>${esc(r.t)} · ${new Date(r.ts).toLocaleDateString("es-ES",{day:"numeric",month:"short"})}</div>`).join("")}</div>`:""}`;
  $("ovReq").classList.add("on");const ta=$("reqT");
  $("reqp").querySelectorAll("[data-q]").forEach(b=>b.onclick=()=>{$("reqp").querySelectorAll("[data-q]").forEach(x=>x.classList.toggle("on",x===b));ta.value=b.dataset.q});
@@ -663,7 +663,7 @@ function openReq(){const can=ENC.sync&&getUser();const H=(st.reqs||[]).slice(-5)
  $("reqS").onclick=async()=>{const t=ta.value.trim();if(!t){$("reqM").textContent="Escribe o elige algo primero";return}$("reqS").disabled=true;$("reqM").textContent="Enviando…";
   try{const r=await fetch("/api/push",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"request",name:getUser(),uid:userId(getUser()),text:t})});if(!r.ok)throw 0;
    st.reqs=(st.reqs||[]).concat([{t,ts:Date.now()}]).slice(-30);_save0();buzz(30);$("reqM").textContent="¡Enviado! 💕";setTimeout(()=>$("ovReq").classList.remove("on"),1200)}
-  catch(e){$("reqM").textContent="No se ha podido enviar. Prueba otra vez.";$("reqS").disabled=false}}}
+  catch(e){$("reqM").textContent="No se ha enviado, prueba otra vez";$("reqS").disabled=false}}}
 $("reqBtn").onclick=openReq;$("ovReq").addEventListener("click",e=>{if(e.target.id==="ovReq")e.target.classList.remove("on")});
 
 // ---------- avisos por WhatsApp ----------
@@ -799,15 +799,15 @@ function openSettings(){const seg=(k,opts)=>`<div class="seg">${opts.map(([v,l])
  <div class="srow"><div class="l">Brillos y animaciones</div><div class="d">Destellos, reflejos y cartas flotando</div>${seg("anim",[["true","Activados"],["false","Desactivados"]])}</div>
  <div class="srow"><div class="l">Vibración</div><div class="d">Al abrir sobres y canjear cartas</div>${seg("vibe",[["true","Sí"],["false","No"]])}</div>
  <div class="srow"><div class="l">Cartas por fila</div><div class="d">En la colección</div>${seg("cols",[["2","2 · grandes"],["3","3 · pequeñas"]])}</div>
- ${(ENC.sync&&getUser())?`<div class="srow"><div class="l">Notificaciones</div><div class="d" id="pushD">${!PUSHOK()&&!(ISIOS&&!STANDALONE())?"Este navegador no permite notificaciones.":ISIOS&&!STANDALONE()?"En iPhone primero añade la app a la pantalla de inicio (Compartir → Añadir a pantalla de inicio) y ábrela desde ese icono.":pushOn()?"Activadas: te aviso de planes, cartas que caducan y sobres nuevos.":"Te aviso de tus planes, de las cartas que caducan y de los sobres nuevos, aunque la app esté cerrada."}</div>${PUSHOK()&&!(ISIOS&&!STANDALONE())?`<div class="seg">${pushOn()?`<button id="pushT">Probar</button><button id="pushX">Desactivar</button>`:`<button id="pushA">Activar</button>`}</div>`:""}</div>`:""}
+ ${(ENC.sync&&getUser())?`<div class="srow"><div class="l">Notificaciones</div><div class="d" id="pushD">${!PUSHOK()&&!(ISIOS&&!STANDALONE())?"Este navegador no permite notificaciones.":ISIOS&&!STANDALONE()?"En iPhone tienes que añadirla a la pantalla de inicio (Compartir → Añadir a pantalla de inicio) y abrirla desde ahí":pushOn()?"Activadas":"Te aviso de los planes, de lo que caduca y de los sobres nuevos"}</div>${PUSHOK()&&!(ISIOS&&!STANDALONE())?`<div class="seg">${pushOn()?`<button id="pushT">Probar</button><button id="pushX">Desactivar</button>`:`<button id="pushA">Activar</button>`}</div>`:""}</div>`:""}
  ${(getUser()&&!NOSYNC)?`<div class="srow"><div class="l">Sesión</div><div class="d">Has entrado como <b>${esc(getUser())}</b></div><div class="seg"><button id="logoutB">Cerrar sesión</button></div></div>`:""}
  <div class="btns" style="margin-top:14px"><button class="cta pink" id="setOk" style="width:100%">Listo</button></div>`;
  $("ovSet").classList.add("on");
  $("setp").querySelectorAll(".seg button").forEach(b=>b.onclick=()=>{const k=b.dataset.k;let v=b.dataset.v;if(v==="true")v=true;else if(v==="false")v=false;else if(k==="cols")v=+v;
   SET[k]=v;saveSet();applySet();openSettings()});
  const pd=t=>{const e=$("pushD");if(e)e.textContent=t};
- const pa=$("pushA");if(pa)pa.onclick=async()=>{pd("Activando…");try{await enablePush();openSettings();pd("¡Activadas! Pulsa Probar para ver una.")}catch(e){pd(e.message==="denied"?"Has dicho que no a las notificaciones. Actívalas en los ajustes del móvil para esta app.":e.message==="ios"?"En iPhone primero añade la app a la pantalla de inicio y ábrela desde ahí.":"No se han podido activar. Prueba otra vez en un rato.")}};
- const pt=$("pushT");if(pt)pt.onclick=async()=>{pd("Enviando…");try{await testPush();pd("Enviada. Debería llegarte en unos segundos ✨")}catch(e){pd("No ha llegado a salir. Desactívalas y vuelve a activarlas.")}};
+ const pa=$("pushA");if(pa)pa.onclick=async()=>{pd("Activando…");try{await enablePush();openSettings();pd("Activadas, dale a Probar")}catch(e){pd(e.message==="denied"?"Les has dicho que no 🙄 Actívalas en los ajustes del móvil":e.message==="ios"?"En iPhone tienes que añadirla a la pantalla de inicio y abrirla desde ahí":"No ha ido, prueba en un rato")}};
+ const pt=$("pushT");if(pt)pt.onclick=async()=>{pd("Enviando…");try{await testPush();pd("Enviada, te tendría que llegar ya")}catch(e){pd("No ha salido. Quítalas y vuelve a ponerlas")}};
  const px=$("pushX");if(px)px.onclick=async()=>{await disablePush();openSettings()};
  const lo=$("logoutB");if(lo)lo.onclick=()=>{try{localStorage.removeItem('nc-user')}catch(e){}$("ovSet").classList.remove("on");showLogin()};
  $("setOk").onclick=()=>$("ovSet").classList.remove("on")}
