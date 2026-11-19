@@ -92,7 +92,7 @@ const TYPES=["Argentina","Dulce","Planes","Especial","Gamer","Calma","Amor","Mot
 const RAR={c:"Común",p:"Poco común",r:"Rara",l:"Legendaria",s:"Shiny",x:"Secreta"};
 const KEY="editor-cartas-v1";
 const REPO="auroramb2006-svg/nuestras-cartas",BRANCH="main",DATAF="cartas-datos.enc",EDF=location.pathname.split("/").pop()||"editor.html";
-const EDITOR_VER="2026-11-19b";
+const EDITOR_VER="2026-11-19c";
 async function checkEdUpdate(){try{const r=await fetch(location.pathname+"?v="+Date.now(),{cache:"no-store"});if(!r.ok)return;const t=await r.text();const m=t.match(/const EDITOR_VER="([^"]+)"/);
  if(m&&m[1]!==EDITOR_VER){let n=0;try{n=+sessionStorage.getItem("nc-edreload")||0}catch(e){}if(n<2){try{sessionStorage.setItem("nc-edreload",n+1)}catch(e){}location.reload()}}}catch(e){}}
 checkEdUpdate();document.addEventListener("visibilitychange",()=>{if(!document.hidden)checkEdUpdate()});
@@ -141,8 +141,7 @@ function render(){
   wa.innerHTML=`<b>💬 Avisos por WhatsApp</b><br>Pon tu número y, cuando él canjee o agende una carta, le saldrá un botón para avisarte con el mensaje ya escrito.
    <div style="display:flex;gap:8px;margin-top:10px"><input id="waIn" inputmode="tel" placeholder="Tu móvil, p. ej. 612345678" value="${esc(D.wa||"")}" style="flex:1;min-width:0;font-family:inherit;font-size:15px;font-weight:700;border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:10px;color:#fff;background:#181330"></div>`;
   L.appendChild(wa);
-  const av=document.createElement("div");av.className="help act";av.style.marginTop="12px";av.innerHTML=actHTML();L.appendChild(av);
-  const rb=av.querySelector("#actR");if(rb)rb.onclick=()=>loadAct(true);
+  const av=document.createElement("div");av.className="help act";av.style.marginTop="12px";L.appendChild(av);drawAct(av);
   const nw=document.createElement("div");nw.className="help";nw.style.marginTop="12px";const N=D.news||{};
   nw.innerHTML=`<b>💗 Mensaje de novedades</b><br>Le sale una sola vez al abrir la app después de actualizarla. Si cambias el texto, le vuelve a salir. Déjalo vacío para no mostrar nada.
    <input id="nwT" placeholder="Título, p. ej. ¡Sobre nuevo!" value="${esc(N.title||"")}" style="width:100%;margin-top:10px;font-family:inherit;font-size:15px;font-weight:800;border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:10px;color:#fff;background:#181330">
@@ -241,10 +240,41 @@ async function loadAct(manual){ACTERR="";try{const r=await fetch("https://nuestr
    if(!ACTS.length){ACT=null;ACTERR="read"}else{let w="";try{w=localStorage.getItem("nc-act-who")||""}catch(e){}ACT=ACTS.find(x=>x.id===w)||ACTS[0]}}}
  catch(e){ACTERR=ACTERR||"read"}
  drawAct();if(manual)toast(ACT?"Actividad actualizada ✓":"Todavía no hay actividad")}
-function drawAct(){const el=document.querySelector(".act");if(!el)return;el.innerHTML=actHTML();const rb=el.querySelector("#actR");if(rb)rb.onclick=()=>loadAct(true);
+function drawAct(el0){const el=el0||document.querySelector(".act");if(!el)return;el.innerHTML=actHTML();const rb=el.querySelector("#actR");if(rb)rb.onclick=()=>loadAct(true);
+ el.querySelectorAll("[data-calm]").forEach(b=>b.onclick=()=>{CAL.m+=+b.dataset.calm;CAL.d=null;drawAct(el)});
+ el.querySelectorAll("[data-calw]").forEach(b=>b.onclick=()=>{CAL.w=b.dataset.calw;CAL.d=null;drawAct(el)});
+ el.querySelectorAll("[data-cald]").forEach(b=>b.onclick=()=>{CAL.d=CAL.d===b.dataset.cald?null:b.dataset.cald;drawAct(el)});
  const sel=el.querySelector("#actWho");if(sel)sel.onchange=()=>{ACT=ACTS.find(x=>x.id===sel.value)||ACTS[0];try{localStorage.setItem("nc-act-who",ACT.id)}catch(e){}drawAct()}}
 const fmt=ts=>new Date(ts).toLocaleString("es-ES",{weekday:"short",day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"});
 const RD={c:30,p:30,r:60,l:90,s:0,x:0};
+const CAL={m:0,w:"all",d:null};
+const PCOL=["#ff8fb8","#7cc7ff","#ffd36b","#8be3a5","#c7a2ff","#ff9f6b","#6be0d8","#f78fff"];
+const pcol=id=>{const i=ACTS.findIndex(x=>x.id===id);return PCOL[(i<0?0:i)%PCOL.length]};
+const dkey=ts=>{const d=new Date(ts);return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate()};
+function calEvents(){const ev=[];const cn=n=>{const c=D.cards.find(x=>x.n==n);return c?c.name:"Carta "+n};
+ for(const P of ACTS){if(CAL.w!=="all"&&P.id!==CAL.w)continue;const C=P.cards||{};
+  for(const n in C){const s=C[n];const c=D.cards.find(x=>x.n==n);
+   if(s.plan&&!s.done)ev.push({ts:s.plan,ic:"💗",t:"Agendada: "+cn(n),p:P});
+   if(s.done)ev.push({ts:s.done,ic:"✓",t:"Canjeada: "+cn(n),p:P});
+   const dd=c&&RD[c.r];if(s.got&&!s.done&&dd)ev.push({ts:s.got+dd*864e5,ic:"⏳",t:"Caduca: "+cn(n),p:P})}
+  for(const k in (P.opened||{}))ev.push({ts:P.opened[k],ic:"📦",t:"Abrió el sobre "+k+((D.packs[k]&&D.packs[k].name)?" · "+D.packs[k].name:""),p:P})}
+ return ev.sort((a,b)=>a.ts-b.ts)}
+function calHTML(){if(!ACTS.length)return "";const ev=calEvents();const by={};ev.forEach(e=>{(by[dkey(e.ts)]=by[dkey(e.ts)]||[]).push(e)});
+ const now=new Date();const base=new Date(now.getFullYear(),now.getMonth()+CAL.m,1);const Y=base.getFullYear(),M=base.getMonth();
+ const first=(new Date(Y,M,1).getDay()+6)%7,days=new Date(Y,M+1,0).getDate();const today=dkey(Date.now());
+ const chip=(id,label,col)=>`<button data-calw="${esc(id)}" style="padding:5px 10px;border-radius:99px;font-size:12px;font-weight:800;border:2px solid ${col};background:${CAL.w===id?col:"transparent"};color:${CAL.w===id?"#1b1430":"#fff"};margin:0 6px 6px 0">${esc(label)}</button>`;
+ let h=`<div style="margin-top:14px;font-size:12px;font-weight:900;letter-spacing:1px;color:#ff8fb8">CALENDARIO</div>
+ <div style="margin-top:8px;display:flex;flex-wrap:wrap">${chip("all","Todos","#a59cc4")}${ACTS.map(P=>chip(P.id,P.name,pcol(P.id))).join("")}</div>
+ <div style="display:flex;justify-content:space-between;align-items:center;margin:6px 0 8px"><button data-calm="-1" style="padding:4px 12px">‹</button><b>${(m=>m.charAt(0).toUpperCase()+m.slice(1))(base.toLocaleDateString("es-ES",{month:"long",year:"numeric"}))}</b><button data-calm="1" style="padding:4px 12px">›</button></div>
+ <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center;font-size:11px;font-weight:800;color:#a59cc4">${["L","M","X","J","V","S","D"].map(x=>`<div>${x}</div>`).join("")}`;
+ for(let i=0;i<first;i++)h+=`<div></div>`;
+ for(let d=1;d<=days;d++){const k=Y+"-"+(M+1)+"-"+d;const e=by[k]||[];const ppl=[...new Set(e.map(x=>x.p.id))];
+  h+=`<button data-cald="${k}" style="aspect-ratio:1;min-width:0;padding:2px;border-radius:10px;font-size:13px;font-weight:800;color:#fff;background:${CAL.d===k?"rgba(255,143,184,.35)":e.length?"rgba(255,255,255,.08)":"transparent"};border:${k===today?"2px solid #ff8fb8":"1px solid rgba(255,255,255,.06)"};display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px">${d}<span style="display:flex;gap:2px;height:6px">${ppl.slice(0,4).map(id=>`<i style="width:6px;height:6px;border-radius:50%;background:${pcol(id)};display:block"></i>`).join("")}</span></button>`}
+ h+=`</div>`;
+ const list=CAL.d?(by[CAL.d]||[]):ev.filter(e=>{const d=new Date(e.ts);return d.getFullYear()===Y&&d.getMonth()===M});
+ h+=`<div style="margin-top:10px;font-size:12px;font-weight:800;color:#a59cc4">${CAL.d?"Ese día":"Este mes"} · ${list.length} ${list.length===1?"cosa":"cosas"}</div>`;
+ h+=list.length?list.map(e=>`<div style="display:flex;gap:10px;align-items:center;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.07)"><span style="font-size:16px;width:22px;text-align:center">${e.ic}</span><div style="flex:1;min-width:0"><div style="font-weight:800;color:#fff">${esc(e.t)}</div><small style="color:#a59cc4;font-weight:700">${fmt(e.ts)}</small></div><span style="font-size:11px;font-weight:900;padding:3px 8px;border-radius:99px;background:${pcol(e.p.id)};color:#1b1430;white-space:nowrap">${esc(e.p.name)}</span></div>`).join(""):`<p style="margin:6px 0 0;font-size:13px">Nada por aquí.</p>`;
+ return h}
 function actHTML(){
  const head=`<div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><b>👀 Actividad${ACT&&ACT.id!=="_old"?" de "+esc(ACT.name):" de él"}</b><button id="actR" style="padding:6px 10px;font-size:12px">Actualizar</button></div>`;
  if(NEEDPUB)return head+`<p style="margin:8px 0 0">Pulsa <b>🚀 Publicar</b> una vez para activarlo. A partir de ahí, lo que él abra, canjee o agende aparecerá aquí.</p>`;
@@ -259,7 +289,7 @@ function actHTML(){
  const sec=(t,arr)=>arr.length?`<div style="margin-top:12px;font-size:12px;font-weight:900;letter-spacing:1px;color:#ff8fb8">${t}</div>${arr.join("")}`:"";
  const packName=n=>(D.packs[n]&&D.packs[n].name)||("Sobre "+n);
  const who=`<div style="margin-top:10px"><select id="actWho" style="width:100%;padding:9px 10px;border-radius:12px;font:inherit;font-weight:800">${ACTS.map(x=>`<option value="${esc(x.id)}"${x===ACT?" selected":""}>${esc(x.name)} · ${fmt(x.ts)}</option>`).join("")}</select><small style="display:block;margin-top:4px;color:#a59cc4;font-weight:700">${ACTS.length>1?"Cada persona que ha entrado en la app sale por separado. Elige la suya.":"Solo ha entrado una persona por ahora."}</small></div>`;
- return head+who+`<p style="margin:6px 0 0;font-size:12px">Última vez que abrió la app: <b>${fmt(ACT.ts)}</b></p>`
+ return head+calHTML()+`<div style="margin-top:16px;font-size:12px;font-weight:900;letter-spacing:1px;color:#ff8fb8">POR PERSONA</div>`+who+`<p style="margin:6px 0 0;font-size:12px">Última vez que abrió la app: <b>${fmt(ACT.ts)}</b></p>`
   +sec("PLANES AGENDADOS",plans.map(([n,s])=>li("💗",name(n),fmt(s.plan)+(s.plan<now?" · ya pasó":""))))
   +sec("CADUCAN PRONTO",soon.map(([n,e])=>li("⏳",name(n),e<now?"caducada":"caduca "+fmt(e))))
   +sec("CANJEADAS",done.slice(0,15).map(([n,s])=>li("✓",name(n),fmt(s.done))))
