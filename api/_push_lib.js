@@ -35,8 +35,9 @@ async function allSubs() {
   return out;
 }
 // Envía y borra las suscripciones que ya no existen (móvil desinstalado, permiso quitado…).
-async function send(rec, payload) {
-  try { await webpush.sendNotification(rec.sub, JSON.stringify(payload), { TTL: 60 * 60 * 20 }); return true; }
+async function send(rec, payload, urgency) {
+  // urgency 'high' = que el móvil no lo retrase (avisos al momento)
+  try { await webpush.sendNotification(rec.sub, JSON.stringify(payload), { TTL: urgency === 'high' ? 60 * 60 * 6 : 60 * 60 * 20, urgency: urgency || 'normal' }); return true; }
   catch (e) {
     if (e && (e.statusCode === 404 || e.statusCode === 410)) { try { await del(rec._path || (SUBS + subId(rec.sub.endpoint) + '.json')); } catch (x) {} }
     return false;
@@ -54,4 +55,9 @@ async function readBody(req) {
   return JSON.parse(t || '{}');
 }
 const clip = (s, n) => String(s || '').slice(0, n);
-module.exports = { readJSON, writeJSON, vapid, subId, allSubs, send, cors, readBody, clip, SUBS };
+async function listAll(prefix) {
+  const out = []; let cursor;
+  do { const r = await list({ prefix, limit: 1000, cursor }); out.push(...(r.blobs || [])); cursor = r.hasMore ? r.cursor : undefined; } while (cursor);
+  return out;
+}
+module.exports = { listAll, readJSON, writeJSON, vapid, subId, allSubs, send, cors, readBody, clip, SUBS };

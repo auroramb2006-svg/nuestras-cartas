@@ -41,7 +41,7 @@ async function notify(role, uid, title, body) {
   try {
     await L.vapid();
     const subs = (await L.allSubs()).filter(s => role === 'ella' ? s.role === 'admin' : s.role === 'user' && s.uid === uid);
-    for (const s of subs) await L.send(s, { title, body, url: role === 'ella' ? EDITOR : '/?truco' });
+    for (const s of subs) await L.send(s, { title, body, url: role === 'ella' ? EDITOR : '/?truco' }, 'high');
   } catch (e) { /* sin avisos no pasa nada */ }
 }
 // Si el otro no está mirando la partida, le avisamos de que le toca (como mucho una vez por minuto).

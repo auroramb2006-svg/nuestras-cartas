@@ -12,12 +12,12 @@ async function isAdmin(secret) {
 }
 async function notifyHer(r) {
   const subs = (await L.allSubs()).filter(s => s.role === 'admin'); let n = 0;
-  for (const s of subs) if (await L.send(s, { title: r.title || (r.name + ' 👀'), body: (r.title ? r.name + ': ' : '') + (r.text || ''), url: 'https://editor-aurora-81d3.vercel.app/editor-81d32a46c8.html' })) n++;
+  for (const s of subs) if (await L.send(s, { title: r.title || (r.name + ' 👀'), body: (r.title ? r.name + ': ' : '') + (r.text || ''), url: 'https://editor-aurora-81d3.vercel.app/editor-81d32a46c8.html' }, 'high')) n++;
   return n;
 }
 async function sendCustom(c) {
   const subs = (await L.allSubs()).filter(s => s.role === 'user' && (c.to === 'all' || s.uid === c.to));
-  let n = 0; for (const s of subs) if (await L.send(s, { title: c.title, body: c.body, url: '/' })) n++;
+  let n = 0; for (const s of subs) if (await L.send(s, { title: c.title, body: c.body, url: '/' }, 'high')) n++;
   return { n, devices: subs.length };
 }
 
@@ -35,7 +35,7 @@ module.exports = async (req, res) => {
     if (b.action === 'sub') {
       if (!okSub) return res.status(400).json({ error: 'bad_sub' });
       const role = b.role === 'admin' ? 'admin' : 'user';
-      const reminders = (Array.isArray(b.reminders) ? b.reminders : []).slice(0, 80).map(r => ({ id: L.clip(r.id, 60), day: L.clip(r.day, 10), title: L.clip(r.title, 80), body: L.clip(r.body, 160) })).filter(r => /^\d{4}-\d{2}-\d{2}$/.test(r.day));
+      const reminders = (Array.isArray(b.reminders) ? b.reminders : []).slice(0, 80).map(r => ({ id: L.clip(r.id, 60), day: L.clip(r.day, 10), at: +r.at || 0, title: L.clip(r.title, 80), body: L.clip(r.body, 160) })).filter(r => /^\d{4}-\d{2}-\d{2}$/.test(r.day));
       const path = L.SUBS + L.subId(sub.endpoint) + '.json';
       const prev = (await L.readJSON(path)) || {};
       await L.writeJSON(path, { role, name: L.clip(b.name, 30), uid: L.clip(b.uid, 13), sub: { endpoint: sub.endpoint, keys: { p256dh: sub.keys.p256dh, auth: sub.keys.auth } }, reminders, sent: (prev.sent || []).slice(-200), ts: Date.now() });
@@ -43,8 +43,18 @@ module.exports = async (req, res) => {
     }
     if (b.action === 'test') {
       if (!okSub) return res.status(400).json({ error: 'bad_sub' });
-      const ok = await L.send({ sub }, { title: b.role === 'admin' ? 'Funciona 👀' : 'Funciona ✨', body: b.role === 'admin' ? 'Así te llegará lo que haga' : 'Así te llegarán los avisos', url: b.url || '/' });
+      const ok = await L.send({ sub }, { title: b.role === 'admin' ? 'Funciona 👀' : 'Funciona ✨', body: b.role === 'admin' ? 'Así te llegará lo que haga' : 'Así te llegarán los avisos', url: b.url || '/' }, 'high');
       return res.status(ok ? 200 : 502).json({ ok });
+    }
+    if (b.action === 'resub') {
+      // El móvil ha cambiado la suscripción (lo hace el propio sistema): la movemos sin perder nada.
+      if (!okSub || !b.old) return res.status(400).json({ error: 'bad_sub' });
+      const oldPath = L.SUBS + L.subId(b.old) + '.json'; const prev = await L.readJSON(oldPath);
+      if (!prev) return res.status(404).json({ error: 'no' });
+      prev.sub = { endpoint: sub.endpoint, keys: { p256dh: sub.keys.p256dh, auth: sub.keys.auth } }; prev.ts = Date.now();
+      await L.writeJSON(L.SUBS + L.subId(sub.endpoint) + '.json', prev);
+      try { const { del } = require('@vercel/blob'); await del(oldPath); } catch (e) {}
+      return res.status(200).json({ ok: true });
     }
     if (b.action === 'unsub') {
       if (!okSub) return res.status(400).json({ error: 'bad_sub' });
@@ -55,7 +65,7 @@ module.exports = async (req, res) => {
       // Aviso inmediato para ella (los móviles con el editor y los avisos activados).
       const text = L.clip(b.text, 160); if (!text) return res.status(400).json({ error: 'bad' });
       const subs = (await L.allSubs()).filter(s => s.role === 'admin');
-      let n = 0; for (const s of subs) if (await L.send(s, { title: (L.clip(b.name, 30) || 'Alguien') + ' 👀', body: text, url: 'https://editor-aurora-81d3.vercel.app/editor-81d32a46c8.html' })) n++;
+      let n = 0; for (const s of subs) if (await L.send(s, { title: (L.clip(b.name, 30) || 'Alguien') + ' 👀', body: text, url: 'https://editor-aurora-81d3.vercel.app/editor-81d32a46c8.html' }, 'high')) n++;
       return res.status(200).json({ ok: true, sent: n });
     }
     if (b.action === 'request') {
@@ -63,11 +73,12 @@ module.exports = async (req, res) => {
       const text = L.clip(b.text, 200).trim(), title = L.clip(b.title, 80).trim();
       if (!text && !title) return res.status(400).json({ error: 'empty' });
       const r = { id: crypto.randomBytes(6).toString('hex'), name: L.clip(b.name, 30) || 'Alguien', uid: L.clip(b.uid, 13), title, text, ts: Date.now() };
-      if (b.day && /^\d{4}-\d{2}-\d{2}$/.test(b.day) && b.day > madrid()) r.day = b.day;
+      if (+b.at && +b.at > Date.now() + 60000) { r.at = +b.at; r.day = b.day || ''; }
+      else if (b.day && /^\d{4}-\d{2}-\d{2}$/.test(b.day) && b.day > madrid()) r.day = b.day;
       let n = 0;
-      if (!r.day) { n = await notifyHer(r); r.sent = Date.now(); }
+      if (!r.day && !r.at) { n = await notifyHer(r); r.sent = Date.now(); }
       await L.writeJSON('push/requests/' + r.id + '.json', r);
-      return res.status(200).json({ ok: true, notified: n, scheduled: r.day || null });
+      return res.status(200).json({ ok: true, notified: n, scheduled: r.day || null, at: r.at || null });
     }
     if (b.action === 'reqList' || b.action === 'reqDone') {
       if (!(await isAdmin(b.secret))) return res.status(403).json({ error: 'auth' });
@@ -80,7 +91,7 @@ module.exports = async (req, res) => {
       if (!/^[a-z0-9]{6,20}$/.test(String(b.id))) return res.status(400).json({ error: 'bad' });
       const r = await L.readJSON('push/requests/' + b.id + '.json');
       let n = 0;
-      if (r && b.grant) { const subs = (await L.allSubs()).filter(s => s.role === 'user' && s.uid === r.uid); for (const s of subs) if (await L.send(s, { title: '¡Concedido! 💕', body: '«' + r.text + '»' + (b.note ? ' · ' + L.clip(b.note, 100) : ''), url: '/' })) n++; }
+      if (r && b.grant) { const subs = (await L.allSubs()).filter(s => s.role === 'user' && s.uid === r.uid); for (const s of subs) if (await L.send(s, { title: '¡Concedido! 💕', body: '«' + r.text + '»' + (b.note ? ' · ' + L.clip(b.note, 100) : ''), url: '/' }, 'high')) n++; }
       try { await del('push/requests/' + b.id + '.json'); } catch (e) {}
       return res.status(200).json({ ok: true, notified: n });
     }
@@ -99,10 +110,11 @@ module.exports = async (req, res) => {
       const c = { to: b.to === 'all' ? 'all' : L.clip(b.to, 13), toName: L.clip(b.toName, 30), title: L.clip(b.title, 80), body: L.clip(b.body, 200) };
       if (!c.title && !c.body) return res.status(400).json({ error: 'empty' });
       if (!c.title) c.title = 'Nuestras cartas';
-      if (b.day && /^\d{4}-\d{2}-\d{2}$/.test(b.day) && b.day > madrid()) {
-        c.id = crypto.randomBytes(6).toString('hex'); c.day = b.day; c.ts = Date.now();
+      const at = +b.at || 0;
+      if ((at && at > Date.now() + 60000) || (b.day && /^\d{4}-\d{2}-\d{2}$/.test(b.day) && b.day > madrid())) {
+        c.id = crypto.randomBytes(6).toString('hex'); c.day = b.day || ''; c.at = at; c.ts = Date.now();
         await L.writeJSON('push/custom/' + c.id + '.json', c);
-        return res.status(200).json({ ok: true, scheduled: c.day });
+        return res.status(200).json({ ok: true, scheduled: c.day, at: c.at || null });
       }
       const r = await sendCustom(c);
       return res.status(200).json({ ok: true, sent: r.n, devices: r.devices });

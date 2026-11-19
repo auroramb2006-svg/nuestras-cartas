@@ -420,6 +420,33 @@ html[data-theme="dark"] .news{background:#2a2250;color:#fff}html[data-theme="dar
 .tr-card.px.win{filter:drop-shadow(0 0 2px #ffe27a) drop-shadow(0 0 4px #ffe27a)}
 .tr-card.back,.tr-slot{width:var(--cw);height:var(--ch);border-radius:7px}
 .tr-baza{width:68px}
+
+/* animaciones */
+@keyframes trIn{from{transform:translateY(70px) scale(.55) rotate(-10deg);opacity:0}to{transform:none;opacity:1}}
+@keyframes trInO{from{transform:translateY(-70px) scale(.55) rotate(10deg);opacity:0}to{transform:none;opacity:1}}
+@keyframes trDeal{from{transform:translate(0,-240px) scale(.45) rotate(25deg);opacity:0}to{transform:none;opacity:1}}
+.tr-card.in-me{animation:trIn .42s cubic-bezier(.2,1.35,.4,1) both}
+.tr-card.in-opp{animation:trInO .42s cubic-bezier(.2,1.35,.4,1) both}
+.deal{animation:trDeal .5s cubic-bezier(.2,1.2,.4,1) both}
+.tr-card.big{will-change:transform}
+.tr-card.big.fly{transition:transform .2s ease-in,opacity .2s ease-in;transform:translateY(-190px) scale(.66) rotate(-4deg)!important;opacity:.15}
+.tr-call{animation:trPop .35s cubic-bezier(.2,1.5,.4,1)}
+@keyframes trPop{from{transform:scale(.5) rotate(-8deg);opacity:0}to{transform:rotate(-2deg);opacity:1}}
+.tr-status{transition:color .25s}
+/* cantos a pantalla completa */
+#trShout{position:fixed;inset:0;z-index:95;pointer-events:none;display:grid;place-items:center;overflow:hidden}
+#trShout .s{position:relative;font-family:"Quicksand",ui-rounded,system-ui,sans-serif;font-weight:700;font-size:clamp(54px,17vw,150px);line-height:.95;text-align:center;padding:0 12px;color:#ffe27a;-webkit-text-stroke:3px #3b2a00;paint-order:stroke fill;text-shadow:0 7px 0 #3b2a00,0 14px 34px rgba(0,0,0,.55);animation:trShout 1.45s cubic-bezier(.2,1.4,.4,1) forwards}
+#trShout .s small{display:block;margin-top:10px;font-size:.24em;-webkit-text-stroke:0;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,.7);letter-spacing:.5px}
+#trShout .s.k-e{color:#ff8fb8;-webkit-text-stroke-color:#5a1030;text-shadow:0 7px 0 #5a1030,0 14px 34px rgba(0,0,0,.55)}
+#trShout .s.k-q{color:#8be3a5;-webkit-text-stroke-color:#0f3b22;text-shadow:0 7px 0 #0f3b22,0 14px 34px rgba(0,0,0,.55)}
+#trShout .s.k-no{color:#ff6b6b;-webkit-text-stroke-color:#4a0b0b;text-shadow:0 7px 0 #4a0b0b,0 14px 34px rgba(0,0,0,.55)}
+#trShout .s.k-m{color:#e6e6e6;-webkit-text-stroke-color:#333;text-shadow:0 7px 0 #333,0 14px 34px rgba(0,0,0,.55)}
+#trShout .fl{position:absolute;inset:0;background:radial-gradient(circle at 50% 50%,rgba(255,226,122,.55),transparent 60%);animation:trFlash .9s ease-out forwards}
+#trShout .fl.k-e{background:radial-gradient(circle,rgba(255,143,184,.5),transparent 60%)}#trShout .fl.k-no{background:radial-gradient(circle,rgba(255,80,80,.45),transparent 60%)}#trShout .fl.k-q{background:radial-gradient(circle,rgba(139,227,165,.45),transparent 60%)}#trShout .fl.k-m{background:radial-gradient(circle,rgba(255,255,255,.25),transparent 60%)}
+@keyframes trShout{0%{transform:scale(.15) rotate(-16deg);opacity:0}16%{transform:scale(1.2) rotate(-4deg);opacity:1}28%{transform:scale(.96) rotate(-7deg)}38%{transform:scale(1) rotate(-6deg)}80%{transform:scale(1.03) rotate(-6deg);opacity:1}100%{transform:scale(1.6) rotate(-6deg);opacity:0}}
+@keyframes trFlash{0%{opacity:0;transform:scale(.4)}25%{opacity:1}100%{opacity:0;transform:scale(1.6)}}
+@media (prefers-reduced-motion:reduce){.tr-card.in-me,.tr-card.in-opp,.deal,#trShout .s,#trShout .fl{animation-duration:.01s}}
+/*tr-end*/
 .trb{position:relative;width:calc(100% - 4px);margin:12px 2px 0;display:flex;align-items:center;gap:12px;text-align:left;border:none;border-radius:20px 16px 22px 14px;padding:12px 14px;font:inherit;cursor:pointer;background:#2f7d57;color:#fff;box-shadow:0 4px 0 #1d5a3e;transform:rotate(-.6deg)}.trb:active{transform:rotate(-.6deg) translateY(3px);box-shadow:0 1px 0 #1d5a3e}.trb .tri{display:grid;place-items:center;width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.16)}.trb b{display:block;font-size:15px;font-weight:700}.trb small{display:block;font-size:12px;opacity:.85}
 </style></head>
 <body>
@@ -667,15 +694,18 @@ const pushOn=()=>{try{return localStorage.getItem("nc-push")==="1"}catch(e){retu
 function u8key(b64){const p="=".repeat((4-b64.length%4)%4);const r=atob((b64+p).replace(/-/g,"+").replace(/_/g,"/"));return Uint8Array.from(r,c=>c.charCodeAt(0))}
 async function pushSub(create){const reg=await navigator.serviceWorker.register("/sw.js");await navigator.serviceWorker.ready;let sub=await reg.pushManager.getSubscription();
  if(!sub&&create){const k=await (await fetch("/api/push")).json();sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:u8key(k.publicKey)})}return sub}
-function reminders(){const out=[];const add=(ts,id,title,body)=>{const day=dkey(ts);if(day>=dkey(Date.now()))out.push({id,day,title,body})};
- const days=ENC.days||{};for(const n in days){if(days[n]&&!st.codes[n]){const t=new Date(days[n]+"T12:00").getTime();add(t,"pack"+n+days[n],"Hoy toca sobre nuevo ✨","El sobre "+n+". Búscalo y mete el código")}}
+function reminders(){const out=[];const now=Date.now();
+ const at=(d,h,m=0)=>{const x=new Date(d);x.setHours(h,m,0,0);return x.getTime()};
+ const add=(t,id,title,body)=>{if(t>now-36e5)out.push({id,day:dkey(t),at:t,title,body})};
+ const days=ENC.days||{};for(const n in days){if(days[n]&&!st.codes[n])add(at(days[n]+"T12:00",10),"pack"+n+days[n],"Hoy toca sobre nuevo ✨","El sobre "+n+". Búscalo y mete el código")}
  owned().forEach(c=>{const s=st.cards[c.n]||{};const nm=c.r==="x"?"la carta secreta":c.name;
   if(s.plan&&!s.done){const h=new Date(s.plan).toLocaleTimeString("es-ES",{hour:"2-digit",minute:"2-digit"});
-   add(s.plan-DAY,"plan1-"+c.n+"-"+s.plan,"Mañana tenemos plan 🥰",nm+", a las "+h);add(s.plan,"plan0-"+c.n+"-"+s.plan,"Hoy tenemos plan 💕",nm+", a las "+h)}
-  const d=R[c.r].d;if(d&&s.got&&!s.done){const e=s.got+d*DAY;add(e-3*DAY,"exp3-"+c.n+"-"+s.got,"Caduca en 3 días 🫣",nm+", aún estás a tiempo");add(e-DAY,"exp1-"+c.n+"-"+s.got,"¡Caduca mañana! 🫠",nm+", o la usas o la pierdes 😜")}});
- return out.slice(0,80)}
+   const eve=at(s.plan-DAY,20);if(eve<s.plan-3*36e5)add(eve,"plan1-"+c.n+"-"+s.plan,"Mañana tenemos plan 🥰",nm+", a las "+h);
+   add(s.plan-2*36e5,"plan0-"+c.n+"-"+s.plan,"Hoy tenemos plan 💕",nm+", a las "+h)}
+  const d=R[c.r].d;if(d&&s.got&&!s.done){const e=s.got+d*DAY;add(at(e-3*DAY,10),"exp3-"+c.n+"-"+s.got,"Caduca en 3 días 🫣",nm+", aún estás a tiempo");add(at(e-DAY,10),"exp1-"+c.n+"-"+s.got,"¡Caduca mañana! 🫠",nm+", o la usas o la pierdes 😜")}});
+ return out.sort((x,y)=>x.at-y.at).slice(0,80)}
 let pushT=0;function queuePush(){if(!ENC.sync||!pushOn()||!getUser()||!PUSHOK())return;clearTimeout(pushT);pushT=setTimeout(sendPush,2500)}
-async function sendPush(){try{const sub=await pushSub(false);if(!sub){try{localStorage.removeItem("nc-push")}catch(e){}return}
+async function sendPush(){try{let sub=await pushSub(false);if(!sub&&Notification.permission==="granted"){try{sub=await pushSub(true)}catch(e){}}if(!sub){try{localStorage.removeItem("nc-push")}catch(e){}return}
  await fetch("/api/push",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"sub",role:"user",name:getUser(),uid:userId(getUser()),sub:sub.toJSON(),reminders:reminders()}),keepalive:true})}catch(e){}}
 async function enablePush(){if(ISIOS&&!STANDALONE())throw new Error("ios");const p=await Notification.requestPermission();if(p!=="granted")throw new Error("denied");
  const sub=await pushSub(true);try{localStorage.setItem("nc-push","1")}catch(e){}
@@ -734,21 +764,21 @@ function openReq(){const can=ENC.sync&&getUser();const H=(st.reqs||[]).slice(-5)
  <div class="qchips">${QREQ.map(q=>`<button data-q="${esc(q)}">${esc(q)}</button>`).join("")}</div>
  <input id="reqTi" class="rin" maxlength="80" placeholder="Título (si quieres)">
  <textarea id="reqT" class="rin" rows="3" maxlength="200" placeholder="Lo que quieras decirme"></textarea>
- <div style="display:flex;gap:8px"><select id="reqW" class="rin" style="flex:1"><option value="now">Ahora</option><option value="day">Otro día</option></select><input type="date" id="reqD" class="rin" min="${min}" style="flex:1;display:none"></div>
+ <div style="display:flex;gap:8px"><select id="reqW" class="rin" style="flex:1"><option value="now">Ahora</option><option value="day">Otro día</option></select><input type="date" id="reqD" class="rin" min="${min}" style="flex:1;display:none"><input type="time" id="reqH" class="rin" value="10:00" style="flex:.8;display:none"></div>
  <div class="msg" id="reqM"></div>
  <button class="cta pink" id="reqS" style="width:100%">Enviar</button>
  ${H.length?`<div class="reqh">Lo último que me has mandado${H.map(r=>`<div>${esc(r.t)} <span style="opacity:.6">(${r.day?"para el "+new Date(r.day+"T12:00").toLocaleDateString("es-ES",{day:"numeric",month:"short"}):new Date(r.ts).toLocaleDateString("es-ES",{day:"numeric",month:"short"})})</span></div>`).join("")}</div>`:""}`
  :`<p style="font-size:14px">Antes tienes que iniciar sesión</p>`}`;
  $("ovReq").classList.add("on");$("reqX").onclick=()=>$("ovReq").classList.remove("on");if(!can)return;
  const ta=$("reqT"),w=$("reqW"),d=$("reqD");
- w.onchange=()=>{d.style.display=w.value==="day"?"block":"none";$("reqS").textContent=w.value==="day"?"Programar":"Enviar"};
+ w.onchange=()=>{d.style.display=w.value==="day"?"block":"none";$("reqH").style.display=w.value==="day"?"block":"none";$("reqS").textContent=w.value==="day"?"Programar":"Enviar"};
  $("reqp").querySelectorAll("[data-q]").forEach(b=>b.onclick=()=>{$("reqp").querySelectorAll("[data-q]").forEach(x=>x.classList.toggle("on",x===b));ta.value=b.dataset.q});
  $("reqS").onclick=async()=>{const t=ta.value.trim(),ti=$("reqTi").value.trim();if(!t&&!ti){$("reqM").textContent="Escribe algo, anda 🙄";return}
   const day=w.value==="day"?d.value:"";if(w.value==="day"&&!day){$("reqM").textContent="Elige el día";return}
   $("reqS").disabled=true;$("reqM").textContent="Enviando…";
-  try{const r=await fetch("/api/push",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"request",name:getUser(),uid:userId(getUser()),title:ti,text:t,day})});if(!r.ok)throw 0;
+  try{const r=await fetch("/api/push",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"request",name:getUser(),uid:userId(getUser()),title:ti,text:t,day,at:day?new Date(day+"T"+($("reqH").value||"10:00")).getTime():0})});if(!r.ok)throw 0;
    st.reqs=(st.reqs||[]).concat([{t:ti||t,ts:Date.now(),day}]).slice(-30);_save0();buzz(30);
-   $("reqM").textContent=day?"Programada, me llegará ese día sobre las 10 😏":"Enviada, ya me ha llegado 💕";setTimeout(()=>$("ovReq").classList.remove("on"),1400)}
+   $("reqM").textContent=day?"Programada, me llegará ese día a las "+($("reqH").value||"10:00").replace(/^0/,"")+" 😏":"Enviada, ya me ha llegado 💕";setTimeout(()=>$("ovReq").classList.remove("on"),1400)}
   catch(e){$("reqM").textContent="No se ha enviado 😒 Prueba otra vez";$("reqS").disabled=false}}}
 
 function devTok(){let t="";try{t=localStorage.getItem("nc-chat-tok")||""}catch(e){}if(!t){t=[...crypto.getRandomValues(new Uint8Array(18))].map(b=>b.toString(16).padStart(2,"0")).join("");try{localStorage.setItem("nc-chat-tok",t)}catch(e){}}return t}
@@ -768,7 +798,19 @@ const e=s=>String(s==null?"":s).replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">
 const SPV=[1,2,3,4,5,6,7,10,11,12],SPS=["O","C","E","B"];
 const cardH=(c,big,extra="")=>c?`<div class="tr-card px${big?" big":""} ${extra}" style="--x:${SPV.indexOf(c.v)};--y:${SPS.indexOf(c.s)}" title="${c.v} de ${SUIT[c.s]}" role="img" aria-label="${c.v} de ${SUIT[c.s]}"></div>`:`<div class="tr-slot"></div>`;
 const back=()=>`<div class="tr-card back"></div>`;
-let S=null,LAST="",timer=0,bet=null,msg="",busy=false,sure=false,view="";
+let S=null,LAST="",timer=0,bet=null,msg="",busy=false,sure=false,view="",PREV=null;
+const SH=[];let shBusy=false;
+function shoutBox(){let b=document.getElementById("trShout");if(!b){b=document.createElement("div");b.id="trShout";document.body.appendChild(b)}return b}
+function shout(t,sub,kind){SH.push([t,sub,kind]);if(!shBusy)nextShout()}
+function nextShout(){const x=SH.shift();if(!x){shBusy=false;return}shBusy=true;const b=shoutBox();
+ b.innerHTML=`<div class="fl k-${x[2]||"t"}"></div><div class="s k-${x[2]||"t"}">${e(x[0])}${x[1]?`<small>${e(x[1])}</small>`:""}</div>`;
+ try{navigator.vibrate&&navigator.vibrate(x[2]==="no"?[60,40,60]:[30,30,90])}catch(z){}
+ setTimeout(()=>{b.innerHTML="";nextShout()},SH.length?1050:1450)}
+const CALLS={"¡Truco!":["¡TRUCO!","t"],"¡Retruco!":["¡RETRUCO!","t"],"¡Vale cuatro!":["¡VALE CUATRO!","t"],"¡Envido!":["¡ENVIDO!","e"],"¡Real envido!":["¡REAL ENVIDO!","e"],"¡Falta envido!":["¡FALTA ENVIDO!","e"],"Quiero":["¡QUIERO!","q"],"No quiero":["NO QUIERO","no"],"Me voy al mazo":["AL MAZO","m"]};
+function shoutsFrom(g){if(!PREV||PREV.id!==g.id||!g.log)return;const last=(PREV.log||[]).slice(-1)[0];const t0=last?last.ts:0;
+ g.log.filter(l=>l.ts>t0).forEach(l=>{const c=CALLS[l.t];const who=l.who?(l.who===me()?"Tú":g.names[l.who]):"";
+  if(c)shout(c[0],who,c[1]);else if(/^Envido: /.test(l.t))shout(g.hand&&g.hand.envido&&g.hand.envido.winner===me()?"¡ES TUYO!":"SON BUENAS",l.t.replace(/\.$/,""),"e");
+  else if(/gana \d+ a \d+/.test(l.t))shout(g.winner===me()?"¡GANASTE!":"PERDISTE",g.score[me()]+" a "+g.score[opp()],g.winner===me()?"q":"no")})}
 const me=()=>TRC.me,opp=()=>me()==="el"?"ella":"el";
 function ov(){let o=document.getElementById("trOv");if(!o){o=document.createElement("div");o.id="trOv";o.style.setProperty("--sp","url("+TRC.sprite+")");document.body.appendChild(o);const pre=new Image();pre.src=TRC.sprite}return o}
 async function call(o){const r=await fetch(TRC.api,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(Object.assign(await TRC.auth(),o))});let j={};try{j=await r.json()}catch(x){}if(!r.ok){const er=new Error(j.error||"server");er.data=j;throw er}return j}
@@ -786,6 +828,8 @@ function ledgerH(){const L=S.ledger||{prizes:[],debts:[]};const P=(L.prizes||[])
 function pickH(){const cs=TRC.betCards();if(!cs.length)return `<p>${me()==="el"?"Primero abre algún sobre, que no tienes nada que apostar 🙄":"No hay cartas"}</p>`;
  return `<div class="tr-list">${cs.map(c=>`<button class="tr-pick${bet&&bet.n===c.n?" on":""}" data-tr="bet" data-n="${c.n}"><div><b>${e(c.name)}</b><small>${e((c.efecto||"").slice(0,70))}</small></div></button>`).join("")}</div>`}
 function draw(){const o=ov();const g=S&&S.game;let h=head(g)+`<div class="tr-body">`;
+ const P=PREV&&g&&PREV.id===g.id?PREV:null;const newHand=!!(g&&g.hand&&(!P||!P.hand||P.hand.n!==g.hand.n));
+ const isNew=(i,w)=>{if(!g||!g.hand)return false;const b=g.hand.bazas[i];if(!b||!b[w])return false;if(!P||!P.hand||P.hand.n!==g.hand.n)return !newHand||true;const pb=P.hand.bazas[i];return !pb||!pb[w]};
  if(!S){h+=`<p class="tr-sub">Cargando…</p>`}
  else if(g&&g.status==="done"&&localStorage.getItem("tr-ack")!==g.id){const w=g.winner===me();const bE=g.bets.el,bA=g.bets.ella;
   h+=`<div class="tr-big">${w?"¡Has ganado! 🥰":"Has perdido 🫠"}</div><div class="tr-sub">${g.score[me()]} a ${g.score[opp()]}</div>
@@ -802,11 +846,11 @@ function draw(){const o=ov();const g=S&&S.game;let h=head(g)+`<div class="tr-bod
   let stt=mine?(pend?`${e(N)} te canta`:"Te toca"):`Le toca a ${e(N)}`;
   h+=`<div class="tr-status${mine?" go":""}">${stt}${H.mano===me()?" (eres mano)":""}</div>`;
   if(pend)h+=`<div class="tr-call">${pend.who===me()?"Tú: ":e(N)+": "}¡${pend.kind==="truco"?TN[pend.pts]:EN[pend.chain[pend.chain.length-1]]}!</div>`;
-  h+=`<div class="tr-opp">${Array.from({length:H.oppLeft},back).join("")}</div>`;
-  h+=`<div class="tr-table">${[0,1,2].map(i=>{const b=H.bazas[i]||{};return `<div class="tr-baza">${cardH(b[opp()],false,b.win===opp()?"win":"")}${cardH(b[me()],false,b.win===me()?"win":"")}<small>${b.win?(b.win==="parda"?"parda":b.win===me()?"tuya":"suya"):""}</small></div>`}).join("")}</div>`;
+  h+=`<div class="tr-opp">${Array.from({length:H.oppLeft},(x,i)=>newHand?`<div class="tr-card back deal" style="animation-delay:${i*90+40}ms"></div>`:back()).join("")}</div>`;
+  h+=`<div class="tr-table">${[0,1,2].map(i=>{const b=H.bazas[i]||{};return `<div class="tr-baza">${cardH(b[opp()],false,(b.win===opp()?"win ":"")+(P&&isNew(i,opp())?"in-opp":""))}${cardH(b[me()],false,(b.win===me()?"win ":"")+(P&&isNew(i,me())?"in-me":""))}<small>${b.win?(b.win==="parda"?"parda":b.win===me()?"tuya":"suya"):""}</small></div>`}).join("")}</div>`;
   const env=H.envido&&H.envido.winner?`Envido: tú ${H.envido[me()]}, ${e(N)} ${H.envido[opp()]}`:(!H.envido&&H.bazas.length===1?`Tienes ${g.myEnvido} de envido`:"");
   if(env)h+=`<div class="tr-env">${env}${H.truco>1?". Se juega "+TN[H.truco].toLowerCase():""}</div>`;else if(H.truco>1)h+=`<div class="tr-env">Se juega ${TN[H.truco].toLowerCase()}</div>`;
-  h+=`<div class="tr-hand">${H.mine.map((c,i)=>`<div data-tr="play" data-i="${i}">${cardH(c,true,op.play?"can":"")}</div>`).join("")}</div>`;
+  h+=`<div class="tr-hand">${H.mine.map((c,i)=>`<div data-tr="play" data-i="${i}"${newHand?` class="deal" style="animation-delay:${i*110+300}ms"`:""}>${cardH(c,true,op.play?"can":"")}</div>`).join("")}</div>`;
   const B=[];if(op.quiero){B.push(`<button class="tr-b hot" data-tr="m" data-m="quiero">Quiero</button>`,`<button class="tr-b red" data-tr="m" data-m="noquiero">No quiero</button>`)}
   if(op.truco)B.push(`<button class="tr-b" data-tr="m" data-m="truco">${pend&&pend.kind==="truco"?"Quiero ":""}${TN[op.truco]}</button>`);
   (op.envido||[]).forEach(k=>B.push(`<button class="tr-b" data-tr="m" data-m="envido" data-k="${k}">${EN[k]}</button>`));
@@ -815,7 +859,7 @@ function draw(){const o=ov();const g=S&&S.game;let h=head(g)+`<div class="tr-bod
   h+=`<div class="tr-log">${(g.log||[]).slice(-4).map(l=>(l.who?`<b>${l.who===me()?"Tú":e(g.names[l.who])}:</b> `:"")+e(l.t)).join("<br>")}</div>`;
   if(g.lastHand&&H.bazas.length===1&&!H.bazas[0].el&&!H.bazas[0].ella)h+=`<div class="tr-env" style="margin-top:6px">En la mano anterior ${e(N)} tenía ${g.lastHand.opp.map(c=>c.v+" de "+SUIT[c.s]).join(", ")}</div>`;
   h+=`<div class="tr-btns"><button class="tr-b ghost" data-tr="give" style="font-size:12px;padding:7px 10px">${sure?"¿Seguro? Pierdes la apuesta":"Abandonar"}</button></div>`}
- h+=`<div class="tr-msg">${e(msg)}</div></div>`;o.innerHTML=h;
+ h+=`<div class="tr-msg">${e(msg)}</div></div>`;o.innerHTML=h;if(g){shoutsFrom(g);PREV=JSON.parse(JSON.stringify(g))}
  o.querySelectorAll("[data-tr]").forEach(el=>el.onclick=()=>{const t=el.dataset.tr;
   if(t==="close")return close();
   if(t==="bet"){bet=TRC.betCards().find(c=>c.n==el.dataset.n)||null;draw();return}
@@ -827,10 +871,10 @@ function draw(){const o=ov();const g=S&&S.game;let h=head(g)+`<div class="tr-bod
   if(t==="ack"){try{localStorage.setItem("tr-ack",S.game.id)}catch(x){}bet=null;draw();return}
   if(t==="use")return send({action:"useprize",id:el.dataset.id});
   if(t==="pay")return send({action:"paydebt",id:el.dataset.id});
-  if(t==="play"){const op=S.game.opts||{};if(op.play)act({type:"play",i:+el.dataset.i});return}
+  if(t==="play"){const op=S.game.opts||{};if(op.play&&!busy){const c=el.querySelector(".tr-card");if(c)c.classList.add("fly");setTimeout(()=>act({type:"play",i:+el.dataset.i}),160)}return}
   if(t==="m"){const m=el.dataset.m;act(m==="envido"?{type:"envido",k:el.dataset.k}:{type:m})}})}
 function close(){ov().classList.remove("on");clearInterval(timer);TRC.onClose&&TRC.onClose()}
-window.Truco={open(){if(TRC.ready&&!TRC.ready()){return}S=null;LAST="";msg="";bet=null;sure=false;ov().classList.add("on");draw();load(true).then(poll)},
+window.Truco={open(){if(TRC.ready&&!TRC.ready()){return}S=null;LAST="";PREV=null;msg="";bet=null;sure=false;ov().classList.add("on");draw();load(true).then(poll)},
  async status(){try{const j=await call({action:"state"});const g=j.game;if(!g)return null;if(g.status==="invite"&&g.inviter!==me())return "reto";if(g.status==="play"&&g.opts&&g.opts.toAct===me())return "toca";if(g.status==="done"&&localStorage.getItem("tr-ack")!==g.id)return "fin";return null}catch(x){return null}},
  close};
 })();
