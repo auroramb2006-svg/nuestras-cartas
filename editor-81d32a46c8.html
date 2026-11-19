@@ -65,7 +65,7 @@ main{max-width:900px;margin:0 auto;padding:14px 16px 60px;position:relative}
  <p id="lmsg">Escribe tu contraseña para abrir el editor.</p>
  <input id="ltok" type="password" placeholder="Clave de GitHub (solo la primera vez)" autocomplete="off" style="display:none">
  <input id="lpw" type="password" placeholder="Contraseña del editor" autocomplete="current-password">
- <button class="main" id="lgo">Entrar</button><div class="err" id="lerr"></div>
+ <label style="display:flex;align-items:center;gap:8px;justify-content:center;margin-top:12px;font-size:13.5px;font-weight:800;color:#d9d1f2"><input type="checkbox" id="lrem" checked style="width:auto;margin:0"> Recordarme en este dispositivo</label><button class="main" id="lgo">Entrar</button><div class="err" id="lerr"></div>
  <details id="lhelp" style="display:none"><summary>¿Cómo creo la clave de GitHub?</summary><ol>
  <li>En github.com, entra en tu foto → <b>Settings</b> → abajo del todo <b>Developer settings</b>.</li>
  <li><b>Personal access tokens → Fine-grained tokens → Generate new token</b>.</li>
@@ -222,21 +222,22 @@ document.getElementById("impf").onchange=e=>{const f=e.target.files[0];if(!f)ret
 
 const $=id=>document.getElementById(id);
 function busy(on,txt){$("busy").classList.toggle("on",!!on);if(txt)$("busyT").textContent=txt}
-async function login(){const pw=$("lpw").value;const tk=$("ltok").value.trim();$("lerr").textContent="";
+async function login(){const pw=$("lpw").value||LS.get("nc-pw")||"";const tk=$("ltok").value.trim();$("lerr").textContent="";
  if(tk)LS.set("nc-gh-token",tk);if(!TOK()){$("lerr").textContent="Pega primero la clave de GitHub";return}if(!pw){$("lerr").textContent="Escribe la contraseña";return}
  busy(1,"Abriendo…");
  try{const enc=await ghRaw(DATAF);let remote=await unseal(enc,pw);PW=pw;
   const dr=LS.get("nc-draft");let usedDraft=false;
   if(dr){try{const d=await unseal(dr,pw);if(d&&d._base===enc.length){D=d;usedDraft=true}}catch(e){}}
   if(!usedDraft){D=remote;LS.del("nc-draft")}D._base=enc.length;normalize();DIRTY=usedDraft;FIRSTPW=!!remote._initial;
-  $("login").style.display="none";render();markDirty();if(usedDraft)toast("He recuperado tus cambios sin publicar");
+  if($("lrem").checked)LS.set("nc-pw",pw);else LS.del("nc-pw");$("login").style.display="none";render();markDirty();if(usedDraft)toast("He recuperado tus cambios sin publicar");
   if(FIRSTPW)setTimeout(()=>openCfg(true),400)}
- catch(e){$("lerr").textContent=ghErr(e);if(e&&e.status===401){LS.del("nc-gh-token");showTok()}}
+ catch(e){if(e&&e.name==="OperationError")LS.del("nc-pw");$("lerr").textContent=ghErr(e);if(e&&e.status===401){LS.del("nc-gh-token");showTok()}}
  busy(0)}
 function showTok(){$("ltok").style.display="block";$("lhelp").style.display="block";$("lmsg").textContent="Primera vez en este dispositivo: pega tu clave de GitHub y la contraseña del editor."}
 if(!TOK())showTok();
+else if(LS.get("nc-pw")){$("lmsg").textContent="Entrando…";setTimeout(login,50)}
 $("lgo").onclick=login;$("lpw").addEventListener("keydown",e=>{if(e.key==="Enter")login()});
-$("lock").onclick=()=>{D=null;PW=null;$("list").innerHTML="";$("lpw").value="";$("login").style.display="flex"};
+$("lock").onclick=()=>{LS.del("nc-pw");D=null;PW=null;$("list").innerHTML="";$("lpw").value="";$("login").style.display="flex"};
 $("pub").onclick=async()=>{let h;try{h=build()}catch(e){toast(e);return}busy(1,"Publicando…");
  try{const enc=await seal(Object.assign({},D,{_initial:FIRSTPW?true:undefined,_base:undefined}),PW);
   await ghCommit({"index.html":h,[DATAF]:enc},"Actualizar cartas desde el editor");
@@ -255,7 +256,7 @@ function openCfg(first){const M=$("cfgM");M.classList.add("on");
  $("npOk").onclick=async()=>{const a=$("np1").value,b=$("np2").value;if(a.length<6){$("cerr").textContent="Mínimo 6 caracteres";return}if(a!==b){$("cerr").textContent="No coinciden";return}
   let h;try{h=build()}catch(e){$("cerr").textContent=e;return}busy(1,"Guardando…");
   try{const enc=await seal(Object.assign({},D,{_initial:undefined,_base:undefined}),a);await ghCommit({"index.html":h,[DATAF]:enc},"Cambiar contraseña del editor");
-   PW=a;FIRSTPW=false;D._base=enc.length;DIRTY=false;LS.del("nc-draft");markDirty();busy(0);M.classList.remove("on");toast("Contraseña cambiada y publicado ✓")}
+   PW=a;FIRSTPW=false;if(LS.get("nc-pw"))LS.set("nc-pw",a);D._base=enc.length;DIRTY=false;LS.del("nc-draft");markDirty();busy(0);M.classList.remove("on");toast("Contraseña cambiada y publicado ✓")}
   catch(e){busy(0);$("cerr").textContent=ghErr(e)}}}
 $("cfg").onclick=()=>openCfg(false);
 window.addEventListener("beforeunload",e=>{if(DIRTY){e.preventDefault();e.returnValue=""}});
