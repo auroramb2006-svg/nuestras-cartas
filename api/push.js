@@ -38,7 +38,7 @@ module.exports = async (req, res) => {
     }
     if (b.action === 'test') {
       if (!okSub) return res.status(400).json({ error: 'bad_sub' });
-      const ok = await L.send({ sub }, { title: b.role === 'admin' ? '🔔 Avisos del editor activados' : '💌 ¡Notificaciones activadas!', body: b.role === 'admin' ? 'Así te llegará cuando alguien agende, canjee o abra un sobre.' : 'Así te avisaré de tus planes y de las cartas que caducan.', url: b.url || '/' });
+      const ok = await L.send({ sub }, { title: b.role === 'admin' ? 'Avisos del editor activados ✨' : '¡Notificaciones activadas! ✨', body: b.role === 'admin' ? 'Así te llegará cuando alguien agende, canjee o abra un sobre.' : 'Así te avisaré de tus planes y de las cartas que caducan.', url: b.url || '/' });
       return res.status(ok ? 200 : 502).json({ ok });
     }
     if (b.action === 'unsub') {
@@ -50,7 +50,7 @@ module.exports = async (req, res) => {
       // Aviso inmediato para ella (los móviles con el editor y los avisos activados).
       const text = L.clip(b.text, 160); if (!text) return res.status(400).json({ error: 'bad' });
       const subs = (await L.allSubs()).filter(s => s.role === 'admin');
-      let n = 0; for (const s of subs) if (await L.send(s, { title: '👀 ' + (L.clip(b.name, 30) || 'Alguien'), body: text, url: 'https://editor-aurora-81d3.vercel.app/editor-81d32a46c8.html' })) n++;
+      let n = 0; for (const s of subs) if (await L.send(s, { title: L.clip(b.name, 30) || 'Alguien', body: text, url: 'https://editor-aurora-81d3.vercel.app/editor-81d32a46c8.html' })) n++;
       return res.status(200).json({ ok: true, sent: n });
     }
     if (b.action === 'request') {
@@ -59,7 +59,7 @@ module.exports = async (req, res) => {
       const r = { id: crypto.randomBytes(6).toString('hex'), name: L.clip(b.name, 30) || 'Alguien', uid: L.clip(b.uid, 13), text, ts: Date.now() };
       await L.writeJSON('push/requests/' + r.id + '.json', r);
       const subs = (await L.allSubs()).filter(s => s.role === 'admin');
-      let n = 0; for (const s of subs) if (await L.send(s, { title: '🙋 ' + r.name + ' te pide algo', body: text, url: 'https://editor-aurora-81d3.vercel.app/editor-81d32a46c8.html' })) n++;
+      let n = 0; for (const s of subs) if (await L.send(s, { title: r.name + ' te pide algo 🫣', body: text, url: 'https://editor-aurora-81d3.vercel.app/editor-81d32a46c8.html' })) n++;
       return res.status(200).json({ ok: true, notified: n });
     }
     if (b.action === 'reqList' || b.action === 'reqDone') {
@@ -73,7 +73,7 @@ module.exports = async (req, res) => {
       if (!/^[a-z0-9]{6,20}$/.test(String(b.id))) return res.status(400).json({ error: 'bad' });
       const r = await L.readJSON('push/requests/' + b.id + '.json');
       let n = 0;
-      if (r && b.grant) { const subs = (await L.allSubs()).filter(s => s.role === 'user' && s.uid === r.uid); for (const s of subs) if (await L.send(s, { title: '💗 ¡Concedido!', body: '«' + r.text + '»' + (b.note ? ' · ' + L.clip(b.note, 100) : ''), url: '/' })) n++; }
+      if (r && b.grant) { const subs = (await L.allSubs()).filter(s => s.role === 'user' && s.uid === r.uid); for (const s of subs) if (await L.send(s, { title: '¡Concedido! 💕', body: '«' + r.text + '»' + (b.note ? ' · ' + L.clip(b.note, 100) : ''), url: '/' })) n++; }
       try { await del('push/requests/' + b.id + '.json'); } catch (e) {}
       return res.status(200).json({ ok: true, notified: n });
     }
@@ -91,7 +91,7 @@ module.exports = async (req, res) => {
       }
       const c = { to: b.to === 'all' ? 'all' : L.clip(b.to, 13), toName: L.clip(b.toName, 30), title: L.clip(b.title, 80), body: L.clip(b.body, 200) };
       if (!c.title && !c.body) return res.status(400).json({ error: 'empty' });
-      if (!c.title) c.title = '💌 Nuestras cartas';
+      if (!c.title) c.title = 'Nuestras cartas';
       if (b.day && /^\d{4}-\d{2}-\d{2}$/.test(b.day) && b.day > madrid()) {
         c.id = crypto.randomBytes(6).toString('hex'); c.day = b.day; c.ts = Date.now();
         await L.writeJSON('push/custom/' + c.id + '.json', c);

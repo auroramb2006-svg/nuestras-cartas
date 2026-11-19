@@ -12,7 +12,7 @@ module.exports = async (req, res) => {
       if (s.role !== 'user') continue;
       const due = (s.reminders || []).filter(r => r.day === day && !(s.sent || []).includes(r.id));
       if (!due.length) continue;
-      const payload = due.length === 1 ? { title: due[0].title, body: due[0].body, url: '/' } : { title: '💌 Tienes ' + due.length + ' avisos hoy', body: due.map(r => r.title.replace(/^\S+\s/, '') + ': ' + r.body).join(' · ').slice(0, 220), url: '/' };
+      const payload = due.length === 1 ? { title: due[0].title, body: due[0].body, url: '/' } : { title: 'Tienes ' + due.length + ' avisos hoy ✨', body: due.map(r => r.title + ': ' + r.body).join(' · ').slice(0, 220), url: '/' };
       if (await L.send(s, payload)) { sent++; s.sent = (s.sent || []).concat(due.map(r => r.id)).slice(-200); const p = s._path; delete s._path; await L.writeJSON(p, s); }
     }
     // Notificaciones personalizadas programadas para hoy (o atrasadas).
