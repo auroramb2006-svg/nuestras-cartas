@@ -26,10 +26,10 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.5;
 .screens{flex:1;position:relative;overflow:hidden}
 .screen{position:absolute;inset:0;overflow-y:auto;padding:6px 16px 150px;opacity:0;pointer-events:none;transform:translateY(10px);transition:opacity .3s,transform .3s}
 .screen.on{opacity:1;pointer-events:auto;transform:none}
-h2.sec{font-size:15px;color:var(--muted);font-weight:800;margin:18px 4px 10px;letter-spacing:.5px}
+h2.sec{font-size:18px;color:inherit;font-weight:900;margin:22px 4px 10px;text-decoration:underline wavy #ff8fb8;text-decoration-thickness:2px;text-underline-offset:6px}
 /* nav */
 .nav{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom) + 14px);display:flex;gap:4px;background:rgba(255,255,255,.92);
- padding:6px;border-radius:24px;box-shadow:0 8px 30px rgba(70,80,150,.22);z-index:10;backdrop-filter:blur(10px)}
+ padding:6px;border-radius:24px;box-shadow:0 8px 30px rgba(70,80,150,.22);z-index:10}
 .nav button{border:none;background:none;font-family:inherit;font-weight:800;font-size:11px;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:2px;padding:7px 18px;border-radius:18px;cursor:pointer}
 .nav button b{line-height:0}
 .nav button.on{background:linear-gradient(135deg,#e9f2ff,#ffe9f3);color:#2b2a3d}
@@ -49,10 +49,10 @@ h2.sec{font-size:15px;color:var(--muted);font-weight:800;margin:18px 4px 10px;le
 .codebox input{flex:1;min-width:0;border:none;outline:none;font-family:inherit;font-weight:900;font-size:17px;letter-spacing:2px;text-transform:uppercase;text-align:center;background:transparent;color:#2b2a3d}
 .codebox input::placeholder{color:#b5b3c8;letter-spacing:1px;font-weight:800;font-size:14px}
 .cta{border:none;border-radius:14px;padding:12px 18px;font-family:inherit;font-weight:900;font-size:15px;color:#fff;cursor:pointer;
- background:linear-gradient(135deg,#5aa7ff,#8f7bff);box-shadow:0 6px 16px rgba(90,120,255,.4)}
-.cta.pink{background:linear-gradient(135deg,#ff8fb8,#ff6f9f);box-shadow:0 6px 16px rgba(255,100,150,.4)}
-.cta.ghost{background:#fff;color:#2b2a3d;box-shadow:0 4px 14px rgba(80,90,160,.15)}
-.cta:active{transform:scale(.97)}
+ background:#6f7dff;box-shadow:0 4px 0 #4b56c8}
+.cta.pink{background:#ff6f9f;box-shadow:0 4px 0 #cf4a7a}
+.cta.ghost{background:#fff;color:#2b2a3d;box-shadow:0 0 0 2px #d9d4f2 inset,0 4px 0 #d9d4f2}
+.cta:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(0,0,0,.18)}
 .msg{position:relative;z-index:1;min-height:20px;margin-top:10px;font-weight:800;font-size:13px;color:#e0457b}
 .rowscroll{display:flex;gap:10px;overflow-x:auto;padding:4px 2px 10px;scroll-snap-type:x mandatory}
 .rowscroll .pc{flex:0 0 112px;scroll-snap-align:start}
@@ -271,10 +271,10 @@ html[data-theme="dark"] #splash .load{background:rgba(255,255,255,.14)}
 .tright{display:flex;gap:8px;align-items:center}
 .setp{width:min(92vw,420px);background:#fff;border-radius:24px;padding:18px;box-shadow:0 10px 40px rgba(0,0,0,.25);color:#2b2a3d;max-height:86vh;overflow:auto}
 .setp h3{margin:0 0 12px;font-size:22px;font-weight:900}
-.hx{display:flex;gap:10px;margin:16px 0 2px}.hxb{flex:1;display:flex;align-items:center;gap:10px;text-align:left;border:none;border-radius:18px;padding:12px;font:inherit;cursor:pointer;background:#fff;color:#2b2a3d;box-shadow:0 4px 14px rgba(80,90,160,.15)}.hxb:active{transform:scale(.97)}.hxb .hxi{font-size:26px}.hxb b{display:block;font-size:14px;font-weight:900}.hxb small{display:block;font-size:11px;font-weight:800;color:#8a85a6}
+.hx{display:flex;gap:12px;margin:18px 2px 2px}#achBtn{transform:rotate(-1.2deg);border-radius:16px 22px 14px 20px}#reqBtn{transform:rotate(1deg);border-radius:22px 14px 20px 16px}.hxb .hxi{display:grid;place-items:center;width:38px;height:38px;border-radius:50%;font-size:20px !important;color:#fff}#achBtn .hxi{background:#ffc94d}#reqBtn .hxi{background:#ff6f9f}.hxb{flex:1;display:flex;align-items:center;gap:10px;text-align:left;border:none;border-radius:18px;padding:12px;font:inherit;cursor:pointer;background:#fff;color:#2b2a3d;box-shadow:0 4px 14px rgba(80,90,160,.15)}.hxb:active{transform:scale(.97)}.hxb .hxi{font-size:26px}.hxb b{display:block;font-size:14px;font-weight:900}.hxb small{display:block;font-size:11px;font-weight:800;color:#8a85a6}
 html[data-theme="dark"] .hxb{background:#2a2250;color:#fff}
 .achbar{height:8px;border-radius:9px;background:rgba(143,123,255,.18);overflow:hidden;margin:6px 0 14px}.achbar i{display:block;height:100%;border-radius:9px;background:linear-gradient(90deg,#ffd36e,#ff6f9f)}
-.achg{display:grid;grid-template-columns:1fr 1fr;gap:8px;max-height:52vh;overflow:auto;padding:2px}.ach{border-radius:14px;padding:10px;background:rgba(143,123,255,.08);text-align:center}.ach .e{font-size:28px}.ach b{display:block;font-size:13px;font-weight:900;margin-top:2px}.ach small{display:block;font-size:11px;font-weight:700;color:#8a85a6;margin-top:2px}.ach.on{background:linear-gradient(135deg,rgba(255,211,110,.35),rgba(255,111,159,.25))}.ach:not(.on) .e{font-size:20px;font-weight:900;width:34px;height:34px;line-height:34px;margin:0 auto;border-radius:50%;background:rgba(143,123,255,.18);color:#8a85a6}
+.achg{display:grid;grid-template-columns:1fr 1fr;gap:8px;max-height:52vh;overflow:auto;padding:2px}.ach{border-radius:14px;padding:10px;background:rgba(143,123,255,.08);text-align:center}.ach .e{font-size:28px}.ach b{display:block;font-size:13px;font-weight:900;margin-top:2px}.ach small{display:block;font-size:11px;font-weight:700;color:#8a85a6;margin-top:2px}.ach.on{background:#ffe9b8}html[data-theme="dark"] .ach.on{background:#4a3b62}.ach:nth-child(odd){transform:rotate(-.8deg)}.ach:nth-child(even){transform:rotate(.7deg)}.ach:nth-child(3n){border-radius:18px 12px 16px 10px}.ach:not(.on) .e{font-size:20px;font-weight:900;width:34px;height:34px;line-height:34px;margin:0 auto;border-radius:50%;background:rgba(143,123,255,.18);color:#8a85a6}
 .qchips{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 10px}.qchips button{border:2px solid rgba(143,123,255,.35);background:transparent;color:inherit;border-radius:99px;padding:6px 10px;font:inherit;font-size:13px;font-weight:800;cursor:pointer}.qchips button.on{background:#8f7bff;border-color:#8f7bff;color:#fff}
 #reqp textarea{width:100%;box-sizing:border-box;padding:12px;border-radius:14px;border:2px solid rgba(143,123,255,.35);font:inherit;font-weight:700;background:rgba(143,123,255,.08);color:inherit;outline:none;resize:none}
 .reqh{margin-top:12px;font-size:12px;font-weight:800;color:#8a85a6}.reqh div{padding:5px 0;border-bottom:1px solid rgba(143,123,255,.15)}
@@ -349,7 +349,7 @@ html[data-theme="dark"] .news{background:#2a2250;color:#fff}html[data-theme="dar
 <div id="splash"><div class="halo"></div><div id="flc"></div>
 <div class="lg"><span>Nuestras</span><span>cartas</span><div class="shine"></div></div><div class="badge">TEMPORADA 1</div>
 <div class="bottom2"><div class="load"><i id="lbar"></i></div><div class="lt" id="ltxt">Barajando cartas…</div>
-<div class="tap">Toca la pantalla para empezar<small>o desliza hacia arriba</small></div></div><div class="ver">hecho a mano con amor ♥</div></div>
+<div class="tap">Toca para entrar</div></div><div class="ver">hecho a mano con amor ♥</div></div>
 <div class="sparkfield" id="sf"></div>
 <div class="app">
  <div class="topbar"><div class="brand"><i>♥</i>Nuestras cartas</div><div class="tright"><div class="pillcount" id="ownc"></div><button class="gear" id="rulesTop" aria-label="Reglas"><span class="ico" style="--m:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABgCAYAAADimHc4AAAABmJLR0QA/wD/AP+gvaeTAAACx0lEQVR4nO2cvW7UQBSFP1gppIiSCrFBQLkNgpoSgfipeIiIDpDgCRDiGSBPsRTUFFAAD8CfRBkIpIqS3TShCY3TbXbsyY7PjH0+6VZeec/cY/uO75UMxhhjjDHGGLMYRsAYmABHhcWk0j5SJzGWEbCbQSJPG7ulmjDOIHmLinHqZJ1JcM59YDXBeRVMgLWUf3A25ck7QPILKYUB7xKc0zSgK0X4OIqk5G1oqwakKMKlEUpy0hy5CIuxAWJsgBgbIMYGiLEBYmyAGBsgxgaIsQFibICYXAxI2bwrfsabmrba1yfNeDvZjm5CmzPkWTPe3rej25whz5rxuh3dZ3IwoM0ZsufVM3ARzgDlNrT3RViNi3CfsQFibIAYGyDGBoixAWJsgJhcDPA8QIhbEWI8DxDjeYDRkYMBngeIcRHOAM8DeoyLcJ+xAWJsgBgbIMYGiLEBYmyAGBsgxgaIsQFibICYWANK/iBT8TPirnyS7Lg9Le2GxtC174JKDYhptXbtu6ChtWTXju5K8rOg77ugImfE6ud2p4pwH++AKfAGuAH8VIuJYRq4YlbUAhuwGljLfmoBMXfAn8DxK5FaFFwOHP+bWkCMASFRdyK1KLgXOL6dWkCMAd8Dxx8Cg0g9bTIANgK/+dGSlkbcr7FzeKQWWYMnNdZxVy1yFueq4jRP+CFwSy10DrcrjfPWsAcsqYWexGaNq+cQeJzZ42hQXfmh5B8Br9Ri57EOHNR84fkCPAWuiraoK9V/PwO+1tQ8BYYCrY14mcHbbKp4rk5uHZaBzxkka9HxsapzRTAEtjJI2qJiG7ioTmpTrgO/MkjeaWMLuKZOZizngQ8ZJDE2PpVQdEMsAy8a7I5yiGlVcIt55tdhHXhd42VNGXvVPv+COlkp551LwE3gQbUPHwKXBO8CB8BvYAf4BrwF3gP/WtZhjDHGGGOMMQD8B32h7RprgdXTAAAAAElFTkSuQmCC)"></span></button><button class="gear" id="gearBtn" aria-label="Ajustes"><span class="ico" style="--m:url(data:image/png;base64,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)"></span></button></div></div>
@@ -357,19 +357,19 @@ html[data-theme="dark"] .news{background:#2a2250;color:#fff}html[data-theme="dar
   <section class="screen on" id="s-home">
    <div class="hero">
      <div class="packslot" id="homePack"></div>
-     <h3>¿Tienes un sobre nuevo?</h3>
-     <p>Escribe el código que viene dentro para abrirlo</p>
+     <h3>¿Sobre nuevo?</h3>
+     <p>Mete el código que viene dentro</p>
      <div class="codebox"><input id="code" autocomplete="off" autocapitalize="characters" spellcheck="false" enterkeyhint="go" placeholder="CÓDIGO DEL SOBRE"><button class="cta" id="go" type="button">Abrir</button></div>
      <div class="msg" id="msg"></div>
    </div>
-   <div class="hx"><button class="hxb" id="achBtn"><span class="hxi">✨</span><span><b>Logros</b><small id="achCount">0/0</small></span></button><button class="hxb" id="reqBtn"><span class="hxi">🫣</span><span><b>Pedirte algo</b><small>lo que sea, me llega</small></span></button></div>
-   <h2 class="sec">RECIÉN CONSEGUIDAS</h2>
+   <div class="hx"><button class="hxb" id="achBtn"><span class="hxi">✦</span><span><b>Logros</b><small id="achCount">0/0</small></span></button><button class="hxb" id="reqBtn"><span class="hxi">♥</span><span><b>Pedirte algo</b><small>lo que sea, me llega</small></span></button></div>
+   <h2 class="sec">Lo último que te ha tocado</h2>
    <div class="rowscroll" id="recent"></div>
-   <h2 class="sec">POR CANJEAR PRONTO</h2>
+   <h2 class="sec">Ojo, que caducan</h2>
    <div id="soon"></div>
   </section>
   <section class="screen" id="s-col">
-   <h2 class="sec" style="margin-top:8px">MI COLECCIÓN</h2>
+   <h2 class="sec" style="margin-top:8px">Tu colección</h2>
    <div class="chips" id="chips"></div>
    <div class="cgrid" id="cgrid"></div>
   </section>
@@ -381,13 +381,13 @@ html[data-theme="dark"] .news{background:#2a2250;color:#fff}html[data-theme="dar
    <div id="cDay"></div>
   </section>
   <section class="screen" id="s-rules">
-   <h2 class="sec" style="margin-top:8px">REGLAMENTO</h2>
+   <h2 class="sec" style="margin-top:8px">Reglamento</h2>
    <div class="panel"><ol class="rules">
     <li>Para canjear una carta, me la das en mano.</li><li>Máximo una carta al día.</li><li>Cada carta se usa una vez.</li>
     <li>Si estoy mala o muy cansada, se aplaza, pero no se pierde.</li><li>Las dudas las resuelve la organizadora (yo).</li>
     <li><b>Estas cartas son para usarlas. Si te las he dado, es porque quiero hacerlas.</b></li>
-    <li><b>Si una carta caduca sin usarse, pierdes tú, no yo.</b></li><li>Cada sobre se abre con el código que viene dentro. Nada de trampas.</li><li>Cuando canjeas o agendas una carta, te sale un botón para avisarme por WhatsApp. Úsalo, que así me entero 💕 Además, lo que abres, canjeas y agendas me llega a mi editor.</li></ol></div>
-   <h2 class="sec">CUÁNDO SE CUMPLE CADA CARTA</h2>
+    <li><b>Si una carta caduca sin usarse, pierdes tú, no yo.</b></li><li>Cada sobre se abre con el código que viene dentro. Nada de trampas.</li><li>Cuando canjees o agendes una carta, avísame por WhatsApp con el botón que sale. Y sí, me entero de lo que haces 👀</li></ol></div>
+   <h2 class="sec">Cuánto dura cada carta</h2>
    <div class="panel" id="rtable"></div>
   </section>
  </div>
@@ -396,7 +396,7 @@ html[data-theme="dark"] .news{background:#2a2250;color:#fff}html[data-theme="dar
 
 <div class="ov" id="ovPack"><div class="packwrap" id="pw"></div><div class="hint" id="ph"></div></div>
 <div class="ov dark" id="ovDeck"><div class="deck" id="deck"></div><div class="rlabel" id="rl"></div><div class="dots" id="dots"></div><div class="hint" id="dh">Desliza o toca para ver la siguiente</div></div>
-<div class="ov" id="ovSum"><div class="sum"><h3>¡Sobre abierto!</h3><div style="color:var(--muted);font-weight:700">Ya están guardadas en tu colección</div><div class="cgrid" id="sgrid"></div><button class="cta pink" id="sumOk" style="width:100%">Ver mi colección</button></div></div>
+<div class="ov" id="ovSum"><div class="sum"><h3>Sobre abierto</h3><div style="color:var(--muted);font-weight:700">Ya las tienes en tu colección</div><div class="cgrid" id="sgrid"></div><button class="cta pink" id="sumOk" style="width:100%">Ver colección</button></div></div>
 <div class="ov" id="ovDet"><button class="close" id="dclose">✕</button><div class="tilt" id="tilt"></div><div class="dinfo" id="dinfo"></div></div>
 <div class="flash" id="flash"></div>
 <div class="toast2" id="toast2"><div class="ic">🫣</div><div class="tx" id="t2tx"></div><button id="t2b">Ver</button></div>
@@ -471,14 +471,14 @@ function render(){
   const soon=$("soon");soon.innerHTML="";
   const pend=o.filter(c=>!st.cards[c.n]?.done&&daysLeft(c)!==null).sort((a,b)=>daysLeft(a)-daysLeft(b)).slice(0,3);
   soon.innerHTML=pend.length?`<div class="panel">${pend.map(c=>{const d=daysLeft(c);return `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.08)"><span>${esc(c.name)}</span><b style="color:${d<=7?"#e0457b":"inherit"}">${d<=0?"caducada":d+" días"}</b></div>`}).join("")}</div>`
-   :`<div class="panel emptyc">Nada pendiente por ahora ✨</div>`;
+   :`<div class="panel emptyc">Nada pendiente</div>`;
   // colección
   const ch=$("chips");ch.innerHTML="";
   [["all","Todas"],["todo","Por canjear"],["done","Canjeadas"]].forEach(([k,l])=>{const b=document.createElement("button");b.className="chip"+(filter===k?" on":"");b.textContent=l;b.onclick=()=>{filter=k;render()};ch.appendChild(b)});
   const g=$("cgrid");g.innerHTML="";
   const list=o.filter(c=>{const d=st.cards[c.n]?.done;return filter==="todo"?!d:filter==="done"?d:true});
-  if(!o.length)g.innerHTML=`<div class="panel emptyc" style="grid-column:1/-1">Tu colección está vacía.<br>Cuando tengas un sobre, ábrelo desde Inicio.</div>`;
-  else if(!list.length)g.innerHTML=`<div class="panel emptyc" style="grid-column:1/-1">${filter==="done"?"Todavía no has canjeado ninguna 👀":"¡Las has canjeado todas! 🥰"}</div>`;
+  if(!o.length)g.innerHTML=`<div class="panel emptyc" style="grid-column:1/-1">Aquí no hay nada todavía. Abre un sobre desde Inicio</div>`;
+  else if(!list.length)g.innerHTML=`<div class="panel emptyc" style="grid-column:1/-1">${filter==="done"?"Todavía no has canjeado ninguna 👀":"Las has canjeado todas 🥰"}</div>`;
   list.forEach(c=>g.appendChild(mini(c)));
   updateBadge();renderCal();
   $("rtable").innerHTML=Object.values(R).map(r=>`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.08)"><span><b>${r.sym}</b> ${r.n}</span><span>se cumple: <b>${r.canje}</b> · dura: <b>${r.val}</b></span></div>`).join("");
@@ -539,11 +539,11 @@ function checkAlerts(force){const s=soonList(),ex=expiredList();const ta=todayAl
 function remindDate(c){const s=st.cards[c.n];const d=R[c.r].d;if(!s||!s.got||!d)return null;const exp=new Date(s.got+d*864e5);
  const r=new Date(exp.getTime()-2*864e5);r.setHours(10,0,0,0);if(r<new Date()){const n=new Date(Date.now()+36e5);n.setMinutes(0,0,0);return{r:n,exp}}return{r,exp}}
 function gcalLink(c){const x=remindDate(c);if(!x)return null;const f=d=>d.toISOString().replace(/[-:]/g,"").replace(/\.\d{3}/,"");const e=new Date(x.r.getTime()+30*6e4);
- const txt=encodeURIComponent("Canjear carta: "+c.name);const det=encodeURIComponent(`Tu carta "${c.name}" caduca el ${x.exp.toLocaleDateString("es-ES")}. ¡Úsala antes, que si no pierdes tú! ♥ Nuestras cartas`);
+ const txt=encodeURIComponent("Canjear carta: "+c.name);const det=encodeURIComponent(`Tu carta "${c.name}" caduca el ${x.exp.toLocaleDateString("es-ES")}. Úsala antes, que si no pierdes tú 😜`);
  return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${txt}&dates=${f(x.r)}/${f(e)}&details=${det}`}
 function icsHref(c){const x=remindDate(c);if(!x)return null;const f=d=>d.toISOString().replace(/[-:]/g,"").replace(/\.\d{3}/,"");const e=new Date(x.r.getTime()+30*6e4);
  const ics=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//Nuestras cartas//ES","BEGIN:VEVENT",`UID:nc-${c.n}-${Date.now()}@nuestras-cartas`,`DTSTAMP:${f(new Date())}`,`DTSTART:${f(x.r)}`,`DTEND:${f(e)}`,
-  `SUMMARY:Canjear carta: ${c.name}`,`DESCRIPTION:Tu carta "${c.name}" caduca el ${x.exp.toLocaleDateString("es-ES")}. ¡Úsala!`,
+  `SUMMARY:Canjear carta: ${c.name}`,`DESCRIPTION:Tu carta "${c.name}" caduca el ${x.exp.toLocaleDateString("es-ES")}. Úsala, eh`,
   "BEGIN:VALARM","TRIGGER:-P1D","ACTION:DISPLAY","DESCRIPTION:Mañana toca canjear una carta","END:VALARM","BEGIN:VALARM","TRIGGER:PT0M","ACTION:DISPLAY","DESCRIPTION:Hoy toca canjear una carta","END:VALARM",
   "END:VEVENT","END:VCALENDAR"].join("\r\n");return URL.createObjectURL(new Blob([ics],{type:"text/calendar"}))}
 const SANDBOXED=(()=>{try{return window.self!==window.top}catch(e){return true}})();
@@ -593,7 +593,7 @@ function reminders(){const out=[];const add=(ts,id,title,body)=>{const day=dkey(
  const days=ENC.days||{};for(const n in days){if(days[n]&&!st.codes[n]){const t=new Date(days[n]+"T12:00").getTime();add(t,"pack"+n+days[n],"Hoy toca sobre nuevo ✨","El sobre "+n+". Búscalo y mete el código")}}
  owned().forEach(c=>{const s=st.cards[c.n]||{};const nm=c.r==="x"?"la carta secreta":c.name;
   if(s.plan&&!s.done){const h=new Date(s.plan).toLocaleTimeString("es-ES",{hour:"2-digit",minute:"2-digit"});
-   add(s.plan-DAY,"plan1-"+c.n+"-"+s.plan,"Mañana tenemos plan 🥰",nm+" · a las "+h);add(s.plan,"plan0-"+c.n+"-"+s.plan,"Hoy tenemos plan 💕",nm+" · a las "+h)}
+   add(s.plan-DAY,"plan1-"+c.n+"-"+s.plan,"Mañana tenemos plan 🥰",nm+", a las "+h);add(s.plan,"plan0-"+c.n+"-"+s.plan,"Hoy tenemos plan 💕",nm+", a las "+h)}
   const d=R[c.r].d;if(d&&s.got&&!s.done){const e=s.got+d*DAY;add(e-3*DAY,"exp3-"+c.n+"-"+s.got,"Caduca en 3 días 🫣",nm+", aún estás a tiempo");add(e-DAY,"exp1-"+c.n+"-"+s.got,"¡Caduca mañana! 🫠",nm+", o la usas o la pierdes 😜")}});
  return out.slice(0,80)}
 let pushT=0;function queuePush(){if(!ENC.sync||!pushOn()||!getUser()||!PUSHOK())return;clearTimeout(pushT);pushT=setTimeout(sendPush,2500)}
@@ -610,7 +610,7 @@ let SNAP=snap();
 function notifyChanges(){const a=SNAP,b=snap();SNAP=b;if(!ENC.sync||!getUser())return;const msgs=[];const nm=n=>{const c=DATA[n];return c?(c.r==="x"?"la carta secreta":"«"+c.name+"»"):"una carta"};
  for(const k in b.p)if(b.p[k]!==a.p[k]&&!b.d[k])msgs.push("Ha agendado "+nm(k)+" para el "+new Date(b.p[k]).toLocaleString("es-ES",{weekday:"long",day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}));
  for(const k in b.d)if(!a.d[k])msgs.push("Ha canjeado "+nm(k));
- const ao=a.o?a.o.split(","):[];(b.o?b.o.split(","):[]).forEach(n=>{if(n&&!ao.includes(n))msgs.push("Ha abierto el sobre "+n+" · "+pname(n))});
+ const ao=a.o?a.o.split(","):[];(b.o?b.o.split(","):[]).forEach(n=>{if(n&&!ao.includes(n))msgs.push("Ha abierto el sobre "+n+" ("+pname(n)+")")});
  msgs.forEach(text=>{try{fetch("/api/push",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"event",name:getUser(),text}),keepalive:true})}catch(e){}})}
 const _save0=save;save=function(){_save0();checkAch();queueSync();queuePush();notifyChanges()};
 // ---------- logros ----------
@@ -620,15 +620,15 @@ const ACH=[
  ["agenda1","😏","Planificador","Agenda tu primer plan",x=>x.planned>=1],
  ["canje5","😜","Cinco de cinco","Canjea 5 cartas",x=>x.done.length>=5],
  ["canje10","🫠","Veterano","Canjea 10 cartas",x=>x.done.length>=10],
- ["racha3","💕","En racha","Canjea 3 cartas en 30 días",x=>{const t=x.done.map(c=>st.cards[c.n].done).sort();for(let i=2;i<t.length;i++)if(t[i]-t[i-2]<=30*DAY)return true;return false}],
+ ["racha3","💕","En racha","3 canjes en un mes",x=>{const t=x.done.map(c=>st.cards[c.n].done).sort();for(let i=2;i<t.length;i++)if(t[i]-t[i-2]<=30*DAY)return true;return false}],
  ["full","🫣","Coleccionista","Canjea todas las cartas de un sobre",x=>{const by={};owned().forEach(c=>{const k=c.sobre;by[k]=by[k]||[0,0];by[k][0]++;if(st.cards[c.n]?.done)by[k][1]++});return Object.values(by).some(v=>v[0]>0&&v[0]===v[1])}],
  ["medio","🙄","Medio álbum","Abre 4 sobres",x=>x.packs>=4],
  ["album","🥰","Álbum completo","Abre todos los sobres",x=>x.packs>=Object.keys(ENC.packs||{}).length&&x.packs>0],
- ["shiny","✨","Shiny encontrada","Consigue una carta shiny",x=>owned().some(c=>c.r==="s")],
- ["secreta","👀","Secreto descubierto","Consigue la carta secreta",x=>owned().some(c=>c.r==="x")],
+ ["shiny","✨","Shiny encontrada","Que te toque la shiny",x=>owned().some(c=>c.r==="s")],
+ ["secreta","👀","Secreto descubierto","Que te toque la secreta",x=>owned().some(c=>c.r==="x")],
  ["leyenda","💕","Leyenda","Canjea una carta legendaria",x=>x.done.some(c=>c.r==="l")],
- ["buho","🫩","Búho nocturno","Canjea una carta de madrugada (00:00–6:00)",x=>x.done.some(c=>new Date(st.cards[c.n].done).getHours()<6)],
- ["limpio","😒","Sin dejar caducar","Canjea 5 cartas sin que caduque ninguna",x=>x.done.length>=5&&!expiredList().length],
+ ["buho","🫩","Búho nocturno","Canjea una carta de madrugada",x=>x.done.some(c=>new Date(st.cards[c.n].done).getHours()<6)],
+ ["limpio","😒","Sin dejar caducar","5 canjes sin dejar caducar ninguna",x=>x.done.length>=5&&!expiredList().length],
  ["che","🧉","Che, boludo","Canjea 3 cartas argentinas",x=>x.done.filter(c=>c.type==="Argentina").length>=3],
  ["gg","😜","GG","Canjea 2 cartas gamer",x=>x.done.filter(c=>c.type==="Gamer").length>=2]];
 function achCtx(){const o=owned();return{packs:Object.keys(st.codes||{}).length,done:o.filter(c=>st.cards[c.n]?.done),planned:o.filter(c=>st.cards[c.n]?.plan||st.cards[c.n]?.wasPlan).length}}
@@ -637,12 +637,12 @@ function checkAch(quiet){if(ACHBUSY)return;ACHBUSY=true;try{st.ach=st.ach||{};co
  for(const k in st.cards){if(st.cards[k].plan)st.cards[k].wasPlan=1}
  ACH.forEach(a=>{if(!st.ach[a[0]]){let ok=false;try{ok=a[4](x)}catch(e){}if(ok){st.ach[a[0]]=Date.now();nu.push(a)}}});
  if(nu.length){_save0();updAchCount();
-  if(!quiet){$("toast2").querySelector(".ic").textContent="🥰";buzz([40,60,40,60,80]);showToast(nu.length===1?`<b>¡Logro desbloqueado!</b>${nu[0][1]} ${esc(nu[0][2])}`:`<b>¡${nu.length} logros desbloqueados!</b>${nu.map(a=>a[1]).join(" ")}`,"Ver",openAch)}
+  if(!quiet){$("toast2").querySelector(".ic").textContent="🥰";buzz([40,60,40,60,80]);showToast(nu.length===1?`<b>Logro desbloqueado</b>${nu[0][1]} ${esc(nu[0][2])}`:`<b>${nu.length} logros nuevos</b>${nu.map(a=>a[1]).join(" ")}`,"Ver",openAch)}
   if(!quiet&&ENC.sync&&getUser())nu.forEach(a=>{try{fetch("/api/push",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"event",name:getUser(),text:"Ha desbloqueado el logro «"+a[2]+"»"}),keepalive:true})}catch(e){}})}
  }finally{ACHBUSY=false}}
 function updAchCount(){const e=$("achCount");if(e)e.textContent=Object.keys(st.ach||{}).filter(k=>ACH.some(a=>a[0]===k)).length+"/"+ACH.length}
 function openAch(){const n=Object.keys(st.ach||{}).filter(k=>ACH.some(a=>a[0]===k)).length;
- $("achp").innerHTML=`<h3>Logros · ${n}/${ACH.length}</h3><div class="achbar"><i style="width:${Math.round(n/ACH.length*100)}%"></i></div>
+ $("achp").innerHTML=`<h3>Logros <span style="opacity:.55">${n}/${ACH.length}</span></h3><div class="achbar"><i style="width:${Math.round(n/ACH.length*100)}%"></i></div>
  <div class="achg">${ACH.map(a=>{const t=(st.ach||{})[a[0]];return `<div class="ach${t?" on":""}"><div class="e">${t?a[1]:"?"}</div><b>${esc(a[2])}</b><small>${t?"Conseguido el "+new Date(t).toLocaleDateString("es-ES",{day:"numeric",month:"short"}):esc(a[3])}</small></div>`}).join("")}</div>
  <div class="btns" style="margin-top:14px"><button class="cta pink" id="achOk" style="width:100%">Cerrar</button></div>`;
  $("ovAch").classList.add("on");$("achOk").onclick=()=>$("ovAch").classList.remove("on")}
@@ -698,10 +698,10 @@ function renderCal(){const g=$("cGrid");if(!g)return;const E=events();
   h+=`<button class="cd ${d.getMonth()!==calM.getMonth()?"out":""} ${k===dkey(Date.now())?"today":""} ${k===calSel?"sel":""}" data-k="${k}">${d.getDate()}<span class="dots">${types.map(t=>`<i style="background:${EV[t][1]}"></i>`).join("")}</span></button>`}
  g.innerHTML=h;g.querySelectorAll(".cd").forEach(b=>b.onclick=()=>{calSel=b.dataset.k;renderCal()});
  const sd=new Date(calSel+"T12:00");const isToday=calSel===dkey(Date.now());
- $("cDayT").textContent=(isToday?"HOY · ":"")+sd.toLocaleDateString("es-ES",{weekday:"long",day:"numeric",month:"long"}).toUpperCase();
+ $("cDayT").textContent=(isToday?"Hoy, ":"")+sd.toLocaleDateString("es-ES",{weekday:"long",day:"numeric",month:"long"});
  const list=E[calSel]||[];
  $("cDay").innerHTML=list.length?`<div class="panel">${list.map((e,i)=>{const [a,b]=evText(e);return `<div class="ev" data-i="${i}"><div class="k" style="background:${EV[e.t][1]}33">${EV[e.t][0]}</div><div class="x"><b>${esc(a)}</b><small>${esc(b)}</small></div></div>`}).join("")}</div>`
-  :`<div class="panel emptyc">Nada este día. ¿Agendamos algo? Abre una carta y elige "Agendar". 💗</div>`;
+  :`<div class="panel emptyc">Nada este día. ¿Agendamos algo? 😏</div>`;
  $("cDay").querySelectorAll(".ev").forEach(el=>el.onclick=()=>{const e=list[+el.dataset.i];if(e.c)detail(e.c);else if(e.t==="pack"&&!e.done){show("home");$("code").focus()}})}
 $("cPrev").onclick=()=>{calM=new Date(calM.getFullYear(),calM.getMonth()-1,1);renderCal()};
 $("cNext").onclick=()=>{calM=new Date(calM.getFullYear(),calM.getMonth()+1,1);renderCal()};
@@ -739,7 +739,7 @@ function deck(n,code,cards){
     $("rl").textContent=lab?lab[0]:"";$("rl").style.color=lab?lab[1]:"";
     if(lab){const f=$("flash");f.style.background=`radial-gradient(circle,${lab[1]},transparent 70%)`;f.classList.remove("go");void f.offsetWidth;f.classList.add("go");sparkle(lab[1]);buzz([20,40,20])}
     [...$("dots").children].forEach((d,k)=>d.classList.toggle("on",k===i));
-    $("dh").textContent=i<order.length-1?"Desliza o toca para ver la siguiente":"Toca para terminar"}
+    $("dh").textContent=i<order.length-1?"Toca para la siguiente":"Toca para acabar"}
   onTop();
   function next(dir=1){const el=dk.children[i];el.style.transform=`translateX(${dir*130}%) rotate(${dir*18}deg)`;el.classList.add("out");i++;
     if(i>=order.length){setTimeout(()=>finish(n,code,cards),350);return}
@@ -769,11 +769,11 @@ function detail(c){
   const val=s.done?"Canjeada el "+new Date(s.done).toLocaleDateString("es-ES"):(R[c.r].d?(d>0?`Caduca en ${d} días`:"Caducada… pierdes tú"):"No caduca");
   const waBtn=(ENC.wa&&NOTE&&NOTE.n===c.n)?`<a class="cta wa" id="waBtn" href="${waLink(NOTE.txt)}" target="_blank" rel="noopener">Avisarle por WhatsApp</a>`:"";
   $("dinfo").innerHTML=`${val}${waBtn}${holder&&!s.done?"<div style='font-weight:600;color:var(--muted);margin-top:4px'>Esta la juega ella cuando menos te lo esperes</div>":""}
-   <div class="row">${s.done?`<button class="cta ghost" id="undo">Deshacer</button>`:`<button class="cta pink" id="use">${holder?"Ya me la ha jugado ♥":"Canjear esta carta"}</button>`}</div>
-   ${(!s.done&&!holder)?`<div class="plan"><label>${s.plan?"Agendada para el "+new Date(s.plan).toLocaleString("es-ES",{weekday:"long",day:"numeric",month:"long",hour:"2-digit",minute:"2-digit"}):"Agendar un día para canjearla"}</label>
+   <div class="row">${s.done?`<button class="cta ghost" id="undo">Deshacer</button>`:`<button class="cta pink" id="use">${holder?"Ya me la ha jugado ♥":"Canjear"}</button>`}</div>
+   ${(!s.done&&!holder)?`<div class="plan"><label>${s.plan?"Agendada para el "+new Date(s.plan).toLocaleString("es-ES",{weekday:"long",day:"numeric",month:"long",hour:"2-digit",minute:"2-digit"}):"¿Qué día la usamos?"}</label>
      <div class="pr"><input type="datetime-local" id="planIn" value="${s.plan?new Date(s.plan-new Date(s.plan).getTimezoneOffset()*6e4).toISOString().slice(0,16):""}"><button class="cta ghost" id="planOk">${s.plan?"Cambiar":"Agendar"}</button></div>
      ${s.plan?`<div class="calrow"><a href="${planGcal(c,s.plan)}" target="_blank" rel="noopener">Pasar a Google Calendar</a><a href="#" id="planDel">Quitar</a></div>`:""}</div>`:""}
-   ${(!s.done&&!holder&&R[c.r].d&&d>0)?`<div class="calrow"><a href="${gcalLink(c)}" target="_blank" rel="noopener">Recordármelo (Google Calendar)</a>${SANDBOXED?"":`<a href="${icsHref(c)}" download="recordatorio-${c.n}.ics">Calendario del móvil</a>`}</div>`:""}`;
+   ${(!s.done&&!holder&&R[c.r].d&&d>0)?`<div class="calrow"><a href="${gcalLink(c)}" target="_blank" rel="noopener">Ponerlo en Google Calendar</a>${SANDBOXED?"":`<a href="${icsHref(c)}" download="recordatorio-${c.n}.ics">Calendario del móvil</a>`}</div>`:""}`;
   const wb=$("waBtn");if(wb)wb.addEventListener("click",()=>{NOTE=null;setTimeout(()=>detail(c),300)});
   const u=$("use");if(u)u.onclick=()=>{st.cards[c.n].done=Date.now();save();NOTE={n:c.n,txt:holder?`💗 Ya me has jugado la carta "${c.name}" ♥`:`💗 Canjeo la carta "${c.name}"\n${c.efecto}`};sparkle("#ff8fb8");buzz(40);detail(c);render()};
   const un=$("undo");if(un)un.onclick=()=>{delete st.cards[c.n].done;save();detail(c);render()};
@@ -794,12 +794,12 @@ try{matchMedia("(prefers-color-scheme: dark)").addEventListener("change",()=>{if
 const _buzz=buzz;buzz=function(ms){if(SET.vibe!==false)_buzz(ms)};
 function openSettings(){const seg=(k,opts)=>`<div class="seg">${opts.map(([v,l])=>`<button data-k="${k}" data-v="${v}" class="${String(SET[k])===String(v)?"on":""}">${l}</button>`).join("")}</div>`;
  $("setp").innerHTML=`<h3>Ajustes</h3>
- <div class="srow"><div class="l">Tema</div><div class="d">Cómo se ve la app</div>${seg("theme",[["light","Claro"],["dark","Oscuro"],["auto","Automático"]])}</div>
- <div class="srow"><div class="l">Pantalla de inicio</div><div class="d">La portada con el logo al abrir la app</div>${seg("splash",[["always","Siempre"],["day","Una vez al día"],["never","Nunca"]])}</div>
- <div class="srow"><div class="l">Brillos y animaciones</div><div class="d">Destellos, reflejos y cartas flotando</div>${seg("anim",[["true","Activados"],["false","Desactivados"]])}</div>
- <div class="srow"><div class="l">Vibración</div><div class="d">Al abrir sobres y canjear cartas</div>${seg("vibe",[["true","Sí"],["false","No"]])}</div>
- <div class="srow"><div class="l">Cartas por fila</div><div class="d">En la colección</div>${seg("cols",[["2","2 · grandes"],["3","3 · pequeñas"]])}</div>
- ${(ENC.sync&&getUser())?`<div class="srow"><div class="l">Notificaciones</div><div class="d" id="pushD">${!PUSHOK()&&!(ISIOS&&!STANDALONE())?"Este navegador no permite notificaciones.":ISIOS&&!STANDALONE()?"En iPhone tienes que añadirla a la pantalla de inicio (Compartir → Añadir a pantalla de inicio) y abrirla desde ahí":pushOn()?"Activadas":"Te aviso de los planes, de lo que caduca y de los sobres nuevos"}</div>${PUSHOK()&&!(ISIOS&&!STANDALONE())?`<div class="seg">${pushOn()?`<button id="pushT">Probar</button><button id="pushX">Desactivar</button>`:`<button id="pushA">Activar</button>`}</div>`:""}</div>`:""}
+ <div class="srow"><div class="l">Tema</div>${seg("theme",[["light","Claro"],["dark","Oscuro"],["auto","Automático"]])}</div>
+ <div class="srow"><div class="l">Pantalla de inicio</div><div class="d">La portada del principio</div>${seg("splash",[["always","Siempre"],["day","Una vez al día"],["never","Nunca"]])}</div>
+ <div class="srow"><div class="l">Brillos y animaciones</div>${seg("anim",[["true","Activados"],["false","Desactivados"]])}</div>
+ <div class="srow"><div class="l">Vibración</div>${seg("vibe",[["true","Sí"],["false","No"]])}</div>
+ <div class="srow"><div class="l">Cartas por fila</div>${seg("cols",[["2","2, grandes"],["3","3, pequeñas"]])}</div>
+ ${(ENC.sync&&getUser())?`<div class="srow"><div class="l">Notificaciones</div><div class="d" id="pushD">${!PUSHOK()&&!(ISIOS&&!STANDALONE())?"Este navegador no deja 😒":ISIOS&&!STANDALONE()?"En iPhone tienes que añadirla a la pantalla de inicio (Compartir → Añadir a pantalla de inicio) y abrirla desde ahí":pushOn()?"Activadas":"Te aviso de los planes, de lo que caduca y de los sobres nuevos"}</div>${PUSHOK()&&!(ISIOS&&!STANDALONE())?`<div class="seg">${pushOn()?`<button id="pushT">Probar</button><button id="pushX">Desactivar</button>`:`<button id="pushA">Activar</button>`}</div>`:""}</div>`:""}
  ${(getUser()&&!NOSYNC)?`<div class="srow"><div class="l">Sesión</div><div class="d">Has entrado como <b>${esc(getUser())}</b></div><div class="seg"><button id="logoutB">Cerrar sesión</button></div></div>`:""}
  <div class="btns" style="margin-top:14px"><button class="cta pink" id="setOk" style="width:100%">Listo</button></div>`;
  $("ovSet").classList.add("on");
