@@ -19,6 +19,10 @@ module.exports = async (req, res) => {
     const { list, del } = require('@vercel/blob'); const { sendCustom } = require('./push.js'); let custom = 0;
     const r = await list({ prefix: 'push/custom/', limit: 200 });
     for (const x of r.blobs || []) { const c = await L.readJSON(x.pathname); if (c && c.day && c.day <= day) { await sendCustom(c); custom++; try { await del(x.pathname); } catch (e) {} } }
-    return res.status(200).json({ ok: true, day, sent, custom });
+    // Lo que él le ha programado a ella.
+    const { notifyHer } = require('./push.js'); let his = 0;
+    const rq = await list({ prefix: 'push/requests/', limit: 200 });
+    for (const x of rq.blobs || []) { const r = await L.readJSON(x.pathname); if (r && r.day && !r.sent && r.day <= day) { await notifyHer(r); r.sent = Date.now(); await L.writeJSON(x.pathname, r); his++; } }
+    return res.status(200).json({ ok: true, day, sent, custom, his });
   } catch (e) { return res.status(500).json({ error: 'server', message: String(e && e.message || e).slice(0, 200) }); }
 };

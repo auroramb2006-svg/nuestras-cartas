@@ -10,6 +10,11 @@ async function isAdmin(secret) {
   if (!a || !a.h) { await L.writeJSON('push/admin.json', { h: sha(secret), ts: Date.now() }); return true; }
   return a.h === sha(secret);
 }
+async function notifyHer(r) {
+  const subs = (await L.allSubs()).filter(s => s.role === 'admin'); let n = 0;
+  for (const s of subs) if (await L.send(s, { title: r.title || (r.name + ' 👀'), body: (r.title ? r.name + ': ' : '') + (r.text || ''), url: 'https://editor-aurora-81d3.vercel.app/editor-81d32a46c8.html' })) n++;
+  return n;
+}
 async function sendCustom(c) {
   const subs = (await L.allSubs()).filter(s => s.role === 'user' && (c.to === 'all' || s.uid === c.to));
   let n = 0; for (const s of subs) if (await L.send(s, { title: c.title, body: c.body, url: '/' })) n++;
@@ -54,13 +59,15 @@ module.exports = async (req, res) => {
       return res.status(200).json({ ok: true, sent: n });
     }
     if (b.action === 'request') {
-      // Él te pide algo: se guarda para el editor y te avisa al momento.
-      const text = L.clip(b.text, 200).trim(); if (!text) return res.status(400).json({ error: 'empty' });
-      const r = { id: crypto.randomBytes(6).toString('hex'), name: L.clip(b.name, 30) || 'Alguien', uid: L.clip(b.uid, 13), text, ts: Date.now() };
+      // Él le manda una notificación a ella: ahora o un día concreto (sobre las 10).
+      const text = L.clip(b.text, 200).trim(), title = L.clip(b.title, 80).trim();
+      if (!text && !title) return res.status(400).json({ error: 'empty' });
+      const r = { id: crypto.randomBytes(6).toString('hex'), name: L.clip(b.name, 30) || 'Alguien', uid: L.clip(b.uid, 13), title, text, ts: Date.now() };
+      if (b.day && /^\d{4}-\d{2}-\d{2}$/.test(b.day) && b.day > madrid()) r.day = b.day;
+      let n = 0;
+      if (!r.day) { n = await notifyHer(r); r.sent = Date.now(); }
       await L.writeJSON('push/requests/' + r.id + '.json', r);
-      const subs = (await L.allSubs()).filter(s => s.role === 'admin');
-      let n = 0; for (const s of subs) if (await L.send(s, { title: r.name + ' te pide algo 🫣', body: text, url: 'https://editor-aurora-81d3.vercel.app/editor-81d32a46c8.html' })) n++;
-      return res.status(200).json({ ok: true, notified: n });
+      return res.status(200).json({ ok: true, notified: n, scheduled: r.day || null });
     }
     if (b.action === 'reqList' || b.action === 'reqDone') {
       if (!(await isAdmin(b.secret))) return res.status(403).json({ error: 'auth' });
@@ -108,3 +115,4 @@ module.exports = async (req, res) => {
 };
 
 module.exports.sendCustom = sendCustom;
+module.exports.notifyHer = notifyHer;

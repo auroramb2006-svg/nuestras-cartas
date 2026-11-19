@@ -279,7 +279,7 @@ html[data-theme="dark"] .hxb{background:#2a2250;color:#fff}
 .achbar{height:8px;border-radius:9px;background:rgba(143,123,255,.18);overflow:hidden;margin:6px 0 14px}.achbar i{display:block;height:100%;border-radius:9px;background:linear-gradient(90deg,#ffd36e,#ff6f9f)}
 .achg{display:grid;grid-template-columns:1fr 1fr;gap:8px;max-height:52vh;overflow:auto;padding:2px}.ach{border-radius:14px;padding:10px;background:rgba(143,123,255,.08);text-align:center}.ach .e{font-size:28px}.ach b{display:block;font-size:13px;font-weight:700;margin-top:2px}.ach small{display:block;font-size:11px;font-weight:700;color:#8a85a6;margin-top:2px}.ach.on{background:#ffe9b8}html[data-theme="dark"] .ach.on{background:#4a3b62}.ach:nth-child(odd){transform:rotate(-.8deg)}.ach:nth-child(even){transform:rotate(.7deg)}.ach:nth-child(3n){border-radius:18px 12px 16px 10px}.ach:not(.on) .e{font-size:20px;font-weight:700;width:34px;height:34px;line-height:34px;margin:0 auto;border-radius:50%;background:rgba(143,123,255,.18);color:#8a85a6}
 .qchips{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 10px}.qchips button{border:2px solid rgba(143,123,255,.35);background:transparent;color:inherit;border-radius:99px;padding:6px 10px;font:inherit;font-size:13px;font-weight:600;cursor:pointer}.qchips button.on{background:#8f7bff;border-color:#8f7bff;color:#fff}
-#reqp{display:flex;flex-direction:column;height:min(82vh,640px)}.chatHead{display:flex;align-items:center;justify-content:space-between}.chatHead h3{margin:0}.chatHead .close{position:static;inset:auto;transform:none;flex-shrink:0;border:none;background:rgba(143,123,255,.12);color:inherit;width:34px;height:34px;border-radius:50%;font-size:15px;cursor:pointer}
+#reqp .rin{width:100%;box-sizing:border-box;padding:11px 12px;border-radius:14px;border:2px solid rgba(143,123,255,.35);font:inherit;font-weight:600;background:rgba(143,123,255,.08);color:inherit;outline:none;margin-bottom:8px;resize:none}#reqp .msg{margin:0 0 8px}.chatHead{display:flex;align-items:center;justify-content:space-between}.chatHead h3{margin:0}.chatHead .close{position:static;inset:auto;transform:none;flex-shrink:0;border:none;background:rgba(143,123,255,.12);color:inherit;width:34px;height:34px;border-radius:50%;font-size:15px;cursor:pointer}
 .chatList{flex:1;overflow-y:auto;margin:10px -4px 8px;padding:4px;display:flex;flex-direction:column;gap:6px}.chatEmpty{margin:auto;text-align:center;color:#8a85a6;font-size:14px;padding:20px}
 .bub{max-width:78%;padding:8px 12px 6px;border-radius:18px;font-size:15px;line-height:1.35;word-wrap:break-word;white-space:pre-wrap}.bub small{display:block;font-size:10px;opacity:.6;margin-top:2px;text-align:right}
 .bub.me{align-self:flex-end;background:#6f7dff;color:#fff;border-bottom-right-radius:6px}.bub.her{align-self:flex-start;background:#ffe1ec;color:#2b2a3d;border-bottom-left-radius:6px}
@@ -373,7 +373,7 @@ html[data-theme="dark"] .news{background:#2a2250;color:#fff}html[data-theme="dar
      <div class="codebox"><input id="code" autocomplete="off" autocapitalize="characters" spellcheck="false" enterkeyhint="go" placeholder="CÓDIGO DEL SOBRE"><button class="cta" id="go" type="button">Abrir</button></div>
      <div class="msg" id="msg"></div>
    </div>
-   <div class="hx"><button class="hxb" id="achBtn"><span class="hxi">✦</span><span><b>Logros</b><small id="achCount">0/0</small></span></button><button class="hxb" id="reqBtn"><span class="hxi">♥</span><span><b>Hablamos</b><small id="chatSub">tú y yo</small></span><i class="cbadge" id="chatBadge"></i></button></div>
+   <div class="hx"><button class="hxb" id="achBtn"><span class="hxi">✦</span><span><b>Logros</b><small id="achCount">0/0</small></span></button><button class="hxb" id="reqBtn"><span class="hxi">♥</span><span><b>Mándame algo</b><small>me llega como noti</small></span></button></div>
    <h2 class="sec">Lo último que te ha tocado</h2>
    <div class="rowscroll" id="recent"></div>
    <h2 class="sec">Ojo, que caducan</h2>
@@ -658,36 +658,32 @@ function openAch(){const n=Object.keys(st.ach||{}).filter(k=>ACH.some(a=>a[0]===
  <div class="btns" style="margin-top:14px"><button class="cta pink" id="achOk" style="width:100%">Cerrar</button></div>`;
  $("ovAch").classList.add("on");$("achOk").onclick=()=>$("ovAch").classList.remove("on")}
 $("achBtn").onclick=openAch;$("ovAch").addEventListener("click",e=>{if(e.target.id==="ovAch")e.target.classList.remove("on")});
-// ---------- chat (él en la app, ella en el editor) ----------
-const QREQ=["🧉 ¿Un mate?","Un abrazo 🥰","Llámame","Algo dulce","¿Jugamos? 😜","Siesta 🫩"];
-function chatTok(){let t="";try{t=localStorage.getItem("nc-chat-tok")||""}catch(e){}if(!t){t=[...crypto.getRandomValues(new Uint8Array(18))].map(b=>b.toString(16).padStart(2,"0")).join("");try{localStorage.setItem("nc-chat-tok",t)}catch(e){}}return t}
-const chatPost=o=>fetch("/api/chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(Object.assign({uid:userId(getUser()),name:getUser(),tok:chatTok()},o))});
-let CHAT={msgs:[],timer:0,open:false};
-function chatTime(ts){const d=new Date(ts),n=new Date();const h=d.toLocaleTimeString("es-ES",{hour:"2-digit",minute:"2-digit"});return d.toDateString()===n.toDateString()?h:d.toLocaleDateString("es-ES",{day:"numeric",month:"short"})+", "+h}
-function drawChat(){const box=$("chatList");if(!box)return;const atEnd=box.scrollHeight-box.scrollTop-box.clientHeight<60;
- box.innerHTML=CHAT.msgs.length?CHAT.msgs.map(m=>`<div class="bub ${m.from==="el"?"me":"her"}"><span>${esc(m.t)}</span><small>${chatTime(m.ts)}</small></div>`).join(""):`<div class="chatEmpty">Aquí no hay nada todavía. Escríbeme lo que quieras 🫣</div>`;
- if(atEnd||CHAT.first){box.scrollTop=box.scrollHeight;CHAT.first=false}}
-async function chatLoad(){try{const r=await chatPost({action:"get"});if(r.ok){const j=await r.json();CHAT.msgs=j.msgs||[];drawChat();setBadge(0)}}catch(e){}}
-function setBadge(n){const b=$("chatBadge");if(!b)return;b.textContent=n||"";b.style.display=n?"grid":"none"}
-async function chatUnread(){if(!ENC.sync||!getUser())return;try{const r=await chatPost({action:"unread"});if(r.ok){const j=await r.json();setBadge(j.n)}}catch(e){}}
-function openReq(){const can=ENC.sync&&getUser();
- $("reqp").innerHTML=`<div class="chatHead"><h3>Hablamos</h3><button class="close" id="reqX">✕</button></div>
- ${can?`<div class="chatList" id="chatList"><div class="chatEmpty">Cargando…</div></div>
+// ---------- mándame algo: él le manda una notificación a ella ----------
+const QREQ=["🧉 ¿Un mate?","Un abrazo 🥰","Llámame","Algo dulce","¿Jugamos? 😜","Siesta 🫩","Te echo de menos"];
+function dk(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
+function openReq(){const can=ENC.sync&&getUser();const H=(st.reqs||[]).slice(-5).reverse();const min=dk(new Date(Date.now()+DAY));
+ $("reqp").innerHTML=`<div class="chatHead"><h3>Mándame algo</h3><button class="close" id="reqX">✕</button></div>
+ ${can?`<p style="font-size:13px;color:#8a85a6;margin:4px 0 10px">Me llega como notificación, como las que te mando yo</p>
  <div class="qchips">${QREQ.map(q=>`<button data-q="${esc(q)}">${esc(q)}</button>`).join("")}</div>
- <div class="chatIn"><textarea id="reqT" rows="1" maxlength="500" placeholder="Escribe aquí"></textarea><button class="cta pink" id="reqS">Enviar</button></div>
- <div class="msg" id="reqM"></div>`:`<p style="font-size:14px">Antes tienes que iniciar sesión</p>`}`;
- $("ovReq").classList.add("on");$("reqX").onclick=closeChat;if(!can)return;
- const ta=$("reqT");CHAT.open=true;CHAT.first=true;chatLoad();clearInterval(CHAT.timer);CHAT.timer=setInterval(()=>{if(!document.hidden)chatLoad()},5000);
- ta.addEventListener("input",()=>{ta.style.height="auto";ta.style.height=Math.min(ta.scrollHeight,110)+"px"});
- $("reqp").querySelectorAll("[data-q]").forEach(b=>b.onclick=()=>{ta.value=b.dataset.q;ta.focus()});
- const send=async()=>{const t=ta.value.trim();if(!t)return;$("reqS").disabled=true;
-  CHAT.msgs=CHAT.msgs.concat([{from:"el",t,ts:Date.now()}]);CHAT.first=true;drawChat();ta.value="";ta.style.height="auto";
-  try{const r=await chatPost({action:"send",text:t});if(!r.ok)throw 0;const j=await r.json();CHAT.msgs=j.msgs||CHAT.msgs;drawChat();buzz(20);$("reqM").textContent=""}
-  catch(e){$("reqM").textContent="No se ha enviado 😒 Prueba otra vez";CHAT.msgs=CHAT.msgs.filter(m=>m.t!==t||m.id);drawChat();ta.value=t}
-  $("reqS").disabled=false};
- $("reqS").onclick=send;ta.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send()}})}
-function closeChat(){CHAT.open=false;clearInterval(CHAT.timer);$("ovReq").classList.remove("on")}
-$("reqBtn").onclick=openReq;$("ovReq").addEventListener("click",e=>{if(e.target.id==="ovReq")closeChat()});
+ <input id="reqTi" class="rin" maxlength="80" placeholder="Título (si quieres)">
+ <textarea id="reqT" class="rin" rows="3" maxlength="200" placeholder="Lo que quieras decirme"></textarea>
+ <div style="display:flex;gap:8px"><select id="reqW" class="rin" style="flex:1"><option value="now">Ahora</option><option value="day">Otro día</option></select><input type="date" id="reqD" class="rin" min="${min}" style="flex:1;display:none"></div>
+ <div class="msg" id="reqM"></div>
+ <button class="cta pink" id="reqS" style="width:100%">Enviar</button>
+ ${H.length?`<div class="reqh">Lo último que me has mandado${H.map(r=>`<div>${esc(r.t)} <span style="opacity:.6">(${r.day?"para el "+new Date(r.day+"T12:00").toLocaleDateString("es-ES",{day:"numeric",month:"short"}):new Date(r.ts).toLocaleDateString("es-ES",{day:"numeric",month:"short"})})</span></div>`).join("")}</div>`:""}`
+ :`<p style="font-size:14px">Antes tienes que iniciar sesión</p>`}`;
+ $("ovReq").classList.add("on");$("reqX").onclick=()=>$("ovReq").classList.remove("on");if(!can)return;
+ const ta=$("reqT"),w=$("reqW"),d=$("reqD");
+ w.onchange=()=>{d.style.display=w.value==="day"?"block":"none";$("reqS").textContent=w.value==="day"?"Programar":"Enviar"};
+ $("reqp").querySelectorAll("[data-q]").forEach(b=>b.onclick=()=>{$("reqp").querySelectorAll("[data-q]").forEach(x=>x.classList.toggle("on",x===b));ta.value=b.dataset.q});
+ $("reqS").onclick=async()=>{const t=ta.value.trim(),ti=$("reqTi").value.trim();if(!t&&!ti){$("reqM").textContent="Escribe algo, anda 🙄";return}
+  const day=w.value==="day"?d.value:"";if(w.value==="day"&&!day){$("reqM").textContent="Elige el día";return}
+  $("reqS").disabled=true;$("reqM").textContent="Enviando…";
+  try{const r=await fetch("/api/push",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"request",name:getUser(),uid:userId(getUser()),title:ti,text:t,day})});if(!r.ok)throw 0;
+   st.reqs=(st.reqs||[]).concat([{t:ti||t,ts:Date.now(),day}]).slice(-30);_save0();buzz(30);
+   $("reqM").textContent=day?"Programada, me llegará ese día sobre las 10 😏":"Enviada, ya me ha llegado 💕";setTimeout(()=>$("ovReq").classList.remove("on"),1400)}
+  catch(e){$("reqM").textContent="No se ha enviado 😒 Prueba otra vez";$("reqS").disabled=false}}}
+$("reqBtn").onclick=openReq;$("ovReq").addEventListener("click",e=>{if(e.target.id==="ovReq")e.target.classList.remove("on")});
 
 // ---------- avisos por WhatsApp ----------
 let NOTE=null;
@@ -838,7 +834,7 @@ $("gearBtn").onclick=openSettings;$("ovSet").addEventListener("click",e=>{if(e.t
 applySet();
 (function(){const sp=$("splash");if(!sp)return;
  let showIt=SET.splash!=="never";if(SET.splash==="day"){let last="";try{last=localStorage.getItem("nc-splash-day")||""}catch(e){}const today=new Date().toDateString();showIt=last!==today;try{localStorage.setItem("nc-splash-day",today)}catch(e){}}
- if(!showIt){sp.remove();setTimeout(()=>showLogin(()=>showNews(()=>{checkAlerts();if(/[?&]chat/.test(location.search))openReq()})),600);return}
+ if(!showIt){sp.remove();setTimeout(()=>showLogin(()=>showNews(()=>checkAlerts())),600);return}
  const fc=$("flc");const R=(a,b)=>a+Math.random()*(b-a);
  for(let i=0;i<14;i++){const d=document.createElement("div");const depth=Math.random();d.className="fl"+(i%5===0?" h":"");
   const ang=i/14*6.283+R(-.2,.2),rx=R(36,56),ry=R(36,52);
@@ -847,12 +843,12 @@ applySet();
  const msgs=["Barajando cartas…","Sellando sobres…","Puliendo los brillos…","Escondiendo la secreta…","¡Listo!"];
  const iv=setInterval(()=>{p=Math.min(100,p+8+Math.random()*14);bar.style.width=p+"%";lt.textContent=msgs[Math.min(msgs.length-1,Math.floor(p/25))];
   if(p>=100){clearInterval(iv);setTimeout(()=>{ready=true;sp.classList.add("ready")},250)}},160);
- function go(){sp.style.transition="";sp.style.transform="";sp.classList.add("gone");buzz(20);setTimeout(()=>sp.remove(),700);setTimeout(()=>showLogin(()=>showNews(()=>{checkAlerts();if(/[?&]chat/.test(location.search))openReq()})),900)}
+ function go(){sp.style.transition="";sp.style.transform="";sp.classList.add("gone");buzz(20);setTimeout(()=>sp.remove(),700);setTimeout(()=>showLogin(()=>showNews(()=>checkAlerts())),900)}
  sp.addEventListener("pointerdown",e=>{y0=e.clientY;dy=0;try{sp.setPointerCapture(e.pointerId)}catch(x){}});
  sp.addEventListener("pointermove",e=>{if(y0===null||!ready)return;dy=Math.min(0,e.clientY-y0);sp.style.transition="none";sp.style.transform=`translateY(${dy}px)`});
  sp.addEventListener("pointerup",()=>{if(y0===null)return;y0=null;if(!ready)return;if(dy<-60||Math.abs(dy)<6)go();else{sp.style.transition="";sp.style.transform=""}});
  document.addEventListener("keydown",e=>{if(ready&&document.getElementById("splash")&&(e.key==="Enter"||e.key===" "))go()});
 })();
-render();checkAch(true);updAchCount();queueSync();queuePush();chatUnread();setInterval(()=>{if(!document.hidden&&!CHAT.open)chatUnread()},60000);document.addEventListener("visibilitychange",()=>{if(!document.hidden&&!CHAT.open)chatUnread()});
+render();checkAch(true);updAchCount();queueSync();queuePush();
 document.addEventListener("visibilitychange",()=>{if(!document.hidden){render();checkAlerts()}else{queueSync()}});
 </script></body></html>
