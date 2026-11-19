@@ -306,7 +306,7 @@ const TYPES=["Argentina","Dulce","Planes","Especial","Gamer","Calma","Amor","Mot
 const RAR={c:"Común",p:"Poco común",r:"Rara",l:"Legendaria",s:"Shiny",x:"Secreta"};
 const KEY="editor-cartas-v1";
 const REPO="auroramb2006-svg/nuestras-cartas",BRANCH="main",DATAF="cartas-datos.enc",EDF=location.pathname.split("/").pop()||"editor.html";
-const EDITOR_VER="2026-11-20c";
+const EDITOR_VER="2026-11-20d";
 async function checkEdUpdate(){try{const r=await fetch(location.pathname+"?v="+Date.now(),{cache:"no-store"});if(!r.ok)return;const t=await r.text();const m=t.match(/const EDITOR_VER="([^"]+)"/);
  if(m&&m[1]!==EDITOR_VER){let n=0;try{n=+sessionStorage.getItem("nc-edreload")||0}catch(e){}if(n<2){try{sessionStorage.setItem("nc-edreload",n+1)}catch(e){}location.reload()}}}catch(e){}}
 checkEdUpdate();document.addEventListener("visibilitychange",()=>{if(!document.hidden)checkEdUpdate()});
@@ -447,6 +447,11 @@ document.getElementById("imp").onclick=()=>document.getElementById("impf").click
 document.getElementById("impf").onchange=e=>{const f=e.target.files[0];if(!f)return;f.text().then(t=>{try{const o=JSON.parse(t);if(!o.cards||!o.codes)throw 0;const keepP=D&&D.placeholder;D=o;normalize();if(!D.placeholder)D.placeholder=keepP;save();render();toast("Copia cargada ✓ Pulsa Publicar para subirla")}catch(x){toast("Ese archivo no es una copia válida")}})};
 
 // ---------- actividad de él ----------
+// ---- perfiles favoritos (se guardan en este móvil) ----
+const FAVK="nc-favs";const favs=()=>{try{return JSON.parse(localStorage.getItem(FAVK)||"[]")}catch(e){return[]}};const isFav=id=>favs().includes(id);
+const star=id=>isFav(id)?"★ ":"";const hasFavs=()=>favs().some(f=>ACTS.some(a=>a.id===f));
+function sortActs(){ACTS.sort((x,y)=>(x.id==="_old")-(y.id==="_old")||isFav(y.id)-isFav(x.id)||y.ts-x.ts)}
+function togFav(id){let f=favs();f=f.includes(id)?f.filter(x=>x!==id):f.concat([id]);try{localStorage.setItem(FAVK,JSON.stringify(f))}catch(e){}sortActs();if(!CAL.touched)CAL.w=hasFavs()?"fav":"all";drawAct();toast(isFav(id)?"Añadido a favoritos ★":"Quitado de favoritos")}
 async function loadAct(manual){ACTERR="";try{const r=await fetch("https://nuestrascartas.vercel.app/api/sync?t="+Date.now(),{cache:"no-store"});
   if(r.status===404){ACT=null;ACTS=[];ACTERR="empty"}else if(!r.ok){let e={};try{e=await r.json()}catch(x){}ACTERR=e.error||"server"}
   else{const o=await r.json();const unb=s=>{const b=atob(s);const u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return u};
@@ -454,7 +459,7 @@ async function loadAct(manual){ACTERR="";try{const r=await fetch("https://nuestr
    const dec=async x=>{const raw=await crypto.subtle.decrypt({name:"RSA-OAEP"},pk,unb(x.k));const key=await crypto.subtle.importKey("raw",raw,"AES-GCM",false,["decrypt"]);
     const a=JSON.parse(new TextDecoder().decode(await crypto.subtle.decrypt({name:"AES-GCM",iv:unb(x.iv)},key,unb(x.ct))));a.id=x.u||"_old";if(!a.name)a.name="Sin nombre (versión antigua)";return a};
    const list=Array.isArray(o.items)?o.items:[o];const out=[];for(const x of list){try{out.push(await dec(x))}catch(e){}}
-   ACTS=out.sort((x,y)=>(x.id==="_old")-(y.id==="_old")||y.ts-x.ts);
+   ACTS=out;sortActs();if(!CAL.touched)CAL.w=hasFavs()?"fav":"all";
    if(!ACTS.length){ACT=null;ACTERR="read"}else{let w="";try{w=localStorage.getItem("nc-act-who")||""}catch(e){}ACT=ACTS.find(x=>x.id===w)||ACTS[0]}}}
  catch(e){ACTERR=ACTERR||"read"}
  drawAct();if(manual)toast(ACT?"Actualizado":"Aún nada")}
@@ -468,9 +473,9 @@ function drawAct(el0){const el=el0||document.querySelector(".act");if(!el)return
  el.querySelectorAll("[data-rqdel]").forEach(b=>b.onclick=()=>{b.disabled=true;rqDone(b.dataset.rqdel,false)});
  el.querySelectorAll("[data-cndel]").forEach(b=>b.onclick=async()=>{try{await cnCall({action:"customDel",id:b.dataset.cndel})}catch(e){}cnLoad()});
  el.querySelectorAll("[data-calm]").forEach(b=>b.onclick=()=>{CAL.m+=+b.dataset.calm;CAL.d=null;drawAct(el)});
- el.querySelectorAll("[data-calw]").forEach(b=>b.onclick=()=>{CAL.w=b.dataset.calw;CAL.d=null;drawAct(el)});
+ el.querySelectorAll("[data-calw]").forEach(b=>b.onclick=()=>{CAL.touched=1;CAL.w=b.dataset.calw;CAL.d=null;drawAct(el)});
  el.querySelectorAll("[data-cald]").forEach(b=>b.onclick=()=>{CAL.d=CAL.d===b.dataset.cald?null:b.dataset.cald;drawAct(el)});
- const sel=el.querySelector("#actWho");if(sel)sel.onchange=()=>{ACT=ACTS.find(x=>x.id===sel.value)||ACTS[0];try{localStorage.setItem("nc-act-who",ACT.id)}catch(e){}drawAct()}}
+ const sel=el.querySelector("#actWho");if(sel)sel.onchange=()=>{ACT=ACTS.find(x=>x.id===sel.value)||ACTS[0];try{localStorage.setItem("nc-act-who",ACT.id)}catch(e){}drawAct()};const fb=el.querySelector("#actFav");if(fb)fb.onclick=()=>togFav(ACT.id)}
 const fmt=ts=>new Date(ts).toLocaleString("es-ES",{weekday:"short",day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"});
 const RD={c:30,p:30,r:60,l:90,s:0,x:0};
 const CAL={m:0,w:"all",d:null};
@@ -478,7 +483,7 @@ const PCOL=["#ff8fb8","#7cc7ff","#ffd36b","#8be3a5","#c7a2ff","#ff9f6b","#6be0d8
 const pcol=id=>{const i=ACTS.findIndex(x=>x.id===id);return PCOL[(i<0?0:i)%PCOL.length]};
 const dkey=ts=>{const d=new Date(ts);return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate()};
 function calEvents(){const ev=[];const cn=n=>{const c=D.cards.find(x=>x.n==n);return c?c.name:"Carta "+n};
- for(const P of ACTS){if(CAL.w!=="all"&&P.id!==CAL.w)continue;const C=P.cards||{};
+ for(const P of ACTS){if(CAL.w==="fav"?!isFav(P.id):(CAL.w!=="all"&&P.id!==CAL.w))continue;const C=P.cards||{};
   for(const n in C){const s=C[n];const c=D.cards.find(x=>x.n==n);
    if(s.plan&&!s.done)ev.push({ts:s.plan,ic:"💕",t:"Agendada: "+cn(n),p:P});
    if(s.done)ev.push({ts:s.done,ic:"✓",t:"Canjeada: "+cn(n),p:P});
@@ -490,7 +495,7 @@ function calHTML(){if(!ACTS.length)return "";const ev=calEvents();const by={};ev
  const first=(new Date(Y,M,1).getDay()+6)%7,days=new Date(Y,M+1,0).getDate();const today=dkey(Date.now());
  const chip=(id,label,col)=>`<button data-calw="${esc(id)}" style="padding:5px 10px;border-radius:99px;font-size:12px;font-weight:800;border:2px solid ${col};background:${CAL.w===id?col:"transparent"};color:${CAL.w===id?"#1b1430":"#fff"};margin:0 6px 6px 0">${esc(label)}</button>`;
  let h=`<div style="margin-top:14px;font-size:14px;font-weight:900;color:#ff8fb8">Calendario</div>
- <div style="margin-top:8px;display:flex;flex-wrap:wrap">${chip("all","Todos","#a59cc4")}${ACTS.map(P=>chip(P.id,P.name,pcol(P.id))).join("")}</div>
+ <div style="margin-top:8px;display:flex;flex-wrap:wrap">${chip("all","Todos","#a59cc4")}${hasFavs()?chip("fav","★ Favoritos","#ffd36b"):""}${ACTS.map(P=>chip(P.id,star(P.id)+P.name,pcol(P.id))).join("")}</div>
  <div style="display:flex;justify-content:space-between;align-items:center;margin:6px 0 8px"><button data-calm="-1" style="padding:4px 12px">‹</button><b>${(m=>m.charAt(0).toUpperCase()+m.slice(1))(base.toLocaleDateString("es-ES",{month:"long",year:"numeric"}))}</b><button data-calm="1" style="padding:4px 12px">›</button></div>
  <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center;font-size:11px;font-weight:800;color:#a59cc4">${["L","M","X","J","V","S","D"].map(x=>`<div>${x}</div>`).join("")}`;
  for(let i=0;i<first;i++)h+=`<div></div>`;
@@ -545,7 +550,7 @@ async function cnSend(){if(CN.busy)return;if(!CN.title.trim()&&!CN.body.trim()){
  catch(e){CN.msg=e.message==="auth"?"Este editor no tiene permiso para enviar.":e.message==="nokey"?"Pulsa Publicar una vez y vuelve a intentarlo.":"No se ha podido enviar. Prueba en un rato."}
  CN.busy=false;drawAct()}
 function customHTML(){const inp="width:100%;box-sizing:border-box;padding:9px 10px;border-radius:12px;font:inherit;font-weight:700;margin-top:6px";
- const opts=`<option value="all"${CN.to==="all"?" selected":""}>Todos</option>`+ACTS.filter(x=>x.id!=="_old").map(x=>`<option value="${esc(x.id)}"${CN.to===x.id?" selected":""}>${esc(x.name)}</option>`).join("");
+ const opts=`<option value="all"${CN.to==="all"?" selected":""}>Todos</option>`+ACTS.filter(x=>x.id!=="_old").map(x=>`<option value="${esc(x.id)}"${CN.to===x.id?" selected":""}>${star(x.id)}${esc(x.name)}</option>`).join("");
  const tmr=new Date(Date.now()+864e5);const min=tmr.getFullYear()+"-"+String(tmr.getMonth()+1).padStart(2,"0")+"-"+String(tmr.getDate()).padStart(2,"0");
  const L=CN.list;
  return `<div style="margin-top:14px;font-size:14px;font-weight:900;color:#ff8fb8">Mandarle un aviso</div>
@@ -777,7 +782,7 @@ async function trCheck(){const ppl=ACTS.filter(x=>x.id!=="_old");for(const p of 
 function trucoBoxHTML(){const ppl=ACTS.filter(x=>x.id!=="_old");if(!ppl.length)return "";
  const lab={reto:"te reta 😏",toca:"te toca",fin:"acabada"};
  return `<div style="margin-top:10px;padding:10px;border-radius:12px;background:#2f7d57;display:flex;align-items:center;gap:8px"><div style="flex:1;font-size:12px"><b style="color:#fff;font-size:14px">Truco</b><br><span style="color:#d9f2e4;font-weight:700">${ppl.map(p=>TRU.st[p.id]?esc(p.name)+": "+lab[TRU.st[p.id]]:"").filter(x=>x).join(", ")||"A 15, apostando una carta cada uno"}</span></div>
- <select id="trWho" style="padding:6px;border-radius:10px;font:inherit;font-weight:700;max-width:120px">${ppl.map(p=>`<option value="${esc(p.id)}">${esc(p.name)}</option>`).join("")}</select><button data-trgo style="padding:7px 12px;font-weight:900">Jugar</button></div>`}
+ <select id="trWho" style="padding:6px;border-radius:10px;font:inherit;font-weight:700;max-width:120px">${ppl.map(p=>`<option value="${esc(p.id)}">${star(p.id)}${esc(p.name)}</option>`).join("")}</select><button data-trgo style="padding:7px 12px;font-weight:900">Jugar</button></div>`}
 function actHTML(){const h=actHTML0();const k=h.indexOf("</div>")+6;if(CN.list===null&&D&&D.syncKeys){CN.list=[];setTimeout(cnLoad,0)}if(RQ.list===null&&D&&D.syncKeys&&!RQ.loading){RQ.loading=1;setTimeout(rqLoad,0)}if(!TRU.checked&&ACTS.length){TRU.checked=1;setTimeout(trCheck,0)}return h.slice(0,k)+pushBoxHTML()+trucoBoxHTML()+reqHTML()+customHTML()+h.slice(k)}
 function actHTML0(){
  const head=`<div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><b>👀 Actividad${ACT&&ACT.id!=="_old"?" de "+esc(ACT.name):" de él"}</b><button id="actR" style="padding:6px 10px;font-size:12px">Actualizar</button></div>`;
@@ -792,7 +797,7 @@ function actHTML0(){
  const li=(ic,txt,sub)=>`<div style="display:flex;gap:10px;align-items:center;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.07)"><span style="font-size:18px">${ic}</span><div><div style="font-weight:800;color:#fff">${esc(txt)}</div><small style="color:#a59cc4;font-weight:700">${esc(sub)}</small></div></div>`;
  const sec=(t,arr)=>arr.length?`<div style="margin-top:12px;font-size:14px;font-weight:900;color:#ff8fb8">${t}</div>${arr.join("")}`:"";
  const packName=n=>(D.packs[n]&&D.packs[n].name)||("Sobre "+n);
- const who=`<div style="margin-top:10px"><select id="actWho" style="width:100%;padding:9px 10px;border-radius:12px;font:inherit;font-weight:800">${ACTS.map(x=>`<option value="${esc(x.id)}"${x===ACT?" selected":""}>${esc(x.name)} · ${fmt(x.ts)}</option>`).join("")}</select><small style="display:block;margin-top:4px;color:#a59cc4;font-weight:700">${ACTS.length>1?"Elige a quién quieres ver":"Solo ha entrado una persona"}</small></div>`;
+ const who=`<div style="margin-top:10px"><select id="actWho" style="width:100%;padding:9px 10px;border-radius:12px;font:inherit;font-weight:800">${ACTS.map(x=>`<option value="${esc(x.id)}"${x===ACT?" selected":""}>${star(x.id)}${esc(x.name)}, ${fmt(x.ts)}</option>`).join("")}</select>${ACT&&ACT.id!=="_old"?`<button id="actFav" style="margin-top:6px;padding:7px 12px;font-weight:900;${isFav(ACT.id)?"background:#ffd36b;color:#3b2a00":""}">${isFav(ACT.id)?"★ Favorito":"☆ Marcar como favorito"}</button>`:""}<small style="display:block;margin-top:4px;color:#a59cc4;font-weight:700">${ACTS.length>1?"Elige a quién quieres ver":"Solo ha entrado una persona"}</small></div>`;
  return head+calHTML()+`<div style="margin-top:16px;font-size:14px;font-weight:900;color:#ff8fb8">Por persona</div>`+who+`<p style="margin:6px 0 0;font-size:12px">Última vez que abrió la app: <b>${fmt(ACT.ts)}</b></p>`
   +sec("Planes agendados",plans.map(([n,s])=>li("💕",name(n),fmt(s.plan)+(s.plan<now?" · ya pasó":""))))
   +sec("Caducan pronto",soon.map(([n,e])=>li("🫣",name(n),e<now?"caducada":"caduca "+fmt(e))))
