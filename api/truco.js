@@ -58,11 +58,21 @@ async function nudge(g, uid, who) {
   await notify(who, uid, 'Te toca 👀', 'En el truco, ' + g.names[T.other(who)] + ' está esperando');
 }
 
+function statsFrom(hist) {
+  const st = { el: 0, ella: 0, streakWho: null, streakN: 0, best: { el: 0, ella: 0 } };
+  for (const h of hist || []) { st[h.winner]++; if (st.streakWho === h.winner) st.streakN++; else { st.streakWho = h.winner; st.streakN = 1; } st.best[h.winner] = Math.max(st.best[h.winner], st.streakN); }
+  return st;
+}
 async function finish(g, uid) {
   const led = (await kv.get(uid + '-ledger')) || { prizes: [], debts: [] };
   if (g.winner === 'el') asList(g.bets.ella).forEach((card, i) => led.prizes.push({ id: g.id + '-' + i, card, ts: Date.now(), used: 0 }));
   else asList(g.bets.el).forEach((card, i) => led.debts.push({ id: g.id + '-' + i, card, ts: Date.now(), paid: 0 }));
   led.history = (led.history || []).concat([{ id: g.id, winner: g.winner, score: g.score, ts: Date.now(), bets: g.bets }]).slice(-50);
+  const st = led.stats || statsFrom(led.history.slice(0, -1));
+  st[g.winner] = (st[g.winner] || 0) + 1;
+  if (st.streakWho === g.winner) st.streakN++; else { st.streakWho = g.winner; st.streakN = 1; }
+  st.best = Object.assign({ el: 0, ella: 0 }, st.best); st.best[g.winner] = Math.max(st.best[g.winner], st.streakN);
+  led.stats = st;
   await kv.set(uid + '-ledger', led);
   const sc = g.score.el + ' a ' + g.score.ella;
   if (g.winner === 'el') { await notify('ella', uid, g.names.el + ' te ha ganado al truco 🙄', sc + '. Se lleva ' + betNames(g.bets.ella)); }
@@ -85,11 +95,11 @@ module.exports = async (req, res) => {
     const out = async () => {
       // Durante la partida no hace falta leer premios y deudas (ahorra lecturas).
       const led = g && g.status === 'play' && b.action !== 'act' ? { prizes: [], debts: [] } : ((await kv.get(uid + '-ledger')) || { prizes: [], debts: [] });
-      return res.status(200).json({ game: g ? T.view(g, who) : null, ledger: { prizes: led.prizes || [], debts: led.debts || [], history: (led.history || []).slice(-10) }, redis: !!(RURL && RTOK) });
+      return res.status(200).json({ game: g ? Object.assign(T.view(g, who), { chat: (g.chat || []).slice(-25), online: { [T.other(who)]: Date.now() - ((g.seen || {})[T.other(who)] || 0) < 12000 } }) : null, ledger: { prizes: led.prizes || [], debts: led.debts || [], history: (led.history || []).slice(-10), stats: led.stats || (led.history ? statsFrom(led.history) : null) }, redis: !!(RURL && RTOK) });
     };
 
     if (b.action === 'state') {
-      if (g && g.status !== 'done') { g.seen = Object.assign({}, g.seen, { [who]: Date.now() }); if (!g._sw || Date.now() - g._sw > 10000) { g._sw = Date.now(); await kv.set(gk, g); } }
+      if (g && g.status !== 'done') { g.seen = Object.assign({}, g.seen, { [who]: Date.now() }); g._sw = typeof g._sw === 'object' && g._sw ? g._sw : {}; if (Date.now() - (g._sw[who] || 0) > 8000) { g._sw[who] = Date.now(); await kv.set(gk, g); } }
       return out();
     }
     if (b.action === 'challenge') {
@@ -129,6 +139,16 @@ module.exports = async (req, res) => {
       g.v++; g.seen = Object.assign({}, g.seen, { [who]: Date.now() });
       if (g.status === 'done') { await kv.set(gk, g); await finish(g, uid); }
       else { const nxt = T.options(g, who).toAct; if (nxt && nxt !== who) await nudge(g, uid, nxt); await kv.set(gk, g); }
+      return out();
+    }
+    if (b.action === 'say') {
+      // Mini chat de la partida: reacciones y mensajes cortos.
+      const t = L.clip(b.text, 120).trim(); if (!t) return res.status(400).json({ error: 'empty' });
+      g.chat = (g.chat || []).concat([{ who, t, ts: Date.now() }]).slice(-40);
+      g.seen = Object.assign({}, g.seen, { [who]: Date.now() });
+      const o = T.other(who), seen = (g.seen || {})[o] || 0, last = (g.chatNudge || {})[o] || 0;
+      if (Date.now() - seen > 15000 && Date.now() - last > 60000) { g.chatNudge = Object.assign({}, g.chatNudge, { [o]: Date.now() }); await notify(o, uid, (who === 'el' ? g.names.el : 'Ella') + ' en el truco 👀', t); }
+      await kv.set(gk, g);
       return out();
     }
     if (b.action === 'useprize' && who === 'el') {
