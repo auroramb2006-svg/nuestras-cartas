@@ -306,7 +306,7 @@ const TYPES=["Argentina","Dulce","Planes","Especial","Gamer","Calma","Amor","Mot
 const RAR={c:"Común",p:"Poco común",r:"Rara",l:"Legendaria",s:"Shiny",x:"Secreta"};
 const KEY="editor-cartas-v1";
 const REPO="auroramb2006-svg/nuestras-cartas",BRANCH="main",DATAF="cartas-datos.enc",EDF=location.pathname.split("/").pop()||"editor.html";
-const EDITOR_VER="2026-11-19z";
+const EDITOR_VER="2026-11-20a";
 async function checkEdUpdate(){try{const r=await fetch(location.pathname+"?v="+Date.now(),{cache:"no-store"});if(!r.ok)return;const t=await r.text();const m=t.match(/const EDITOR_VER="([^"]+)"/);
  if(m&&m[1]!==EDITOR_VER){let n=0;try{n=+sessionStorage.getItem("nc-edreload")||0}catch(e){}if(n<2){try{sessionStorage.setItem("nc-edreload",n+1)}catch(e){}location.reload()}}}catch(e){}}
 checkEdUpdate();document.addEventListener("visibilitychange",()=>{if(!document.hidden)checkEdUpdate()});
@@ -351,6 +351,7 @@ function packIds(){return Object.keys(D.packs).map(Number).sort((a,b)=>a-b)}
 function newCode(name){const w=(name||"SOBRE").toUpperCase().normalize("NFD").replace(/[^A-Z]/g,"").slice(0,10)||"SOBRE";let c;do{c=w+"-"+(1000+Math.floor(Math.random()*9000))}while(Object.values(D.codes).map(norm).includes(norm(c)));return c}
 function render(){
   const L=document.getElementById("list");L.innerHTML="";const ids=packIds();
+  const nb=document.createElement("div");nb.id="notiBanner";L.appendChild(nb);drawNotiBanner();
   const wa=document.createElement("div");wa.className="help";wa.style.marginTop="16px";
   wa.innerHTML=`<b>Avisos por WhatsApp</b><br>Pon tu número y le saldrá un botón para avisarte cuando canjee o agende algo.
    <div style="display:flex;gap:8px;margin-top:10px"><input id="waIn" inputmode="tel" placeholder="Tu móvil, p. ej. 612345678" value="${esc(D.wa||"")}" style="flex:1;min-width:0;font-family:inherit;font-size:15px;font-weight:700;border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:10px;color:#fff;background:#181330"></div>`;
@@ -514,6 +515,14 @@ async function ePushAction(a){try{
  }catch(e){EPMSG={denied:"Les has dicho que no 🙄 Actívalas en los ajustes del móvil",ios:"En iPhone primero añade el editor a la pantalla de inicio y ábrelo desde ese icono.",nosub:"Desactívalos y vuelve a activarlos.",send:"No ha salido. Desactívalos y vuelve a activarlos."}[e.message]||"No ha ido, prueba en un rato"}
  drawAct()}
 let EPREF=false;async function eRefresh(){if(EPREF||!ePushOn()||!EPUSHOK())return;EPREF=true;try{let sub=await eSub(false);if(!sub&&Notification.permission==="granted")sub=await eSub(true);if(sub)await ePost({action:"sub",role:"admin",name:"Editor",sub:sub.toJSON()});else{try{localStorage.removeItem("nc-push-admin")}catch(e){}}}catch(e){}}
+// Aviso arriba del todo hasta que los avisos estén activados en este móvil
+function drawNotiBanner(){const nb=document.getElementById("notiBanner");if(!nb)return;if(ePushOn()){nb.style.display="none";nb.innerHTML="";return}
+ const ios=EIOS&&!ESTAND(),can=EPUSHOK()&&!ios;nb.style.display="";nb.className="help";nb.style.cssText="margin:4px 0 12px;border:2px solid #ff6f9f;background:rgba(255,111,159,.12)";
+ nb.innerHTML=`<b>🔔 Activa los avisos en este móvil</b><br>Así te llega al momento lo que te mande desde "Mándame algo", cuando agende o canjee una carta y cuando te rete al truco.${ios?`<br><br><b>En iPhone:</b> primero añade el editor a la pantalla de inicio (Compartir → Añadir a pantalla de inicio) y ábrelo desde ese icono. Luego vuelve aquí.`:""}${!EPUSHOK()&&!ios?`<br><br>Este navegador no permite avisos. Prueba con Chrome o Safari.`:""}
+ ${can?`<div style="margin-top:10px"><button id="nbOn" style="padding:10px 16px;font-weight:900">Activar avisos</button></div>`:""}<p id="nbMsg" style="margin:6px 0 0;font-size:12px;font-weight:700"></p>`;
+ const b=document.getElementById("nbOn");if(b)b.onclick=async()=>{b.disabled=true;b.textContent="Activando…";await ePushAction("on");const ok=ePushOn();if(ok)await ePushAction("test");
+  if(ok){nb.innerHTML=`<b>✓ Avisos activados</b><br>Te acabo de mandar uno de prueba. Si no te ha llegado en unos segundos, mira que el móvil no tenga silenciadas las notificaciones de esta app.`;setTimeout(()=>{nb.style.display="none"},9000)}
+  else{const mm=document.getElementById("nbMsg");if(mm)mm.textContent=EPMSG;b.disabled=false;b.textContent="Activar avisos"}}}
 function pushBoxHTML(){setTimeout(eRefresh,0);const b=(id,t)=>`<button data-ep="${id}" style="padding:6px 10px;font-size:12px;margin-left:6px">${t}</button>`;
  const msg=EPMSG||(!EPUSHOK()&&!(EIOS&&!ESTAND())?"Este navegador no permite notificaciones.":EIOS&&!ESTAND()?"En iPhone: añade el editor a la pantalla de inicio y ábrelo desde ahí.":ePushOn()?"Activados":"Para que te llegue lo que haga");
  const btns=EPUSHOK()&&!(EIOS&&!ESTAND())?(ePushOn()?b("test","Probar")+b("off","Desactivar"):b("on","Activar")):"";
