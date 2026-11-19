@@ -274,6 +274,15 @@ html[data-theme="dark"] #splash .load{background:rgba(255,255,255,.14)}
 .tright{display:flex;gap:8px;align-items:center}
 .setp{width:min(92vw,420px);background:#fff;border-radius:24px;padding:18px;box-shadow:0 10px 40px rgba(0,0,0,.25);color:#2b2a3d;max-height:86vh;overflow:auto}
 .setp h3{margin:0 0 12px;font-size:22px;font-weight:700}
+.hx3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:22px 2px 6px}
+.hx3 .hxb{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center;padding:12px 6px 10px;border-radius:18px 14px 20px 16px}
+.hx3 .hxb .hxi{width:34px;height:34px;font-size:17px!important;margin-bottom:2px}
+.hx3 .hxb b{font-size:13px;line-height:1.15}.hx3 .hxb small{font-size:10.5px;line-height:1.2;color:#8a85a6}
+.hx3 #trBtn{background:#2f7d57;color:#fff;box-shadow:0 4px 0 #1d5a3e;transform:rotate(-.8deg)}.hx3 #trBtn small{color:#cdebdc}.hx3 #trBtn .hxi{background:rgba(255,255,255,.16)}
+.hx3 #trBtn .hxi svg{width:15px;height:22px}
+.hx3 .cbadge{top:-7px;right:-5px}
+.soonr{display:flex;justify-content:space-between;align-items:center;width:100%;border:none;background:none;font:inherit;color:inherit;padding:8px 0;border-bottom:1px solid rgba(143,123,255,.14);cursor:pointer;text-align:left}
+.soonr:last-child{border-bottom:none}.soonr b{color:#e0457b;white-space:nowrap;margin-left:10px}
 .cdw{display:flex;flex-direction:column;gap:8px;margin:14px 2px 0}
 .cdi{display:flex;align-items:center;gap:12px;width:100%;text-align:left;border:none;font:inherit;cursor:pointer;padding:11px 12px;border-radius:18px 14px 20px 16px;background:#fff;color:#2b2a3d;box-shadow:0 4px 0 #e2dcf5}
 .cdi:active{transform:translateY(3px);box-shadow:0 1px 0 #e2dcf5}
@@ -606,12 +615,11 @@ html[data-theme="dark"] .news{background:#2a2250;color:#fff}html[data-theme="dar
      <div class="msg" id="msg"></div>
    </div>
    <div id="cdown"></div>
-   <div class="hx"><button class="hxb" id="achBtn"><span class="hxi">✦</span><span><b>Logros</b><small id="achCount">0/0</small></span></button><button class="hxb" id="reqBtn"><span class="hxi">♥</span><span><b>Mándame algo</b><small>me llega como noti</small></span></button></div>
-   <button class="trb" id="trBtn"><span class="tri"><svg viewBox="0 0 40 60" width="20" height="30"><path d="M20 2l5 8v30H15V10z" fill="#fff" stroke="#fff" stroke-width="1"/><rect x="8" y="40" width="24" height="5" rx="2" fill="#ffe27a"/><rect x="17.5" y="45" width="5" height="9" fill="#ffe27a"/><circle cx="20" cy="56.5" r="3" fill="#ffe27a"/></svg></span><span><b>Truco</b><small id="trSub">A 15, apostando una carta</small></span><i class="cbadge" id="trBadge"></i></button>
+   <h2 class="sec" id="soonH">Ojo, que caducan</h2>
+   <div id="soon"></div>
    <h2 class="sec">Lo último que te ha tocado</h2>
    <div class="rowscroll" id="recent"></div>
-   <h2 class="sec">Ojo, que caducan</h2>
-   <div id="soon"></div>
+   <div class="hx3"><button class="hxb" id="achBtn"><span class="hxi">✦</span><b>Logros</b><small id="achCount">0/0</small></button><button class="hxb" id="reqBtn"><span class="hxi">♥</span><b>Mándame algo</b><small>me llega como noti</small></button><button class="hxb trt" id="trBtn"><span class="hxi"><svg viewBox="0 0 40 60" width="20" height="30"><path d="M20 2l5 8v30H15V10z" fill="#fff" stroke="#fff" stroke-width="1"/><rect x="8" y="40" width="24" height="5" rx="2" fill="#ffe27a"/><rect x="17.5" y="45" width="5" height="9" fill="#ffe27a"/><circle cx="20" cy="56.5" r="3" fill="#ffe27a"/></svg></span><b>Truco</b><small id="trSub">A 15</small><i class="cbadge" id="trBadge"></i></button></div>
   </section>
   <section class="screen" id="s-col">
    <h2 class="sec" style="margin-top:8px">Tu colección</h2>
@@ -715,9 +723,10 @@ function render(){
   byGot.forEach(c=>rec.appendChild(mini(c)));
   renderCountdown();
   const soon=$("soon");soon.innerHTML="";
-  const pend=o.filter(c=>!st.cards[c.n]?.done&&daysLeft(c)!==null).sort((a,b)=>daysLeft(a)-daysLeft(b)).slice(0,3);
-  soon.innerHTML=pend.length?`<div class="panel">${pend.map(c=>{const d=daysLeft(c);return `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.08)"><span>${esc(c.name)}</span><b style="color:${d<=7?"#e0457b":"inherit"}">${d<=0?"caducada":d+" días"}</b></div>`}).join("")}</div>`
-   :`<div class="panel emptyc">Nada pendiente</div>`;
+  const pend=soonList().slice(0,4);
+  $("soonH").style.display=soon.style.display=pend.length?"":"none";
+  soon.innerHTML=pend.length?`<div class="panel">${pend.map(c=>{const d=daysLeft(c);return `<button class="soonr" data-n="${c.n}"><span>${esc(c.r==="x"?"La carta secreta":c.name)}</span><b>${d===1?"mañana":"en "+d+" días"}</b></button>`}).join("")}</div>`:"";
+  soon.querySelectorAll(".soonr").forEach(b=>b.onclick=()=>{const c=DATA[b.dataset.n];if(c)detail(c)});
   // colección
   const ch=$("chips");ch.innerHTML="";
   [["all","Todas"],["todo","Por canjear"],["done","Canjeadas"]].forEach(([k,l])=>{const b=document.createElement("button");b.className="chip"+(filter===k?" on":"");b.textContent=l;b.onclick=()=>{APPSND.p("tick");filter=k;render()};ch.appendChild(b)});
@@ -1152,7 +1161,7 @@ window.Truco={open(){if(TRC.ready&&!TRC.ready()){return}S=null;LAST="";PREV=null
 })();
 
 async function trBadge(){if(!ENC.sync||!getUser())return;const s=await Truco.status();const b=$("trBadge"),sub=$("trSub");if(!b)return;
- const tx={reto:"Te reta",toca:"Te toca",fin:"Ya ha acabado"}[s]||"";b.textContent=tx;b.style.display=tx?"grid":"none";if(sub)sub.textContent=s==="reto"?"Te han retado 😏":s==="toca"?"Hay una partida esperándote":"A 15, apostando una carta"}
+ const tx={reto:"Te reta",toca:"Te toca",fin:"Ya ha acabado"}[s]||"";b.textContent=tx;b.style.display=tx?"grid":"none";if(sub)sub.textContent=s==="reto"?"Te han retado 😏":s==="toca"?"Te toca jugar":"A 15"}
 $("trBtn").onclick=()=>{APPSND.duck(true);APPSND.p("wIn");Truco.open()};
 $("reqBtn").onclick=openReq;$("ovReq").addEventListener("click",e=>{if(e.target.id==="ovReq")e.target.classList.remove("on")});
 
