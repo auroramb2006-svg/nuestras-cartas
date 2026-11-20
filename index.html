@@ -655,20 +655,44 @@ html.noanim .rx .frame,html.noanim .rl .frame,html.noanim .rs .stg,html.noanim .
 .rc .frame{box-shadow:0 0 3cqw rgba(200,205,215,.6),0 1.4cqw 4cqw rgba(30,20,60,.3),inset 0 0 0 .35cqw rgba(255,255,255,.8)}
 html.noanim .pc.rs .body,html.noanim .pc .frame::after{animation:none!important}
 
-/* ===== reflejo holográfico ===== */
-.pc .holo{position:absolute;inset:0;border-radius:4.2cqw;pointer-events:none;z-index:5;mix-blend-mode:overlay;opacity:var(--ho,.2);
+/* ===== reflejo holográfico: solo en las especiales y solo sobre el dibujo ===== */
+.pc .art .holo{position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:2;mix-blend-mode:color-dodge;opacity:var(--ho,.4);
  background-image:repeating-linear-gradient(110deg,#ff3d6e 0%,#ffb13d 6%,#e8ff3d 12%,#3dffb0 18%,#3dc2ff 24%,#8a5cff 30%,#ff3d6e 36%),
-  repeating-linear-gradient(-55deg,rgba(255,255,255,0) 0 2.2%,rgba(255,255,255,.35) 2.6%,rgba(255,255,255,0) 3.2% 5%),
-  radial-gradient(circle at var(--hx,50%) var(--hy,50%),rgba(255,255,255,.5),rgba(255,255,255,0) 42%);
+  repeating-linear-gradient(-55deg,rgba(255,255,255,0) 0 2.2%,rgba(255,255,255,.4) 2.6%,rgba(255,255,255,0) 3.2% 5%),
+  radial-gradient(circle at var(--hx,50%) var(--hy,50%),rgba(255,255,255,.6),rgba(255,255,255,0) 45%);
  background-size:400% 400%,250% 250%,100% 100%;background-position:var(--hx,50%) var(--hy,50%),var(--hy,50%) var(--hx,50%),0 0;
- filter:saturate(1.5);animation:holoDrift 9s ease-in-out infinite;transition:opacity .25s}
+ filter:brightness(.55) contrast(1.5) saturate(1.4);animation:holoDrift 9s ease-in-out infinite;transition:opacity .25s}
 @keyframes holoDrift{0%,100%{background-position:15% 20%,20% 15%,0 0}50%{background-position:85% 80%,80% 85%,0 0}}
-.pc.holo-live .holo{animation:none;opacity:calc(var(--ho,.2) * (1.15 + var(--hd,0) * .5))}
-.pc.rc{--ho:.16}.pc.rp{--ho:.24}.pc.rr{--ho:.34}.pc.rl{--ho:.46}.pc.rs{--ho:.62}.pc.rx{--ho:.45}
-.pc.rx .holo{mix-blend-mode:screen;opacity:calc(var(--ho) * .55);filter:saturate(1.6) hue-rotate(30deg)}
-.pc.mini .holo{animation-duration:12s}
-.pc.done .holo{opacity:.08}
+.pc.holo-live .art .holo{animation:none;opacity:calc(var(--ho,.4) * (1.1 + var(--hd,0) * .5))}
+.pc.rl{--ho:.5}.pc.rs{--ho:.75}.pc.rx{--ho:.55}
+.pc.rx .art .holo{mix-blend-mode:screen;filter:brightness(.5) saturate(1.6) hue-rotate(30deg)}
+.pc.mini .art .holo{animation-duration:12s}
+.pc.done .art .holo{opacity:.1}
+/* que el texto de la shiny se lea bien */
+.pc.rs .body::after{opacity:.3!important}
 html.noanim .pc .holo{animation:none}
+/* ===== sorpresa al sacar algo bueno ===== */
+#ovDeck .celebg{position:fixed;inset:0;background:radial-gradient(circle at 50% 42%,rgba(20,10,40,.35),rgba(8,4,20,.82) 70%);opacity:0;transition:opacity .4s;pointer-events:none;z-index:0}
+#ovDeck .celebg.on{opacity:1}
+#ovDeck .rays{position:fixed;left:50%;top:42%;width:240vmax;height:240vmax;margin:-120vmax 0 0 -120vmax;pointer-events:none;z-index:0;opacity:0;transform:scale(.4);
+ background:repeating-conic-gradient(from 0deg,color-mix(in srgb,var(--rc) 85%,white) 0deg 7deg,transparent 7deg 20deg);
+ -webkit-mask:radial-gradient(circle,#000 0,rgba(0,0,0,.6) 12%,transparent 34%);mask:radial-gradient(circle,#000 0,rgba(0,0,0,.6) 12%,transparent 34%);
+ transition:opacity .35s,transform .6s cubic-bezier(.2,1.4,.4,1);animation:raySpin 14s linear infinite}
+#ovDeck .rays.on{opacity:.55;transform:scale(1)}#ovDeck .rays.big{opacity:.8}
+@keyframes raySpin{to{rotate:360deg}}
+#ovDeck #deck,#ovDeck .rlabel,#ovDeck #dots,#ovDeck #dh{position:relative;z-index:2}
+.dc.charge .pc{animation:chg var(--cd,900ms) ease-in forwards}
+@keyframes chg{0%{transform:scale(.88);filter:brightness(1.4) saturate(.4) drop-shadow(0 0 6px var(--rc))}
+ 10%{transform:scale(.89) translate(-3px,1px) rotate(-1deg)}20%{transform:scale(.9) translate(3px,-1px) rotate(1deg)}30%{transform:scale(.91) translate(-4px,2px) rotate(-1.5deg)}
+ 40%{transform:scale(.93) translate(4px,-2px) rotate(1.5deg)}50%{transform:scale(.95) translate(-5px,1px) rotate(-2deg);filter:brightness(2) saturate(.2) drop-shadow(0 0 18px var(--rc))}
+ 60%{transform:scale(.97) translate(5px,-2px) rotate(2deg)}70%{transform:scale(.99) translate(-6px,2px) rotate(-2.5deg)}80%{transform:scale(1.01) translate(6px,-2px) rotate(2.5deg)}
+ 90%{transform:scale(1.03) translate(-7px,1px) rotate(-3deg)}100%{transform:scale(1.05) translate(0,0);filter:brightness(3.2) saturate(0) drop-shadow(0 0 34px var(--rc))}}
+.dc.burst .pc{animation:bst .6s cubic-bezier(.2,1.6,.4,1)}
+@keyframes bst{0%{transform:scale(1.35);filter:brightness(3) drop-shadow(0 0 40px var(--rc))}100%{transform:none;filter:none}}
+.rlabel.pop span{display:inline-block;animation:rlIn .55s cubic-bezier(.2,1.8,.4,1) both,rlWave 1.1s ease-in-out .6s infinite;animation-delay:calc(var(--i) * 35ms),calc(.6s + var(--i) * 70ms)}
+.rlabel.pop{text-shadow:0 0 18px currentColor,0 3px 0 rgba(0,0,0,.35)}
+@keyframes rlIn{from{transform:scale(0) translateY(20px) rotate(-20deg);opacity:0}to{transform:none;opacity:1}}
+@keyframes rlWave{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
 </style></head>
 <body>
 <div id="splash"><div class="halo"></div><div id="flc"></div>
@@ -772,13 +796,13 @@ function cardHTML(c,mini){
    <div class="frame"><div class="body">
     <div class="stg">${R[c.r].stage.toUpperCase()}</div>
     <div class="top"><div class="name">${esc(c.name)}</div><div class="hp"><small>PS</small>${hp||"∞"}</div>${orb}</div>
-    <div class="art">${art}</div>
+    <div class="art">${art}${"lsx".includes(c.r)?'<div class="holo"></div>':""}</div>
     <div class="info">Nº ${num} · Tipo ${esc(c.type)} · Temporada 1</div>
     <div class="moves">${ms.map(m=>`<div class="mv">${orb}<span class="n">${esc(m[0])}</span><span class="v">${esc(m[1])}</span></div>`).join("")}</div>
     <div class="abil"><span class="tag">Efecto</span>${esc(c.efecto)}${c.extra?`<div class="cj"><span class="tag tag2">Canje</span>${esc(c.extra)}</div>`:""}</div>
     <div class="bottom"><div><small>se cumple</small><b>${R[c.r].canje}</b></div><div><small>validez</small><b>${R[c.r].val}</b></div><div><small>rareza</small><b>${R[c.r].n}</b></div></div>
     <div class="legal"><span class="rar">${R[c.r].sym}</span><span>Ilus. hecha a mano con amor</span><span>${num}</span></div>
-   </div></div>${s.done?`<div class="stamp"><span>CANJEADA</span></div>`:""}<div class="holo"></div></div>`;
+   </div></div>${s.done?`<div class="stamp"><span>CANJEADA</span></div>`:""}</div>`;
 }
 const $=id=>document.getElementById(id);
 function show(id){APPSND.p("tap");document.querySelectorAll(".screen").forEach(s=>s.classList.toggle("on",s.id==="s-"+id));
@@ -1300,6 +1324,24 @@ function startOpen(n,code,cards){
     sparkle("#ffd36e",innerWidth/2,pw.getBoundingClientRect().top+30);APPSND.p("rip");$("ph").textContent="";
     setTimeout(()=>{ov.classList.remove("on");deck(n,code,cards)},1350)}
 }
+// ---------- sorpresa al sacar algo bueno (estilo Brawl Stars) ----------
+let CELEB=false;
+function celebrate(c,dc,lab,done){const ov=$("ovDeck");CELEB=true;
+ let bg=ov.querySelector(".celebg"),rays=ov.querySelector(".rays");
+ if(!bg){ov.insertAdjacentHTML("afterbegin",'<div class="celebg"></div><div class="rays"></div>');bg=ov.querySelector(".celebg");rays=ov.querySelector(".rays")}
+ const col=lab[1],dur={r:700,l:1150,s:1300,x:1400}[c.r]||800;
+ ov.style.setProperty("--rc",col);dc.style.setProperty("--rc",col);dc.style.setProperty("--cd",dur+"ms");
+ bg.classList.add("on");rays.classList.remove("on","big");$("rl").textContent="";$("rl").classList.remove("pop");
+ dc.classList.add("charge");APPSND.p("charge",dur);
+ const pulses=[];for(let t=0;t<dur;t+=dur/6)pulses.push(12+Math.round(t/dur*30),Math.max(25,90-Math.round(t/dur*60)));buzz(pulses);
+ setTimeout(()=>{dc.classList.remove("charge");void dc.offsetWidth;dc.classList.add("burst");
+  rays.classList.add("on");if(c.r!=="r")rays.classList.add("big");
+  const f=$("flash");f.style.background=`radial-gradient(circle,#fff 0%,${col} 35%,transparent 75%)`;f.classList.remove("go");void f.offsetWidth;f.classList.add("go");
+  sparkle(col);setTimeout(()=>sparkle("#fff"),120);if(c.r!=="r")setTimeout(()=>sparkle(c.r==="s"?"#7af0ff":col),260);
+  APPSND.p("boom");setTimeout(()=>APPSND.p(c.r==="x"?"mystery":c.r==="r"?"rare":"fanfare"),120);buzz(c.r==="r"?[50,40,80]:[70,40,140,60,90]);
+  const rl=$("rl");rl.innerHTML=[...lab[0]].map((ch,k)=>ch===" "?" ":`<span style="--i:${k}">${esc(ch)}</span>`).join("");rl.style.color=col;rl.classList.add("pop");
+  setTimeout(()=>{dc.classList.remove("burst");CELEB=false;done&&done()},600)},dur)}
+function celebOff(){const ov=$("ovDeck");const bg=ov.querySelector(".celebg"),rays=ov.querySelector(".rays");if(bg)bg.classList.remove("on");if(rays)rays.classList.remove("on","big");$("rl").classList.remove("pop")}
 function deck(n,code,cards){
   const order=[...cards].sort((a,b)=>"cprlsx".indexOf(a.r)-"cprlsx".indexOf(b.r));
   const ov=$("ovDeck"),dk=$("deck");ov.classList.add("on");dk.innerHTML="";
@@ -1308,15 +1350,15 @@ function deck(n,code,cards){
     d.style.transform=`translateY(${Math.min(i,3)*6}px) scale(${1-Math.min(i,3)*.03})`;d.innerHTML=cardHTML(c,false);dk.appendChild(d)});
   let i=0,x0=null,dx=0;
   function onTop(){const c=order[i];const lab={r:["¡Carta rara!","#6fa8ff"],l:["¡¡LEGENDARIA!!","#ffd23f"],s:["✦ ¡SHINY! ✦","#ff7ad1"],x:["…¿y esta qué es?","#e39bff"]}[c.r];
-    $("rl").textContent=lab?lab[0]:"";$("rl").style.color=lab?lab[1]:"";
-    if(lab){const f=$("flash");f.style.background=`radial-gradient(circle,${lab[1]},transparent 70%)`;f.classList.remove("go");void f.offsetWidth;f.classList.add("go");sparkle(lab[1]);APPSND.p("rare");buzz([20,40,20])}
+    celebOff();$("rl").textContent="";
+    if(lab)celebrate(c,dk.children[i],lab);
     [...$("dots").children].forEach((d,k)=>d.classList.toggle("on",k===i));
     $("dh").textContent=i<order.length-1?"Toca para la siguiente":"Toca para acabar"}
   onTop();
-  function next(dir=1){APPSND.p("swipe",dir);const el=dk.children[i];el.style.transform=`translateX(${dir*130}%) rotate(${dir*18}deg)`;el.classList.add("out");i++;
-    if(i>=order.length){setTimeout(()=>finish(n,code,cards),350);return}
+  function next(dir=1){if(CELEB)return;APPSND.p("swipe",dir);const el=dk.children[i];el.style.transform=`translateX(${dir*130}%) rotate(${dir*18}deg)`;el.classList.add("out");i++;
+    if(i>=order.length){celebOff();setTimeout(()=>finish(n,code,cards),350);return}
     [...dk.children].forEach((d,k)=>{if(k>=i){const j=k-i;d.style.transform=`translateY(${Math.min(j,3)*6}px) scale(${1-Math.min(j,3)*.03})`}});onTop()}
-  dk.onpointerdown=e=>{x0=e.clientX;dx=0;dk.setPointerCapture(e.pointerId);dk.children[i].style.transition="none"};
+  dk.onpointerdown=e=>{if(CELEB)return;x0=e.clientX;dx=0;dk.setPointerCapture(e.pointerId);dk.children[i].style.transition="none"};
   dk.onpointermove=e=>{if(x0===null)return;dx=e.clientX-x0;dk.children[i].style.transform=`translateX(${dx}px) rotate(${dx/18}deg)`};
   dk.onpointerup=()=>{if(x0===null)return;const el=dk.children[i];el.style.transition="";x0=null;
     if(Math.abs(dx)>70||Math.abs(dx)<6)next(dx<0?-1:1);else el.style.transform=""};
@@ -1412,6 +1454,10 @@ const APPSND=(()=>{let ac=null,master=null,sfxBus=null,musBus=null,playing=false
   bonk:()=>{S(175,0,.15,"triangle",.07,116);S(N(53),.02,.12,"square",.012)},
   send:()=>{wh(0,.34,500,6000,.08,.6);S(N(84),.16,.12,"triangle",.035);S(N(91),.24,.3,"triangle",.035)},
   fanfare:()=>{[[77,0],[81,.1],[84,.2],[89,.32]].forEach(([n,o])=>S(N(n),o,.3,"square",.02));[77,81,84,89].forEach(n=>S(N(n),.46,.9,"triangle",.028));wh(.4,.5,1500,6000,.04)},
+  // sorpresa al sacar algo bueno: se carga (sube) y explota
+  charge:d=>{const dd=(d||900)/1000;wh(0,dd,220,4200,.08,0,.6);tone(sfxBus,170,ac.currentTime,dd,"triangle",.05,1100,.05);tone(sfxBus,340,ac.currentTime,dd,"square",.012,2200,.05)},
+  boom:()=>{noise(sfxBus,ac.currentTime,.4,.14,100);S(95,0,.45,"sine",.2,38);[77,84,89,93,96].forEach((n,i)=>S(N(n),.03+i*.015,.8,"triangle",.03));wh(.02,.6,6000,800,.06)},
+  mystery:()=>{[65,68,72,77].forEach((n,i)=>S(N(n),i*.09,.7,"sine",.04));S(N(41),0,1.2,"triangle",.08)},
   start:()=>{}};
  // --- música: caja de música + pad suave, Fa maj7 → Mi m7 → Re m7 → Do maj7 (cambia un poco cada vuelta) ---
  const CH=[[53,57,60,64],[52,55,59,62],[50,53,57,60],[48,52,55,59]];
