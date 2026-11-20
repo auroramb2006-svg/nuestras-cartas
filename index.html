@@ -748,6 +748,30 @@ html.noanim .pc .holo{animation:none}
 #ovDeck .rays{width:170vmax;height:170vmax;margin:-85vmax 0 0 -85vmax;will-change:transform,rotate}
 @media (prefers-reduced-motion:reduce){.pc .frame::after,.pc .frame::before,.pc .art .holo::before,.rr .art::after,.rl .art::after,.rs .art::after{animation:none!important}}
 html.noanim .pc .frame::after,html.noanim .pc .frame::before,html.noanim .pc .art .holo::before{animation:none!important}
+
+/* ===== sobre: las cartas salen boca abajo; las buenas cargan sin decir qué son ===== */
+.dcin{position:absolute;inset:0;transform-origin:50% 55%;will-change:transform}
+.cbk{position:absolute;inset:0;z-index:5;border-radius:4.5% / 3.2%;pointer-events:none;overflow:hidden;
+ background:radial-gradient(circle at 50% 46%,#8a5bd6 0%,#5b3a9c 42%,#33205e 100%);box-shadow:0 10px 30px rgba(20,10,40,.35);border:5px solid #fff3f8}
+.cbk::before{content:"";position:absolute;inset:7%;border-radius:4% / 3%;border:2px solid rgba(255,230,245,.55);
+ background:repeating-linear-gradient(45deg,rgba(255,255,255,.08) 0 6px,transparent 6px 16px),repeating-linear-gradient(-45deg,rgba(255,255,255,.08) 0 6px,transparent 6px 16px)}
+.cbk i{position:absolute;left:50%;top:46%;width:34%;aspect-ratio:1;margin:-17% 0 0 -17%;border-radius:50%;display:grid;place-items:center;font-style:normal;font-size:2.4em;color:#ffe9f4;
+ background:radial-gradient(circle,#ff9ccc 0%,#c45aa8 70%);box-shadow:0 0 0 4px rgba(255,240,248,.7),0 0 26px rgba(255,150,210,.6)}
+.cbk b{position:absolute;left:0;right:0;bottom:11%;text-align:center;color:#ffe9f4;font-size:.95em;letter-spacing:.18em;font-weight:700;opacity:.85}
+.dc.rev .cbk{opacity:0}
+/* giro rápido para las normales */
+.dc.flipq .dcin{animation:flq .46s cubic-bezier(.45,0,.25,1)}
+.dc.flipq .cbk{animation:flh .46s forwards}
+@keyframes flq{0%{transform:perspective(900px) rotateY(0)}50%{transform:perspective(900px) rotateY(90deg) scale(1.03)}50.01%{transform:perspective(900px) rotateY(-90deg) scale(1.03)}100%{transform:perspective(900px) rotateY(0)}}
+@keyframes flh{0%,50%{opacity:1}50.01%,100%{opacity:0}}
+/* carga: crece suave y tiembla cada vez más (propiedades separadas, sin saltos) */
+.dc.charge .pc,.dc.burst .pc{animation:none!important}
+.dc.charge .dcin{animation:chS var(--cd,1100ms) cubic-bezier(.55,0,.85,.55) forwards,chW .16s ease-in-out infinite alternate}
+@keyframes chS{0%{scale:.94;translate:0 0}100%{scale:1.08;translate:0 -6px}}
+@keyframes chW{from{rotate:-1.7deg}to{rotate:1.7deg}}
+.dc.burst .dcin{animation:bstT .7s cubic-bezier(.2,1.5,.35,1)}
+@keyframes bstT{0%{scale:1.3}100%{scale:1}}
+@media (prefers-reduced-motion:reduce){.dc.charge .dcin{animation:none}.dc.flipq .dcin{animation:none}}
 </style></head>
 <body>
 <div id="splash"><div class="halo"></div><div id="flc"></div>
@@ -1384,12 +1408,12 @@ let CELEB=false;
 function celebrate(c,dc,lab,done){const ov=$("ovDeck");CELEB=true;
  let bg=ov.querySelector(".celebg"),rays=ov.querySelector(".rays");
  if(!bg){ov.insertAdjacentHTML("afterbegin",'<div class="celebg"></div><div class="rays"></div>');bg=ov.querySelector(".celebg");rays=ov.querySelector(".rays")}
- const col=lab[1],dur={r:700,l:1150,s:1300,x:1400}[c.r]||800;
- ov.style.setProperty("--rc",col);dc.style.setProperty("--rc",col);dc.style.setProperty("--cd",dur+"ms");
+ const col=lab[1],dur=1150,NEU="#fff1c9";
+ ov.style.setProperty("--rc",NEU);dc.style.setProperty("--rc",NEU);dc.style.setProperty("--cd",dur+"ms");
  bg.classList.add("on");rays.classList.remove("on","big");$("rl").textContent="";$("rl").classList.remove("pop");
  dc.classList.add("charge");APPSND.p("charge",dur);
  const pulses=[];for(let t=0;t<dur;t+=dur/6)pulses.push(12+Math.round(t/dur*30),Math.max(25,90-Math.round(t/dur*60)));buzz(pulses);
- setTimeout(()=>{dc.classList.remove("charge");void dc.offsetWidth;dc.classList.add("burst");
+ setTimeout(()=>{dc.classList.remove("charge");void dc.offsetWidth;ov.style.setProperty("--rc",col);dc.style.setProperty("--rc",col);dc.classList.add("rev","burst");
   rays.classList.add("on");if(c.r!=="r")rays.classList.add("big");
   const f=$("flash");f.style.background=`radial-gradient(circle,#fff 0%,${col} 35%,transparent 75%)`;f.classList.remove("go");void f.offsetWidth;f.classList.add("go");
   sparkle(col);setTimeout(()=>sparkle("#fff"),120);if(c.r!=="r")setTimeout(()=>sparkle(c.r==="s"?"#7af0ff":col),260);
@@ -1402,11 +1426,11 @@ function deck(n,code,cards){
   const ov=$("ovDeck"),dk=$("deck");ov.classList.add("on");dk.innerHTML="";
   $("dots").innerHTML=order.map((_,i)=>`<i class="${i===0?"on":""}"></i>`).join("");
   order.forEach((c,i)=>{const d=document.createElement("div");d.className="dc";d.style.zIndex=100-i;
-    d.style.transform=`translateY(${Math.min(i,3)*6}px) scale(${1-Math.min(i,3)*.03})`;d.innerHTML=cardHTML(c,false);dk.appendChild(d)});
+    d.style.transform=`translateY(${Math.min(i,3)*6}px) scale(${1-Math.min(i,3)*.03})`;d.innerHTML='<div class="dcin"><div class="cbk"><i>✦</i><b>NUESTRAS CARTAS</b></div>'+cardHTML(c,false)+"</div>";dk.appendChild(d)});
   let i=0,x0=null,dx=0;
   function onTop(){const c=order[i];const lab={r:["¡Carta rara!","#6fa8ff"],l:["¡¡LEGENDARIA!!","#ffd23f"],s:["✦ ¡SHINY! ✦","#ff7ad1"],x:["…¿y esta qué es?","#e39bff"]}[c.r];
     celebOff();$("rl").textContent="";
-    if(lab)celebrate(c,dk.children[i],lab);
+    const el=dk.children[i];if(lab)celebrate(c,el,lab);else if(!el.classList.contains("rev")){el.classList.add("rev","flipq");APPSND.p("swipe",1);setTimeout(()=>el.classList.remove("flipq"),500)}
     [...$("dots").children].forEach((d,k)=>d.classList.toggle("on",k===i));
     $("dh").textContent=i<order.length-1?"Toca para la siguiente":"Toca para acabar"}
   onTop();
