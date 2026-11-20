@@ -485,7 +485,7 @@ html[data-theme="dark"] .news{background:#2a2250;color:#fff}html[data-theme="dar
 @media (prefers-reduced-motion:reduce){.tr-card.in-me,.tr-card.in-opp,.deal,#trShout .s,#trShout .fl{animation-duration:.01s}}
 
 .tr-rar{font-size:11px;text-align:right;line-height:1.25;opacity:.9;flex-shrink:0;padding-left:6px}
-.tr-rar.r-p{color:#9be7b0}.tr-rar.r-r{color:#9cc4ff}.tr-rar.r-l{color:#ffd86b}.tr-rar.r-s{color:#ffb3e6}.tr-rar.r-x{color:#e0b3ff}
+.tr-rar.r-c{color:#c9ccd3}.tr-rar.r-p{color:#7fe0a0}.tr-rar.r-r{color:#8fb6ff}.tr-rar.r-l{color:#c89cff}.tr-rar.r-s{color:#ffd86b}.tr-rar.r-x{color:#e8a6ff}
 .tr-tot{text-align:center;margin-top:10px;font-size:14px;opacity:.9}.tr-tot.ok{color:#ffe27a;opacity:1}
 .tr-val{margin:0 0 8px;font-size:13px}.tr-val summary{cursor:pointer;opacity:.85}.tr-val table{margin:6px 0;border-collapse:collapse}.tr-val td{padding:2px 14px 2px 0}.tr-val p{margin:4px 0 0;opacity:.8}
 
@@ -606,6 +606,23 @@ html[data-theme="dark"] .news{background:#2a2250;color:#fff}html[data-theme="dar
 #trChat .tr-b2{--c:#3fbf6e;--k:#1d7a40;border:none;font-family:"Pixelify Sans",monospace;font-weight:700;color:#fff;font-size:16px;padding:11px 14px;background:var(--c);box-shadow:inset 0 -4px 0 var(--k),0 -3px 0 #141414,0 3px 0 #141414,-3px 0 0 #141414,3px 0 0 #141414;cursor:pointer;text-shadow:2px 2px 0 rgba(0,0,0,.35)}
 /*tr-end*/
 .trb{position:relative;width:calc(100% - 4px);margin:12px 2px 0;display:flex;align-items:center;gap:12px;text-align:left;border:none;border-radius:20px 16px 22px 14px;padding:12px 14px;font:inherit;cursor:pointer;background:#2f7d57;color:#fff;box-shadow:0 4px 0 #1d5a3e;transform:rotate(-.6deg)}.trb:active{transform:rotate(-.6deg) translateY(3px);box-shadow:0 1px 0 #1d5a3e}.trb .tri{display:grid;place-items:center;width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.16)}.trb b{display:block;font-size:15px;font-weight:700}.trb small{display:block;font-size:12px;opacity:.85}
+
+/* ===== colores de rareza: gris, verde, azul, morado, dorado y morado brillante ===== */
+.rc{--rcol:#7d828d}.rp{--rcol:#2f9e5a}.rr{--rcol:#3a72e0}.rl{--rcol:#8a46d8}.rs{--rcol:#c9920c}.rx{--rcol:#d38cff}
+.pc .stg{color:var(--rcol);opacity:1;font-weight:700}
+.pc .legal .rar{color:var(--rcol)}
+.pc .info b{color:var(--rcol)}
+.rc .frame{background:linear-gradient(135deg,#f3f4f6,#b4b8c0 22%,#eceef1 45%,#9ea3ac 70%,#e4e6ea)}
+.rp .frame{background:linear-gradient(135deg,#e4fbe9,#58c47a 22%,#d2f6db 45%,#36a25e 70%,#c6f0d1);box-shadow:0 0 3cqw rgba(60,190,110,.35),0 1.4cqw 4cqw rgba(30,20,60,.3),inset 0 0 0 .35cqw rgba(255,255,255,.7)}
+.rr .frame{background:linear-gradient(120deg,#e4eeff,#5b8ff0 20%,#dbe7ff 40%,#3a6fd8 62%,#cfe0ff 80%,#6d9bf2);box-shadow:0 0 3.5cqw rgba(70,130,240,.45),0 1.4cqw 4cqw rgba(30,20,60,.3),inset 0 0 0 .35cqw rgba(255,255,255,.7)}
+.rl .frame{background:linear-gradient(135deg,#f1e5ff,#9a5ce6 20%,#e6d5ff 42%,#7436c8 65%,#d8c1ff 85%,#8e52dd);box-shadow:0 0 4cqw rgba(150,80,235,.55),0 1.4cqw 4cqw rgba(30,20,60,.3),inset 0 0 0 .35cqw rgba(255,255,255,.7)}
+.rs .frame{background:linear-gradient(120deg,#fff6c9,#e8b923,#fff1a8,#c9920c,#ffe58a,#d9a61a,#fff6c9);background-size:400% 400%;animation:holo 6s linear infinite;box-shadow:0 0 4.5cqw rgba(255,200,40,.6),0 1.4cqw 4cqw rgba(30,20,60,.3),inset 0 0 0 .35cqw rgba(255,255,255,.7)}
+.rs .body::after{background:linear-gradient(120deg,#ffe58a,#fff6c9,#e8b923,#fff1a8,#ffd23f,#ffe58a)!important;background-size:400% 400%}
+.rx .frame{background:linear-gradient(135deg,#e6a8ff,#9b30ff 22%,#f3c9ff 42%,#7a1fe0 62%,#d07bff 82%,#a64dff);background-size:300% 300%;animation:holo 7s linear infinite,rxGlow 2.6s ease-in-out infinite}
+@keyframes rxGlow{0%,100%{box-shadow:0 0 4cqw rgba(190,90,255,.6),0 1.4cqw 4cqw rgba(30,20,60,.35)}50%{box-shadow:0 0 7cqw rgba(210,120,255,.9),0 1.4cqw 4cqw rgba(30,20,60,.35)}}
+.rx .art{box-shadow:0 0 0 .6cqw #c77dff,0 0 0 1cqw #4a1d80,0 0 3cqw rgba(200,110,255,.6)}
+.rx .legal .rar,.rx .stg,.rx .info b{color:#e8b8ff}
+html.noanim .rx .frame{animation:none!important}
 </style></head>
 <body>
 <div id="splash"><div class="halo"></div><div id="flc"></div>
@@ -1181,7 +1198,7 @@ function waLink(txt){return "https://wa.me/"+ENC.wa+"?text="+encodeURIComponent(
 // ---------- calendario ----------
 const DAY=864e5;
 function dkey(d){d=new Date(d);return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
-const RCOL={c:"#b9bcc7",p:"#6cc58a",r:"#6f9cf0",l:"#e8b923",s:"#d38cf0",x:"#8f6ad6"};
+const RCOL={c:"#9aa0aa",p:"#3fbf6e",r:"#4f8cff",l:"#9b5de5",s:"#e8b923",x:"#c26bff"};
 function events(){const E={};const add=(k,e)=>{(E[k]=E[k]||[]).push(e)};
  const days=(ENC.days||{});for(const n in days){if(days[n])add(days[n],{t:"pack",n:+n,done:!!st.codes[n]})}
  const op={};owned().forEach(c=>{const g=st.cards[c.n]?.got;if(g&&(!op[c.sobre]||g<op[c.sobre]))op[c.sobre]=g});
@@ -1244,7 +1261,7 @@ function deck(n,code,cards){
   order.forEach((c,i)=>{const d=document.createElement("div");d.className="dc";d.style.zIndex=100-i;
     d.style.transform=`translateY(${Math.min(i,3)*6}px) scale(${1-Math.min(i,3)*.03})`;d.innerHTML=cardHTML(c,false);dk.appendChild(d)});
   let i=0,x0=null,dx=0;
-  function onTop(){const c=order[i];const lab={r:["¡Carta rara!","#9cc3ff"],l:["¡¡LEGENDARIA!!","#ffd23f"],s:["✦ ¡SHINY! ✦","#ffb3e6"],x:["…¿y esta qué es?","#c9a6ff"]}[c.r];
+  function onTop(){const c=order[i];const lab={r:["¡Carta rara!","#6fa8ff"],l:["¡¡LEGENDARIA!!","#c48bff"],s:["✦ ¡SHINY! ✦","#ffd23f"],x:["…¿y esta qué es?","#e39bff"]}[c.r];
     $("rl").textContent=lab?lab[0]:"";$("rl").style.color=lab?lab[1]:"";
     if(lab){const f=$("flash");f.style.background=`radial-gradient(circle,${lab[1]},transparent 70%)`;f.classList.remove("go");void f.offsetWidth;f.classList.add("go");sparkle(lab[1]);APPSND.p("rare");buzz([20,40,20])}
     [...$("dots").children].forEach((d,k)=>d.classList.toggle("on",k===i));
