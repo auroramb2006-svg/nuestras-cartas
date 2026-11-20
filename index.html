@@ -693,6 +693,61 @@ html.noanim .pc .holo{animation:none}
 .rlabel.pop{text-shadow:0 0 18px currentColor,0 3px 0 rgba(0,0,0,.35)}
 @keyframes rlIn{from{transform:scale(0) translateY(20px) rotate(-20deg);opacity:0}to{transform:none;opacity:1}}
 @keyframes rlWave{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+
+/* ===== fluidez: todas las animaciones de las cartas usan solo transform/opacity (las mueve la gráfica del móvil) ===== */
+.pc .frame{overflow:hidden}
+.pc .body{z-index:1}
+/* reflejos que barren la carta: una banda que se desplaza, en vez de redibujar el degradado */
+.pc .frame::after{inset:0 auto 0 -100%;width:300%;background:linear-gradient(115deg,transparent 42%,rgba(255,255,255,.6) 49%,rgba(255,255,255,.18) 52%,transparent 58%);background-size:100% 100%;
+ animation:sheenT 5s ease-in-out infinite;will-change:transform;border-radius:0}
+@keyframes sheenT{0%,35%{transform:translateX(34%)}75%,100%{transform:translateX(-34%)}}
+.rr .art::after,.rl .art::after,.rs .art::after{inset:0 auto 0 -100%;width:300%;background:linear-gradient(115deg,transparent 40%,rgba(255,255,255,.75) 50%,transparent 60%);background-size:100% 100%;
+ animation:shineT 3.5s infinite;will-change:transform}
+@keyframes shineT{0%{transform:translateX(34%)}60%,100%{transform:translateX(-34%)}}
+/* marcos especiales: el color gira por debajo (un degradado grande que rota) */
+.rl .frame,.rs .frame,.rx .frame{animation:none!important;background-size:100% 100%!important}
+.rl .frame::before,.rs .frame::before,.rx .frame::before{content:"";position:absolute;left:-60%;top:-60%;width:220%;height:220%;z-index:0;pointer-events:none;will-change:transform;animation:frameSpin 6s linear infinite}
+.rl .frame::before{background:conic-gradient(#fff8d6,#f2c230,#fff3b0,#d4a017,#fff8d6,#e8b923,#fff1a8,#c9920c,#fff8d6)}
+.rs .frame::before{background:conic-gradient(#ff4fa3,#ff9f4f,#ffe94f,#5dff8f,#4fd8ff,#7d6bff,#d14fff,#ff4fa3);animation-duration:4s}
+.rx .frame::before{background:conic-gradient(#e6a8ff,#9b30ff,#f3c9ff,#7a1fe0,#d07bff,#a64dff,#e6a8ff);animation-duration:7s}
+@keyframes frameSpin{to{transform:rotate(360deg)}}
+.rl .frame{box-shadow:0 0 5cqw rgba(255,196,30,.7),0 1.4cqw 4cqw rgba(30,20,60,.3)}
+.rs .frame{box-shadow:0 0 5cqw rgba(255,120,200,.6),0 0 2cqw rgba(120,220,255,.5),0 1.4cqw 4cqw rgba(30,20,60,.3)}
+.rx .frame{box-shadow:0 0 5.5cqw rgba(200,110,255,.75),0 1.4cqw 4cqw rgba(30,20,60,.35)}
+.pc.rs .body,.rs .stg,.rs .legal .rar,.rs .info b,.rs .body::after{animation:none!important}
+/* holo: las bandas de color se desplazan con transform; el brillo del dedo solo se redibuja al moverlo */
+.pc .art .holo{background:none!important;animation:none!important;filter:none!important;overflow:hidden}
+.pc .art .holo::before{content:"";position:absolute;inset:-60%;will-change:transform;animation:holoT 9s ease-in-out infinite;
+ background-image:repeating-linear-gradient(110deg,#a3253f 0%,#a3701f 6%,#8fa31f 12%,#1fa36e 18%,#1f79a3 24%,#5a3aa3 30%,#a3253f 36%),
+  repeating-linear-gradient(-55deg,rgba(255,255,255,0) 0 2.2%,rgba(255,255,255,.3) 2.6%,rgba(255,255,255,0) 3.2% 5%)}
+.pc .art .holo::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at var(--hx,50%) var(--hy,50%),rgba(255,255,255,.5),rgba(255,255,255,0) 45%);opacity:0;transition:opacity .2s}
+@keyframes holoT{0%,100%{transform:translate(-12%,-9%)}50%{transform:translate(12%,9%)}}
+.pc.holo-live .art .holo::before{animation:none;transform:translate(calc(var(--px,0) * -16%),calc(var(--py,0) * -12%))}
+.pc.holo-live .art .holo::after{opacity:1}
+.pc.rx .art .holo{mix-blend-mode:screen;opacity:calc(var(--ho) * .5)}
+/* sorpresa del sobre: el brillo es una capa que aparece (opacidad), no un filtro */
+.dc{will-change:transform}
+.dc::before{content:"";position:absolute;inset:-28%;z-index:-1;pointer-events:none;background:radial-gradient(circle,var(--rc,#fff) 0%,transparent 62%);opacity:0;transform:scale(.6)}
+.dc::after{content:"";position:absolute;inset:-6%;z-index:6;pointer-events:none;background:radial-gradient(closest-side,#fff 0%,#fff 50%,color-mix(in srgb,var(--rc,#fff) 45%,white) 75%,transparent 100%);opacity:0}
+.dc.charge .pc{animation:chgT var(--cd,900ms) cubic-bezier(.5,0,.9,.6) forwards;filter:none}
+.dc.charge::after{animation:chgW var(--cd,900ms) ease-in forwards}
+.dc.charge::before{animation:chgG var(--cd,900ms) ease-in forwards}
+@keyframes chgT{0%{transform:scale(.9)}8%{transform:scale(.905) translate3d(-2px,1px,0) rotate(-.6deg)}16%{transform:scale(.91) translate3d(2px,-1px,0) rotate(.6deg)}
+ 24%{transform:scale(.92) translate3d(-3px,1px,0) rotate(-1deg)}32%{transform:scale(.93) translate3d(3px,-1px,0) rotate(1deg)}40%{transform:scale(.94) translate3d(-4px,2px,0) rotate(-1.4deg)}
+ 48%{transform:scale(.95) translate3d(4px,-2px,0) rotate(1.4deg)}56%{transform:scale(.965) translate3d(-5px,2px,0) rotate(-1.8deg)}64%{transform:scale(.98) translate3d(5px,-2px,0) rotate(1.8deg)}
+ 72%{transform:scale(.995) translate3d(-6px,2px,0) rotate(-2.2deg)}80%{transform:scale(1.01) translate3d(6px,-2px,0) rotate(2.2deg)}88%{transform:scale(1.025) translate3d(-6px,1px,0) rotate(-2.4deg)}
+ 94%{transform:scale(1.04) translate3d(6px,-1px,0) rotate(2.4deg)}100%{transform:scale(1.06)}}
+@keyframes chgW{0%{opacity:0}40%{opacity:.35}100%{opacity:.95}}
+@keyframes chgG{0%{opacity:0;transform:scale(.6)}100%{opacity:1;transform:scale(1.15)}}
+.dc.burst .pc{animation:bstT .6s cubic-bezier(.2,1.6,.4,1);filter:none}
+.dc.burst::after{animation:bstW .55s ease-out forwards}
+.dc.burst::before{animation:bstG .9s ease-out forwards}
+@keyframes bstT{0%{transform:scale(1.32)}100%{transform:none}}
+@keyframes bstW{0%{opacity:1;transform:scale(1.05)}100%{opacity:0;transform:scale(1.25)}}
+@keyframes bstG{0%{opacity:1;transform:scale(1.15)}100%{opacity:.55;transform:scale(1.4)}}
+#ovDeck .rays{width:170vmax;height:170vmax;margin:-85vmax 0 0 -85vmax;will-change:transform,rotate}
+@media (prefers-reduced-motion:reduce){.pc .frame::after,.pc .frame::before,.pc .art .holo::before,.rr .art::after,.rl .art::after,.rs .art::after{animation:none!important}}
+html.noanim .pc .frame::after,html.noanim .pc .frame::before,html.noanim .pc .art .holo::before{animation:none!important}
 </style></head>
 <body>
 <div id="splash"><div class="halo"></div><div id="flc"></div>
@@ -1372,7 +1427,7 @@ function finish(n,code,cards){
 // ---------- detalle ----------
 
 // ---------- reflejo holográfico (como las cartas de Pokémon) ----------
-function holoAt(pc,px,py){pc.classList.add("holo-live");pc.style.setProperty("--hx",(px*100).toFixed(1)+"%");pc.style.setProperty("--hy",(py*100).toFixed(1)+"%");
+function holoAt(pc,px,py){pc.classList.add("holo-live");pc.style.setProperty("--hx",(px*100).toFixed(1)+"%");pc.style.setProperty("--hy",(py*100).toFixed(1)+"%");pc.style.setProperty("--px",((px-.5)*2).toFixed(3));pc.style.setProperty("--py",((py-.5)*2).toFixed(3));
  pc.style.setProperty("--hd",Math.min(1,Math.hypot(px-.5,py-.5)*1.6).toFixed(2))}
 function holoOff(pc){pc.classList.remove("holo-live")}
 // En el móvil, al inclinarlo con la carta abierta, el reflejo se mueve solo
@@ -1382,7 +1437,7 @@ let GYRO=null;function holoGyro(pc){GYRO=pc;if(holoGyro.on)return;holoGyro.on=tr
  const start=()=>window.addEventListener("deviceorientation",h);
  if(window.DeviceOrientationEvent&&typeof DeviceOrientationEvent.requestPermission==="function"){document.addEventListener("pointerup",function ask(){DeviceOrientationEvent.requestPermission().then(r=>{if(r==="granted")start()}).catch(()=>{})},{once:true})}else start()}
 // Al arrastrar las cartas del sobre, el reflejo también se mueve
-document.addEventListener("pointermove",e=>{const d=e.target.closest&&e.target.closest("#deck .dc");if(!d)return;const pc=d.querySelector(".pc");if(!pc)return;const r=pc.getBoundingClientRect();
+let HRAF=0;document.addEventListener("pointermove",e=>{if(HRAF)return;HRAF=requestAnimationFrame(()=>{HRAF=0});const d=e.target.closest&&e.target.closest("#deck .dc");if(!d)return;const pc=d.querySelector(".pc");if(!pc)return;const r=pc.getBoundingClientRect();
  holoAt(pc,Math.max(0,Math.min(1,(e.clientX-r.left)/r.width)),Math.max(0,Math.min(1,(e.clientY-r.top)/r.height)))},{passive:true});
 document.addEventListener("pointerup",()=>document.querySelectorAll("#deck .pc.holo-live").forEach(holoOff),{passive:true});
 function detail(c){
