@@ -654,6 +654,21 @@ html.noanim .rx .frame,html.noanim .rl .frame,html.noanim .rs .stg,html.noanim .
 .rr .frame{box-shadow:0 0 5cqw rgba(70,140,255,.65),0 1.4cqw 4cqw rgba(30,20,60,.3),inset 0 0 0 .35cqw rgba(255,255,255,.75)}
 .rc .frame{box-shadow:0 0 3cqw rgba(200,205,215,.6),0 1.4cqw 4cqw rgba(30,20,60,.3),inset 0 0 0 .35cqw rgba(255,255,255,.8)}
 html.noanim .pc.rs .body,html.noanim .pc .frame::after{animation:none!important}
+
+/* ===== reflejo holográfico ===== */
+.pc .holo{position:absolute;inset:0;border-radius:4.2cqw;pointer-events:none;z-index:5;mix-blend-mode:overlay;opacity:var(--ho,.2);
+ background-image:repeating-linear-gradient(110deg,#ff3d6e 0%,#ffb13d 6%,#e8ff3d 12%,#3dffb0 18%,#3dc2ff 24%,#8a5cff 30%,#ff3d6e 36%),
+  repeating-linear-gradient(-55deg,rgba(255,255,255,0) 0 2.2%,rgba(255,255,255,.35) 2.6%,rgba(255,255,255,0) 3.2% 5%),
+  radial-gradient(circle at var(--hx,50%) var(--hy,50%),rgba(255,255,255,.5),rgba(255,255,255,0) 42%);
+ background-size:400% 400%,250% 250%,100% 100%;background-position:var(--hx,50%) var(--hy,50%),var(--hy,50%) var(--hx,50%),0 0;
+ filter:saturate(1.5);animation:holoDrift 9s ease-in-out infinite;transition:opacity .25s}
+@keyframes holoDrift{0%,100%{background-position:15% 20%,20% 15%,0 0}50%{background-position:85% 80%,80% 85%,0 0}}
+.pc.holo-live .holo{animation:none;opacity:calc(var(--ho,.2) * (1.15 + var(--hd,0) * .5))}
+.pc.rc{--ho:.16}.pc.rp{--ho:.24}.pc.rr{--ho:.34}.pc.rl{--ho:.46}.pc.rs{--ho:.62}.pc.rx{--ho:.45}
+.pc.rx .holo{mix-blend-mode:screen;opacity:calc(var(--ho) * .55);filter:saturate(1.6) hue-rotate(30deg)}
+.pc.mini .holo{animation-duration:12s}
+.pc.done .holo{opacity:.08}
+html.noanim .pc .holo{animation:none}
 </style></head>
 <body>
 <div id="splash"><div class="halo"></div><div id="flc"></div>
@@ -763,7 +778,7 @@ function cardHTML(c,mini){
     <div class="abil"><span class="tag">Efecto</span>${esc(c.efecto)}${c.extra?`<div class="cj"><span class="tag tag2">Canje</span>${esc(c.extra)}</div>`:""}</div>
     <div class="bottom"><div><small>se cumple</small><b>${R[c.r].canje}</b></div><div><small>validez</small><b>${R[c.r].val}</b></div><div><small>rareza</small><b>${R[c.r].n}</b></div></div>
     <div class="legal"><span class="rar">${R[c.r].sym}</span><span>Ilus. hecha a mano con amor</span><span>${num}</span></div>
-   </div></div>${s.done?`<div class="stamp"><span>CANJEADA</span></div>`:""}</div>`;
+   </div></div>${s.done?`<div class="stamp"><span>CANJEADA</span></div>`:""}<div class="holo"></div></div>`;
 }
 const $=id=>document.getElementById(id);
 function show(id){APPSND.p("tap");document.querySelectorAll(".screen").forEach(s=>s.classList.toggle("on",s.id==="s-"+id));
@@ -1313,13 +1328,29 @@ function finish(n,code,cards){
   $("sumOk").onclick=()=>{ov.classList.remove("on");filter="all";show("col");render()};render();
 }
 // ---------- detalle ----------
+
+// ---------- reflejo holográfico (como las cartas de Pokémon) ----------
+function holoAt(pc,px,py){pc.classList.add("holo-live");pc.style.setProperty("--hx",(px*100).toFixed(1)+"%");pc.style.setProperty("--hy",(py*100).toFixed(1)+"%");
+ pc.style.setProperty("--hd",Math.min(1,Math.hypot(px-.5,py-.5)*1.6).toFixed(2))}
+function holoOff(pc){pc.classList.remove("holo-live")}
+// En el móvil, al inclinarlo con la carta abierta, el reflejo se mueve solo
+let GYRO=null;function holoGyro(pc){GYRO=pc;if(holoGyro.on)return;holoGyro.on=true;
+ const h=e=>{const g=GYRO;if(!g||!document.body.contains(g)||!$("ovDet").classList.contains("on")||$("tilt").classList.contains("active"))return;if(e.gamma==null)return;
+  const px=Math.max(0,Math.min(1,.5+e.gamma/50)),py=Math.max(0,Math.min(1,.5+(e.beta-45)/50));holoAt(g,px,py);g.style.transform=`rotateY(${(px-.5)*16}deg) rotateX(${(.5-py)*16}deg)`};
+ const start=()=>window.addEventListener("deviceorientation",h);
+ if(window.DeviceOrientationEvent&&typeof DeviceOrientationEvent.requestPermission==="function"){document.addEventListener("pointerup",function ask(){DeviceOrientationEvent.requestPermission().then(r=>{if(r==="granted")start()}).catch(()=>{})},{once:true})}else start()}
+// Al arrastrar las cartas del sobre, el reflejo también se mueve
+document.addEventListener("pointermove",e=>{const d=e.target.closest&&e.target.closest("#deck .dc");if(!d)return;const pc=d.querySelector(".pc");if(!pc)return;const r=pc.getBoundingClientRect();
+ holoAt(pc,Math.max(0,Math.min(1,(e.clientX-r.left)/r.width)),Math.max(0,Math.min(1,(e.clientY-r.top)/r.height)))},{passive:true});
+document.addEventListener("pointerup",()=>document.querySelectorAll("#deck .pc.holo-live").forEach(holoOff),{passive:true});
 function detail(c){
   const ov=$("ovDet");ov.classList.add("on");const t=$("tilt");t.innerHTML=cardHTML(c,false);
   const pc=t.firstElementChild;pc.insertAdjacentHTML("beforeend",'<div class="glare"></div>');const gl=pc.querySelector(".glare");
   const mv=e=>{const r=pc.getBoundingClientRect();const px=(e.clientX-r.left)/r.width,py=(e.clientY-r.top)/r.height;
     pc.style.transform=`rotateY(${(px-.5)*24}deg) rotateX(${(.5-py)*24}deg)`;
-    gl.style.background=`radial-gradient(circle at ${px*100}% ${py*100}%,rgba(255,255,255,.95),rgba(255,255,255,0) 55%)`;t.classList.add("active")};
-  const end=()=>{pc.style.transform="";t.classList.remove("active")};
+    gl.style.background=`radial-gradient(circle at ${px*100}% ${py*100}%,rgba(255,255,255,.95),rgba(255,255,255,0) 55%)`;t.classList.add("active");holoAt(pc,px,py)};
+  const end=()=>{pc.style.transform="";t.classList.remove("active");holoOff(pc)};
+  holoGyro(pc);
   pc.onpointermove=mv;pc.onpointerdown=e=>{pc.setPointerCapture(e.pointerId);mv(e)};pc.onpointerup=end;pc.onpointerleave=end;pc.onpointercancel=end;
   pc.style.touchAction="none";
   const s=st.cards[c.n]||{};const d=daysLeft(c);const holder=c.n===29;
