@@ -8,5 +8,7 @@ jobs:
   avisar:
     runs-on: ubuntu-latest
     timeout-minutes: 3
+    env:
+      CRON_SECRET: ${{ secrets.CRON_SECRET }}
     steps:
-      - run: curl -fsS --max-time 60 https://nuestrascartas.vercel.app/api/cron
+      - run: curl -fsS --max-time 60 -H "Authorization: Bearer $CRON_SECRET" https://nuestrascartas.vercel.app/api/cron

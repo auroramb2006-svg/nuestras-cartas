@@ -1,18 +1,12 @@
 // Notificaciones: guardar suscripciones, mandar una de prueba y avisarla a ella al momento.
 const L = require('./_push_lib.js');
 const crypto = require('crypto');
-const sha = x => crypto.createHash('sha256').update(String(x)).digest('hex');
+const Auth = require('./_admin_auth.js');
 const madrid = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Madrid', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
-// Solo el editor de ella conoce la clave: la primera vez que se usa, queda guardada (su huella) y después se exige siempre.
-async function isAdmin(secret) {
-  if (!secret || String(secret).length < 32) return false;
-  const a = await L.readJSON('push/admin.json');
-  if (!a || !a.h) { await L.writeJSON('push/admin.json', { h: sha(secret), ts: Date.now() }); return true; }
-  return a.h === sha(secret);
-}
+const EDITOR = 'https://editor-aurora-81d3.vercel.app/editor-81d32a46c8.html';
 async function notifyHer(r) {
   const subs = (await L.allSubs()).filter(s => s.role === 'admin'); let n = 0;
-  for (const s of subs) if (await L.send(s, { title: r.title || (r.name + ' 👀'), body: (r.title ? r.name + ': ' : '') + (r.text || ''), url: 'https://editor-aurora-81d3.vercel.app/editor-81d32a46c8.html' }, 'high')) n++;
+  for (const s of subs) if (await L.send(s, { title: r.title || (r.name + ' 👀'), body: (r.title ? r.name + ': ' : '') + (r.text || ''), url: EDITOR }, 'high')) n++;
   return n;
 }
 async function sendCustom(c) {
@@ -22,7 +16,7 @@ async function sendCustom(c) {
 }
 
 module.exports = async (req, res) => {
-  L.cors(res);
+  Auth.setCors(req, res);
   if (req.method === 'OPTIONS') return res.status(204).end();
   try {
     const k = await L.vapid();
@@ -39,6 +33,7 @@ module.exports = async (req, res) => {
 
     if (b.action === 'sub') {
       if (!okSub) return res.status(400).json({ error: 'bad_sub' });
+      if (b.role === 'admin' && !Auth.requireAdmin(req, res)) return;
       const role = b.role === 'admin' ? 'admin' : 'user';
       const reminders = (Array.isArray(b.reminders) ? b.reminders : []).slice(0, 80).map(r => ({ id: L.clip(r.id, 60), day: L.clip(r.day, 10), at: +r.at || 0, title: L.clip(r.title, 80), body: L.clip(r.body, 160) })).filter(r => /^\d{4}-\d{2}-\d{2}$/.test(r.day));
       const path = L.SUBS + L.subId(sub.endpoint) + '.json';
@@ -48,6 +43,7 @@ module.exports = async (req, res) => {
     }
     if (b.action === 'test') {
       if (!okSub) return res.status(400).json({ error: 'bad_sub' });
+      if (b.role === 'admin' && !Auth.requireAdmin(req, res)) return;
       const ok = await L.send({ sub }, { title: b.role === 'admin' ? 'Funciona 👀' : 'Funciona ✨', body: b.role === 'admin' ? 'Así te llegará lo que haga' : 'Así te llegarán los avisos', url: b.url || '/' }, 'high');
       return res.status(ok ? 200 : 502).json({ ok });
     }
@@ -70,7 +66,7 @@ module.exports = async (req, res) => {
       // Aviso inmediato para ella (los móviles con el editor y los avisos activados).
       const text = L.clip(b.text, 160); if (!text) return res.status(400).json({ error: 'bad' });
       const subs = (await L.allSubs()).filter(s => s.role === 'admin');
-      let n = 0; for (const s of subs) if (await L.send(s, { title: (L.clip(b.name, 30) || 'Alguien') + ' 👀', body: text, url: 'https://editor-aurora-81d3.vercel.app/editor-81d32a46c8.html' }, 'high')) n++;
+      let n = 0; for (const s of subs) if (await L.send(s, { title: (L.clip(b.name, 30) || 'Alguien') + ' 👀', body: text, url: EDITOR }, 'high')) n++;
       return res.status(200).json({ ok: true, sent: n });
     }
     if (b.action === 'request') {
@@ -86,7 +82,7 @@ module.exports = async (req, res) => {
       return res.status(200).json({ ok: true, notified: n, scheduled: r.day || null, at: r.at || null });
     }
     if (b.action === 'reqList' || b.action === 'reqDone') {
-      if (!(await isAdmin(b.secret))) return res.status(403).json({ error: 'auth' });
+      if (!Auth.requireAdmin(req, res)) return;
       const { list, del } = require('@vercel/blob');
       if (b.action === 'reqList') {
         const r = await list({ prefix: 'push/requests/', limit: 200 });
@@ -101,7 +97,7 @@ module.exports = async (req, res) => {
       return res.status(200).json({ ok: true, notified: n });
     }
     if (b.action === 'custom' || b.action === 'customList' || b.action === 'customDel') {
-      if (!(await isAdmin(b.secret))) return res.status(403).json({ error: 'auth' });
+      if (!Auth.requireAdmin(req, res)) return;
       if (b.action === 'customList') {
         const r = await require('@vercel/blob').list({ prefix: 'push/custom/', limit: 200 });
         const items = []; for (const x of r.blobs || []) { const o = await L.readJSON(x.pathname); if (o) items.push(o); }

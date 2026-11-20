@@ -2,6 +2,7 @@
 const L = require('./_push_lib.js');
 const T = require('./_truco_engine.js');
 const crypto = require('crypto');
+const Auth = require('./_admin_auth.js');
 const sha = x => crypto.createHash('sha256').update(String(x)).digest('hex');
 const EDITOR = 'https://editor-aurora-81d3.vercel.app/editor-81d32a46c8.html';
 const okUid = u => /^[a-z0-9]{1,13}$/.test(String(u || ''));
@@ -18,14 +19,7 @@ const kv = {
   async set(k, v) { if (RURL && RTOK) return redis(['SET', 'nc:' + k, JSON.stringify(v)]); return L.writeJSON('truco/' + k + '.json', v); },
 };
 
-const MEMO = { admin: null, toks: {} }; // se queda en memoria mientras la función está caliente
-async function isAdmin(secret) {
-  if (!secret || String(secret).length < 32) return false;
-  if (MEMO.admin && MEMO.admin === sha(secret)) return true;
-  const a = await L.readJSON('push/admin.json'); if (a && a.h) MEMO.admin = a.h;
-  if (!a || !a.h) { await L.writeJSON('push/admin.json', { h: sha(secret), ts: Date.now() }); return true; }
-  return a.h === sha(secret);
-}
+const MEMO = { toks: {} }; // se queda en memoria mientras la función está caliente
 // Él se identifica con un token que guarda su móvil (hasta 3 móviles por persona).
 async function isHim(uid, tok) {
   if (!okUid(uid) || !tok || String(tok).length < 20) return false;
@@ -80,14 +74,14 @@ async function finish(g, uid) {
 }
 
 module.exports = async (req, res) => {
-  L.cors(res);
+  Auth.setCors(req, res);
   if (req.method === 'OPTIONS') return res.status(204).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'method' });
   try {
     const b = await L.readBody(req);
     const uid = String(b.uid || '');
     let who;
-    if (b.secret) { if (!(await isAdmin(b.secret))) return res.status(403).json({ error: 'auth' }); who = 'ella'; }
+    if (Auth.isAdmin(req)) who = 'ella';
     else { if (!(await isHim(uid, b.tok))) return res.status(403).json({ error: 'auth' }); who = 'el'; }
     if (!okUid(uid)) return res.status(400).json({ error: 'bad' });
     const gk = uid + '-game';

@@ -4,10 +4,16 @@ const L = require('./_push_lib.js');
 const today = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Madrid', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
 const madridHour = () => +new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Madrid', hour: '2-digit', hour12: false }).format(new Date());
 const H12 = 12 * 3600e3;
+const crypto = require('crypto');
+const EDITOR = 'https://editor-aurora-81d3.vercel.app/editor-81d32a46c8.html';
 
 module.exports = async (req, res) => {
   res.setHeader('Cache-Control', 'no-store');
-  if (process.env.CRON_SECRET && req.headers.authorization !== 'Bearer ' + process.env.CRON_SECRET && req.query && req.query.k !== process.env.CRON_SECRET) return res.status(401).json({ error: 'auth' });
+  const secret = process.env.CRON_SECRET || '';
+  if (secret.length < 32) return res.status(503).json({ error: 'not_configured' });
+  const expected = Buffer.from('Bearer ' + secret);
+  const supplied = Buffer.from(String(req.headers.authorization || ''));
+  if (supplied.length !== expected.length || !crypto.timingSafeEqual(supplied, expected)) return res.status(401).json({ error: 'auth' });
   try {
     await L.vapid();
     const day = today(), now = Date.now(), hour = madridHour();
@@ -37,7 +43,7 @@ module.exports = async (req, res) => {
     }
     for (const b of reqs) {
       const r = await L.readJSON(b.pathname); if (!r || r.sent || !due(r)) continue;
-      for (const s of admins) await L.send(s, { title: r.title || (r.name + ' 👀'), body: (r.title ? r.name + ': ' : '') + (r.text || ''), url: 'https://editor-aurora-81d3.vercel.app/editor-81d32a46c8.html' }, 'high');
+      for (const s of admins) await L.send(s, { title: r.title || (r.name + ' 👀'), body: (r.title ? r.name + ': ' : '') + (r.text || ''), url: EDITOR }, 'high');
       r.sent = Date.now(); await L.writeJSON(b.pathname, r); his++;
     }
     return res.status(200).json({ ok: true, day, hour, sent, custom, his });

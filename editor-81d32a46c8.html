@@ -279,9 +279,11 @@ main{max-width:900px;margin:0 auto;padding:14px 16px 60px;position:relative}
 <input type="file" id="impf" accept=".json" hidden></header>
 <div id="login"><div class="lbox">
  <div style="font-size:40px">💕</div><h2>Editor de cartas</h2>
- <p id="lmsg">Escribe tu contraseña para abrir el editor.</p>
+ <p id="lmsg">Escribe la clave de acceso y la contraseña de tus cartas.</p>
  <input id="ltok" type="password" placeholder="Clave de GitHub (solo la primera vez)" autocomplete="off" style="display:none">
+ <input id="lauth" type="password" placeholder="Clave de acceso al editor" autocomplete="current-password">
  <input id="lpw" type="password" placeholder="Contraseña del editor" autocomplete="current-password">
+ <p style="font-size:12px;color:#d9d1f2">La clave de acceso protege el servidor; la contraseña del editor descifra tus cartas.</p>
  <label style="display:flex;align-items:center;gap:8px;justify-content:center;margin-top:12px;font-size:13.5px;font-weight:800;color:#d9d1f2"><input type="checkbox" id="lrem" checked style="width:auto;margin:0"> Recordarme en este dispositivo</label><button class="main" id="lgo">Entrar</button><div class="err" id="lerr"></div>
  <details id="lhelp" style="display:none"><summary>¿Cómo creo la clave de GitHub?</summary><ol>
  <li>En github.com, entra en tu foto → <b>Settings</b> → abajo del todo <b>Developer settings</b>.</li>
@@ -433,6 +435,21 @@ function build(){
   const N=D.news||{};let news=null;if((N.title||"").trim()||(N.text||"").trim()){news={title:N.title||"",text:N.text||"",button:N.button||""};news.id=String(fnv(JSON.stringify(news)))}
   return TEMPLATE.replace("/*ENC*/",JSON.stringify({packs,days,wa,news,sync:(!PREVIEW&&D.syncKeys&&D.syncKeys.pub)||null}));
 }
+function buildFiles(){
+ const html=build(),style=html.match(/<style>([\s\S]*?)<\/style>/);
+ const open="<script>",close="<"+"/script>";
+ const start=html.lastIndexOf(open),end=html.lastIndexOf(close);
+ if(!style||start<0||end<=start)throw "No se pudieron preparar los archivos de la app";
+ const script=html.slice(start+open.length,end);
+ const data=script.match(/^\s*const\s+ENC\s*=\s*(\{.*\});\s*$/m);
+ if(!data)throw "No se encontraron los datos de las cartas";
+ JSON.parse(data[1]);
+ const output=html.replace(style[0],'<link rel="stylesheet" href="/assets/css/app.css">');
+ const scriptStart=output.lastIndexOf(open),scriptEnd=output.lastIndexOf(close);
+ const tags='<script src="/assets/data/app-data.js"></scr'+'ipt>\n<script src="/assets/js/app.js"></scr'+'ipt>';
+ const index=output.slice(0,scriptStart)+tags+output.slice(scriptEnd+close.length);
+ return {"index.html":index,"assets/data/app-data.js":"window.NUESTRAS_CARTAS_DATA = "+data[1]+";"};
+}
 function dl(name,text,type){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},2000);toast("Descargado ✓")}
 var PREVIEW=false;document.getElementById("test").onclick=()=>{try{PREVIEW=true;let h;try{h=build()}finally{PREVIEW=false}let ov=document.getElementById("pv");
   if(!ov){ov=document.createElement("div");ov.id="pv";ov.style.cssText="position:fixed;inset:0;z-index:50;background:#000;display:flex;flex-direction:column";
@@ -452,7 +469,7 @@ const FAVK="nc-favs";const favs=()=>{try{return JSON.parse(localStorage.getItem(
 const star=id=>isFav(id)?"★ ":"";const hasFavs=()=>favs().some(f=>ACTS.some(a=>a.id===f));
 function sortActs(){ACTS.sort((x,y)=>(x.id==="_old")-(y.id==="_old")||isFav(y.id)-isFav(x.id)||y.ts-x.ts)}
 function togFav(id){let f=favs();f=f.includes(id)?f.filter(x=>x!==id):f.concat([id]);try{localStorage.setItem(FAVK,JSON.stringify(f))}catch(e){}sortActs();if(!CAL.touched)CAL.w=hasFavs()?"fav":"all";drawAct();toast(isFav(id)?"Añadido a favoritos ★":"Quitado de favoritos")}
-async function loadAct(manual){ACTERR="";try{const r=await fetch("https://nuestrascartas.vercel.app/api/sync?t="+Date.now(),{cache:"no-store"});
+async function loadAct(manual){ACTERR="";try{const r=await fetch(API_BASE+"/api/sync?t="+Date.now(),{cache:"no-store",headers:editorHeaders()});
   if(r.status===404){ACT=null;ACTS=[];ACTERR="empty"}else if(!r.ok){let e={};try{e=await r.json()}catch(x){}ACTERR=e.error||"server"}
   else{const o=await r.json();const unb=s=>{const b=atob(s);const u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return u};
    const pk=await crypto.subtle.importKey("jwk",D.syncKeys.priv,{name:"RSA-OAEP",hash:"SHA-256"},false,["decrypt"]);
@@ -506,7 +523,10 @@ function calHTML(){if(!ACTS.length)return "";const ev=calEvents();const by={};ev
  h+=`<div style="margin-top:10px;font-size:12px;font-weight:800;color:#a59cc4">${CAL.d?"Ese día":"Este mes"} · ${list.length} ${list.length===1?"cosa":"cosas"}</div>`;
  h+=list.length?list.map(e=>`<div style="display:flex;gap:10px;align-items:center;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.07)"><span style="font-size:16px;width:22px;text-align:center">${e.ic}</span><div style="flex:1;min-width:0"><div style="font-weight:800;color:#fff">${esc(e.t)}</div><small style="color:#a59cc4;font-weight:700">${fmt(e.ts)}</small></div><span style="font-size:11px;font-weight:900;padding:3px 8px;border-radius:99px;background:${pcol(e.p.id)};color:#1b1430;white-space:nowrap">${esc(e.p.name)}</span></div>`).join(""):`<p style="margin:6px 0 0;font-size:13px">Nada por aquí.</p>`;
  return h}
-const PAPI="https://nuestrascartas.vercel.app/api/push";
+const API_BASE="https://nuestrascartas.vercel.app";
+const PAPI=API_BASE+"/api/push";
+const editorToken=()=>{try{return sessionStorage.getItem("nc-editor-token")||""}catch(e){return""}};
+const editorHeaders=()=>{const token=editorToken();return token?{Authorization:"Bearer "+token}:{}};
 const EPUSHOK=()=>"serviceWorker" in navigator&&"PushManager" in window&&"Notification" in window;
 const EIOS=/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
 const ESTAND=()=>(window.matchMedia&&matchMedia("(display-mode: standalone)").matches)||navigator.standalone===true;
@@ -514,7 +534,7 @@ const ePushOn=()=>{try{return localStorage.getItem("nc-push-admin")==="1"}catch(
 function eu8(b64){const p="=".repeat((4-b64.length%4)%4);const r=atob((b64+p).replace(/-/g,"+").replace(/_/g,"/"));return Uint8Array.from(r,c=>c.charCodeAt(0))}
 async function eSub(create){const reg=await navigator.serviceWorker.register("/sw.js");await navigator.serviceWorker.ready;let sub=await reg.pushManager.getSubscription();
  if(!sub&&create){const k=await (await fetch(PAPI)).json();sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:eu8(k.publicKey)})}return sub}
-const ePost=o=>fetch(PAPI,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(o)});
+const ePost=o=>fetch(PAPI,{method:"POST",headers:Object.assign({"Content-Type":"application/json"},editorHeaders()),body:JSON.stringify(o)});
 async function ePushAction(a){try{
  if(a==="on"){if(EIOS&&!ESTAND())throw new Error("ios");const p=await Notification.requestPermission();if(p!=="granted")throw new Error("denied");
   const sub=await eSub(true);const r=await ePost({action:"sub",role:"admin",name:"Editor",sub:sub.toJSON()});if(!r.ok)throw new Error("server");try{localStorage.setItem("nc-push-admin","1")}catch(e){}EPMSG="Activados, dale a Probar"}
@@ -536,9 +556,7 @@ function pushBoxHTML(){setTimeout(eRefresh,0);const b=(id,t)=>`<button data-ep="
  const btns=EPUSHOK()&&!(EIOS&&!ESTAND())?(ePushOn()?b("test","Probar")+b("off","Desactivar"):b("on","Activar")):"";
  return `<div style="margin-top:10px;padding:10px;border-radius:12px;background:rgba(255,255,255,.05);display:flex;align-items:center;justify-content:space-between;gap:8px"><div style="font-size:12px"><b style="color:#fff">Avisos en el móvil</b><br><span style="color:#a59cc4;font-weight:700">${esc(msg)}</span></div><div style="display:flex;flex-shrink:0">${btns}</div></div>`}
 const CN={to:"all",title:"",body:"",when:"now",day:"",hour:"10:00",msg:"",list:null,busy:false};
-async function adminSecret(){const d=D&&D.syncKeys&&D.syncKeys.priv&&D.syncKeys.priv.d;if(!d)throw new Error("nokey");
- const h=await crypto.subtle.digest("SHA-256",new TextEncoder().encode("nc-admin:"+d));return [...new Uint8Array(h)].map(b=>b.toString(16).padStart(2,"0")).join("")}
-async function cnCall(o){const r=await ePost(Object.assign({secret:await adminSecret()},o));let j={};try{j=await r.json()}catch(e){}if(!r.ok)throw new Error(j.error||"server");return j}
+async function cnCall(o){const r=await ePost(o);let j={};try{j=await r.json()}catch(e){}if(!r.ok)throw new Error(j.error||"server");return j}
 async function cnLoad(){try{CN.list=(await cnCall({action:"customList"})).items||[]}catch(e){CN.list=[]}drawAct()}
 async function cnSend(){if(CN.busy)return;if(!CN.title.trim()&&!CN.body.trim()){CN.msg="Escribe algo primero";drawAct();return}
  if(CN.when==="day"&&!CN.day){CN.msg="Elige el día";drawAct();return}
@@ -572,8 +590,8 @@ function reqHTML(){const L=RQ.list||[];
  ${RQ.msg?`<p style="margin:6px 0 0;font-size:12px;font-weight:800;color:#fff">${esc(RQ.msg)}</p>`:""}
  <small style="display:block;margin-top:4px;color:#a59cc4;font-weight:700">Con "Concedido" le llega un aviso</small>`}
 const TRU={uid:null,name:"",st:{}};
-window.TRC={api:"https://nuestrascartas.vercel.app/api/truco",sprite:"https://nuestrascartas.vercel.app/truco-cartas.png",me:"ella",
- auth:async()=>({uid:TRU.uid,secret:await adminSecret()}),
+ window.TRC={api:API_BASE+"/api/truco",sprite:API_BASE+"/truco-cartas.png",me:"ella",
+ auth:async()=>({uid:TRU.uid}),headers:editorHeaders,
  // solo las cartas que él ya tiene (para no destripar las de los sobres que no ha abierto)
  betCards:()=>{const P=ACTS.find(x=>x.id===TRU.uid);const C=(P&&P.cards)||{};return (D.cards||[]).filter(c=>C[c.n]&&C[c.n].got).map(c=>({n:c.n,name:c.name,efecto:c.efecto,r:c.r,type:c.type}))},
  challengeExtra:()=>({otherName:TRU.name}),otherName:()=>TRU.name,
@@ -665,7 +683,7 @@ function shoutsFrom(g){if(!PREV||PREV.id!==g.id||!g.log)return;const last=(PREV.
   else if(/gana \d+ a \d+/.test(l.t))shout(g.winner===me()?"¡GANASTE!":"PERDISTE",g.score[me()]+" a "+g.score[opp()],g.winner===me()?"q":"no",g.winner===me()?"winGame":"loseGame")})}
 const me=()=>TRC.me,opp=()=>me()==="el"?"ella":"el";
 function ov(){let o=document.getElementById("trOv");if(!o){o=document.createElement("div");o.id="trOv";o.style.setProperty("--sp","url("+TRC.sprite+")");document.body.appendChild(o);o.addEventListener("pointerdown",()=>SND.unlock(),{passive:true});const pre=new Image();pre.src=TRC.sprite}return o}
-async function call(o){const r=await fetch(TRC.api,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(Object.assign(await TRC.auth(),o))});let j={};try{j=await r.json()}catch(x){}if(!r.ok){const er=new Error(j.error||"server");er.data=j;throw er}return j}
+async function call(o){const r=await fetch(TRC.api,{method:"POST",headers:Object.assign({"Content-Type":"application/json"},TRC.headers?TRC.headers():{}),body:JSON.stringify(Object.assign(await TRC.auth(),o))});let j={};try{j=await r.json()}catch(x){}if(!r.ok){const er=new Error(j.error||"server");er.data=j;throw er}return j}
 async function load(force){try{const j=await call({action:"state"});const k=JSON.stringify(j);if(force||k!==LAST){LAST=k;S=j;if(HOLD)PENDING=true;else draw()}}catch(x){if(force){S=S||{game:null,ledger:{prizes:[],debts:[]}};msg=x.message==="auth"?"Este móvil no puede jugar con esta cuenta 😒":"No conecta, prueba en un rato 🫠";draw()}}}
 function poll(){clearInterval(timer);timer=setInterval(()=>{if(!document.hidden&&ov().classList.contains("on"))load()},S&&S.redis?2000:3500)}
 async function send(o){if(busy)return;busy=true;msg="";try{const j=await call(o);LAST=JSON.stringify(j);S=j;sure=false}catch(x){if(x.data&&x.data.game&&S){S.game=x.data.game}msg=x.message==="value"?"Tu apuesta tiene que valer al menos "+x.data.need+" pts":x.message==="busy"?"Ya hay una partida empezada":x.message==="move"?(x.data.message||"Esa no vale"):x.message==="stale"?"":"No se ha podido, prueba otra vez"}busy=false;if(HOLD)PENDING=true;else draw()}
@@ -807,10 +825,13 @@ function actHTML0(){
 }
 const $=id=>document.getElementById(id);
 function busy(on,txt){$("busy").classList.toggle("on",!!on);if(txt)$("busyT").textContent=txt}
-async function login(){const pw=$("lpw").value||LS.get("nc-pw")||"";const tk=$("ltok").value.trim();$("lerr").textContent="";
+async function editorAuth(action,password){const r=await fetch(API_BASE+"/api/editor-auth",{method:"POST",headers:Object.assign({"Content-Type":"application/json"},editorHeaders()),body:JSON.stringify({action,password})});
+ let j={};try{j=await r.json()}catch(e){}if(!r.ok)throw new Error(j.error||"auth");if(action==="login"){if(!j.token)throw new Error("auth");try{sessionStorage.setItem("nc-editor-token",j.token)}catch(e){throw new Error("storage")}}return j}
+async function login(){const pw=$("lpw").value||LS.get("nc-pw")||"";const tk=$("ltok").value.trim();const access=$("lauth").value;$("lerr").textContent="";
  if(tk)LS.set("nc-gh-token",tk);if(!TOK()){$("lerr").textContent="Pega primero la clave de GitHub";return}if(!pw){$("lerr").textContent="Escribe la contraseña";return}
  busy(1,"Abriendo…");
- try{const enc=await ghRaw(DATAF);let remote=await unseal(enc,pw);PW=pw;
+ try{if(access){await editorAuth("login",access);$("lauth").value=""}else if(!(await editorAuth("session")).authenticated){$("lerr").textContent="Escribe la clave de acceso al editor";busy(0);return}
+  const enc=await ghRaw(DATAF);let remote=await unseal(enc,pw);PW=pw;
   const dr=LS.get("nc-draft");let usedDraft=false;
   if(dr){try{const d=await unseal(dr,pw);if(d&&d._base===enc.length){D=d;usedDraft=true}}catch(e){}}
   if(!usedDraft){D=remote;LS.del("nc-draft")}D._base=enc.length;normalize();DIRTY=usedDraft;FIRSTPW=!!remote._initial;
@@ -818,16 +839,16 @@ async function login(){const pw=$("lpw").value||LS.get("nc-pw")||"";const tk=$("
     D.syncKeys={pub:await crypto.subtle.exportKey("jwk",kp.publicKey),priv:await crypto.subtle.exportKey("jwk",kp.privateKey)};DIRTY=true;NEEDPUB=true}catch(e){}}
   $("login").style.display="none";render();markDirty();loadAct();if(usedDraft)toast("He recuperado tus cambios sin publicar");
   if(FIRSTPW)setTimeout(()=>openCfg(true),400)}
- catch(e){if(e&&e.name==="OperationError")LS.del("nc-pw");$("lerr").textContent=ghErr(e);if(e&&e.status===401){LS.del("nc-gh-token");showTok()}}
+ catch(e){if(e&&e.name==="OperationError")LS.del("nc-pw");$("lerr").textContent=e.message==="auth"?"Clave de acceso incorrecta o sesión caducada.":e.message==="not_configured"?"Falta configurar las claves de acceso en Vercel.":e.message==="storage"?"Este navegador no permite guardar la sesión.":ghErr(e);if(e&&e.status===401){LS.del("nc-gh-token");showTok()}}
  busy(0)}
-function showTok(){$("ltok").style.display="block";$("lhelp").style.display="block";$("lmsg").textContent="Primera vez en este dispositivo: pega tu clave de GitHub y la contraseña del editor."}
+function showTok(){$("ltok").style.display="block";$("lhelp").style.display="block";$("lmsg").textContent="Primera vez en este dispositivo: pega tu clave de GitHub, la clave de acceso y la contraseña de las cartas."}
 if(!TOK())showTok();
-else if(LS.get("nc-pw")){$("lmsg").textContent="Entrando…";setTimeout(login,50)}
+else if(LS.get("nc-pw")){$("lmsg").textContent="Comprobando la sesión…";editorAuth("session").then(s=>{if(s.authenticated)setTimeout(login,50);else $("lmsg").textContent="Introduce la clave de acceso al editor y la contraseña de las cartas."}).catch(()=>{$("lmsg").textContent="No se ha podido comprobar el acceso."})}
 $("lgo").onclick=login;$("lpw").addEventListener("keydown",e=>{if(e.key==="Enter")login()});
-$("lock").onclick=()=>{LS.del("nc-pw");D=null;PW=null;$("list").innerHTML="";$("lpw").value="";$("login").style.display="flex"};
-$("pub").onclick=async()=>{let h;try{h=build()}catch(e){toast(e);return}busy(1,"Publicando…");
+$("lock").onclick=()=>{try{sessionStorage.removeItem("nc-editor-token")}catch(e){}LS.del("nc-pw");D=null;PW=null;$("list").innerHTML="";$("lpw").value="";$("lauth").value="";$("login").style.display="flex"};
+$("pub").onclick=async()=>{let files;try{files=buildFiles()}catch(e){toast(e);return}busy(1,"Publicando…");
  try{const enc=await seal(Object.assign({},D,{_initial:FIRSTPW?true:undefined,_base:undefined}),PW);
-  await ghCommit({"index.html":h,[DATAF]:enc},"Actualizar cartas desde el editor");
+  files[DATAF]=enc;await ghCommit(files,"Actualizar cartas desde el editor");
   D._base=enc.length;DIRTY=false;NEEDPUB=false;LS.del("nc-draft");markDirty();busy(0);render();
   toast("¡Publicado! En un minuto estará en su app 💕")}catch(e){busy(0);toast(ghErr(e))}};
 function openCfg(first){const M=$("cfgM");M.classList.add("on");
@@ -841,8 +862,8 @@ function openCfg(first){const M=$("cfgM");M.classList.add("on");
  $("cfgX").onclick=()=>M.classList.remove("on");
  $("ntOk").onclick=()=>{const v=$("nt").value.trim();if(!v){$("cerr").textContent="Pega la clave";return}LS.set("nc-gh-token",v);toast("Clave guardada ✓");M.classList.remove("on")};
  $("npOk").onclick=async()=>{const a=$("np1").value,b=$("np2").value;if(a.length<6){$("cerr").textContent="Mínimo 6 caracteres";return}if(a!==b){$("cerr").textContent="No coinciden";return}
-  let h;try{h=build()}catch(e){$("cerr").textContent=e;return}busy(1,"Guardando…");
-  try{const enc=await seal(Object.assign({},D,{_initial:undefined,_base:undefined}),a);await ghCommit({"index.html":h,[DATAF]:enc},"Cambiar contraseña del editor");
+  let files;try{files=buildFiles()}catch(e){$("cerr").textContent=e;return}busy(1,"Guardando…");
+  try{const enc=await seal(Object.assign({},D,{_initial:undefined,_base:undefined}),a);files[DATAF]=enc;await ghCommit(files,"Cambiar contraseña del editor");
    PW=a;FIRSTPW=false;if(LS.get("nc-pw"))LS.set("nc-pw",a);D._base=enc.length;DIRTY=false;LS.del("nc-draft");markDirty();busy(0);M.classList.remove("on");toast("Contraseña cambiada y publicado ✓")}
   catch(e){busy(0);$("cerr").textContent=ghErr(e)}}}
 $("cfg").onclick=()=>openCfg(false);

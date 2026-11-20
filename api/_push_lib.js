@@ -43,12 +43,6 @@ async function send(rec, payload, urgency) {
     return false;
   }
 }
-function cors(res) {
-  res.setHeader('Cache-Control', 'no-store');
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-}
 async function readBody(req) {
   if (req.body && typeof req.body === 'object') return req.body;
   const t = typeof req.body === 'string' ? req.body : await new Promise((ok, ko) => { let d = ''; req.on('data', c => { d += c; if (d.length > 200000) ko(new Error('big')); }); req.on('end', () => ok(d)); req.on('error', ko); });
@@ -60,4 +54,4 @@ async function listAll(prefix) {
   do { const r = await list({ prefix, limit: 1000, cursor }); out.push(...(r.blobs || [])); cursor = r.hasMore ? r.cursor : undefined; } while (cursor);
   return out;
 }
-module.exports = { listAll, readJSON, writeJSON, vapid, subId, allSubs, send, cors, readBody, clip, SUBS };
+module.exports = { listAll, readJSON, writeJSON, vapid, subId, allSubs, send, readBody, clip, SUBS };

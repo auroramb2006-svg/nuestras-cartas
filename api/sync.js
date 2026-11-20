@@ -1,5 +1,6 @@
 // Guarda y devuelve la actividad de la app (va cifrada: solo el editor puede leerla).
 const { put, get, list } = require('@vercel/blob');
+const Auth = require('./_admin_auth.js');
 const PATH = 'sync/estado.json'; // versión antigua (sin sesión)
 const userPath = u => 'sync/u-' + u + '.json';
 
@@ -18,11 +19,7 @@ async function readBody(req) {
 }
 
 module.exports = async (req, res) => {
-  res.setHeader('Cache-Control', 'no-store');
-  // El editor vive en otra dirección: permitir que lea y escriba (los datos van cifrados).
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  Auth.setCors(req, res);
   if (req.method === 'OPTIONS') return res.status(204).end();
   try {
     if (req.method === 'POST') {
@@ -42,6 +39,7 @@ module.exports = async (req, res) => {
       throw last;
     }
     if (req.method === 'GET') {
+      if (!Auth.requireAdmin(req, res)) return;
       // Devuelve la actividad de cada persona que ha iniciado sesión (cada una va cifrada).
       let blobs = [];
       try { const r = await list({ prefix: 'sync/', limit: 100 }); blobs = r.blobs || []; }
