@@ -30,7 +30,7 @@ Aplicacion privada para compartir cartas, recordatorios, notificaciones y jugar 
 | `api/_push_lib.js` | Utilidades compartidas de almacenamiento y web push. |
 | `api/cron.js` | Procesa recordatorios y mensajes pendientes. |
 | `api/sync.js` | Sincroniza el estado cifrado de cada usuario. |
-| `vercel.json` | Programacion diaria de respaldo del cron. |
+| `vercel.json` | Publicacion estatica desde `public/` y programacion diaria de respaldo del cron. |
 | `.github/workflows/avisos.yml` | Ejecucion horaria externa del cron. |
 
 La interfaz principal separa estructura, estilos, logica y datos. Edita los archivos de `src/` y ejecuta `npm run build` para generar los archivos compactos de `assets/`. El editor conserva una plantilla para la vista previa y, al publicar, genera `index.html` y `assets/data/app-data.js` sin volver a incrustar la logica en la pagina. Un pequeno script sigue en el encabezado para aplicar el tema antes de mostrar la pagina y evitar un cambio de colores al cargar.
